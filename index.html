@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ベトナムフーディー - 日本でベトナムに関するお店・スポットを探そう。</title>
+
+    <!-- ブラウザのタブのアイコン(ロゴ) -->
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+
+    <!-- 地図ライブラリ Leaflet のスタイル(インターネット経由で読み込み) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- ピンをまとめて表示する Leaflet.markercluster のスタイル -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+
+    <!-- このアプリ独自のスタイル -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <!-- 文字は app.js が、選ばれた言語のものに書き換えます -->
+      <a class="header-brand" id="brand-link" href="./">
+        <!-- ロゴ(alt の文字は、app.js が選ばれた言語のものに書き換えます) -->
+        <img id="app-logo" class="app-logo" src="images/logo.png" width="36" height="48" alt="ベトナムフーディー" />
+        <div class="header-titles">
+          <h1 id="app-title">ベトナムフーディー</h1>
+          <p id="app-tagline">日本でベトナムに関するお店・スポットを探そう。</p>
+        </div>
+      </a>
+
+      <!-- ログイン表示(中身は js/auth.js が作ります)と、言語の切り替え -->
+      <div class="header-actions">
+        <div id="auth-area" class="auth-area"></div>
+        <select id="lang-select" aria-label="Language">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="vi">Tiếng Việt</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- 検索ボックス(店名・エリア・料理名。入力するたびに絞り込まれます) -->
+    <div id="search-bar">
+      <div class="search-box">
+        <!-- placeholder に空白を入れているのは、「入力が空のとき」だけ下の薄い案内文を出すための仕掛けです -->
+        <input
+          id="search-input"
+          type="search"
+          placeholder=" "
+          autocomplete="off"
+          aria-label="店名・エリア・料理名で検索"
+        />
+        <div class="search-placeholder" aria-hidden="true">
+          <span id="search-placeholder-main">🔍 店名・エリア・料理名で検索</span>
+          <span id="search-placeholder-example" class="search-example">例: 新宿、池袋、横浜、千葉…</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="content">
+      <!-- お店の一覧(app.js が中身を作ります) -->
+      <aside id="shop-list">
+        <h2 id="list-title">お店一覧</h2>
+
+        <!-- 絞り込みボタン(app.js が、data.js の内容からボタンを作ります) -->
+        <div id="filter-panel">
+          <!-- スマホ(幅の狭い画面)では、絞り込みボタンを折りたためる。PC では、いつも開いたまま -->
+          <details id="filter-details" open>
+            <summary id="filter-summary">絞り込み</summary>
+          <!-- お気に入りのみ表示(オン/オフの切り替えボタン) -->
+          <div class="chips" id="favorite-chips">
+            <button id="fav-only" type="button" class="chip" aria-pressed="false">♥ お気に入りのみ表示</button>
+          </div>
+          <!-- 都道府県・エリアは、絞り込みボタンではなく、一覧の階層(アコーディオン)で選びます -->
+          <div class="filter-label" id="dish-label">料理</div>
+          <div class="chips" id="dish-chips"></div>
+          </details>
+          <div class="filter-footer">
+            <p id="filter-count" role="status"></p>
+            <!-- 絞り込み条件が1つでも選ばれているときだけ表示されます -->
+            <button id="filter-reset" type="button" hidden>× 条件をリセット</button>
+          </div>
+        </div>
+
+        <ul id="shop-list-items"></ul>
+      </aside>
+
+      <!-- 地図(#map)と、その上部中央に浮かべる「🔍スキャンする」ボタン・「周辺のお店を検索中」の表示を、まとめる入れ物 -->
+      <div id="map-wrap">
+        <!-- 地図はこの div の中に表示されます -->
+        <div id="map"></div>
+        <!-- スキャンボタン(押すと、いまの地図の表示範囲に映っているお店だけに絞り込みます)。地図に浮かべて表示する -->
+        <div id="scan-panel">
+          <button id="scan-button" type="button">🔍スキャンする</button>
+          <p id="scan-status" role="status" hidden></p>
+        </div>
+        <!-- 「お店一覧を見る」ボタン(スマホの、幅の狭い画面だけで表示。CSSで制御)
+             ・スマホでは、地図を大きく使うため、#shop-list はふだん隠しています。このボタンで、一覧オーバーレイ(#scan-overlay)を開きます
+             ・検索・お気に入り・料理の絞り込みが効いているときは、js/app.js が自動でオーバーレイを開くので、このボタンは隠れます -->
+        <div id="list-overlay-panel">
+          <button id="list-overlay-button" type="button"></button>
+        </div>
+      </div>
+
+      <!-- スキャン結果のオーバーレイ(#content いっぱいに重ねて表示。中身・開閉は js/app.js が作ります)
+           ・上部: 「← 戻る」ボタン + 見出し(固定。スクロールしても動かない)
+           ・その下: 店舗カードを、都道府県・エリアの階層を使わずフラットに並べた一覧
+           ・一覧の最後には、いま使っている本物の地図(#map-wrap)を、そのまま移動させて置く
+             (コピーではないので、そのまま操作でき、閉じると元の場所に戻ります) -->
+      <div id="scan-overlay" hidden>
+        <div class="scan-overlay-header">
+          <button type="button" id="scan-overlay-back" class="scan-overlay-back"></button>
+          <h2 id="scan-overlay-title"></h2>
+        </div>
+        <div id="scan-overlay-scroll" class="scan-overlay-scroll">
+          <ul id="scan-overlay-list" class="scan-overlay-list"></ul>
+          <div id="scan-overlay-map-slot" class="scan-overlay-map-slot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 店舗詳細ページ(URLが「?shop=店舗ID」のときだけ表示されます。中身は js/detail.js が作ります) -->
+    <main id="detail-view" hidden>
+      <div id="detail-page" class="detail-page"></div>
+    </main>
+
+    <!-- 固定ページ(利用規約・プライバシーポリシー・運営者情報。URLが「?page=terms」などのときだけ表示されます。中身は js/detail.js が作ります) -->
+    <main id="content-page-view" hidden>
+      <div id="content-page" class="detail-page terms-page"></div>
+    </main>
+
+    <!-- サイト全体のフッター(どのページでも表示。3つのリンクの文字は、app.js が選ばれた言語のものに書き換えます) -->
+    <footer id="site-footer">
+      <nav class="footer-nav" aria-label="Site pages">
+        <a href="?page=terms" id="footer-link-terms" class="footer-link">利用規約</a>
+        <a href="?page=privacy" id="footer-link-privacy" class="footer-link">プライバシーポリシー</a>
+        <a href="?page=about" id="footer-link-about" class="footer-link">運営者情報</a>
+      </nav>
+    </footer>
+
+    <!-- 地図ライブラリ Leaflet 本体 -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- ピンをまとめて表示するプラグイン Leaflet.markercluster(Leaflet 本体のあとに読み込む) -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
+    <script src="js/i18n.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
+    <script src="js/auth.js"></script>
+    <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
+    <script src="js/auth-modal.js"></script>
+    <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
+    <script src="js/detail.js"></script>
+
+    <!--
+      Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
+      ・モジュール形式(CDN)で読み込みます。ファイルを直接開いた状態(file://)でも読み込めるように、外部ファイルではなく、ここに書いています。
+        (ただし、Google ログインは、file:// では動きません。http://localhost:8000 などで開いてください)
+      ・ログイン(Authentication): ヘッダー・モーダルのログインに使います。auth.js / auth-modal.js から window.authApi として使います。
+        signIn / signOut / onChange … Google ログイン(既存)
+        signInWithEmail(email, password)                … メールアドレス+パスワードでログイン
+        registerWithEmail(email, password, nickname)    … 新規登録(Firestore の users/{ユーザーID} に、ニックネームも保存する)
+        sendPasswordReset(email)                         … パスワード再設定メールを送る
+        fetchUserProfile(uid)                            … users/{ユーザーID} を読む(メールでログインしたユーザーの、表示名を出すため)
+        registerWithEmail と fetchUserProfile は、Firestore も使うので、下の Firestore の読み込みが成功したときだけ用意されます。
+      ・Tips(Firestore): 詳細ページの「Tips」に使います。detail.js から window.tipsApi(fetchCounts / fetchMyVote / addTips /
+        deleteVote / fetchVotes / setVoteHidden)として使います。
+        1人につき、お店ごとに1回だけ投稿できます(ルールは firestore.rules)。deleteVote で、自分の投稿を取り消せます(また投稿できる状態に戻る)。
+        保存先: shops/{店舗ID}/tips/counts(集計: フィールド名 = Tipsのキー、値 = 選ばれた人数)
+                shops/{店舗ID}/tipVotes/{ユーザーID}(そのユーザーの投稿記録。ドキュメント名がユーザーIDなので、1人1件)
+      ・Check-in(Firestore): 詳細ページの「Check-in」に使います。detail.js から window.checkinApi(fetchCount / fetchMyCheckin /
+        checkIn / deleteCheckin / fetchCheckins / setCheckinHidden)として使います。
+        Tips と同じ考え方で、1人につき、お店ごとに1回だけできます(ルールは firestore.rules)。deleteCheckin で取り消せます。
+        保存先: shops/{店舗ID}/checkinCount/total(集計: フィールド count = チェックインした人数)
+                shops/{店舗ID}/checkins/{ユーザーID}(そのユーザーのチェックイン記録。ドキュメント名がユーザーIDなので、1人1件)
+      ・レビュー(Firestore): 詳細ページの「レビュー」に使います。detail.js・app.js から window.reviewsApi(fetchCount / fetchReviews /
+        addReview / deleteReview / setReviewHidden)として使います。
+        Tips・Check-in と同じく、1人につき、お店ごとに1回だけ投稿できます(ルールは firestore.rules)。deleteReview で削除できます。
+        保存先: shops/{店舗ID}/reviews/{ユーザーID}(評価・コメント・投稿者名・投稿日時。ドキュメント名がユーザーIDなので、1人1件)
+        平均点・件数は、集計専用のドキュメントを持たず、レビュー一覧から画面側で計算します。
+      ・写真投稿(Firestore + Cloudinary): 詳細ページの「みんなの写真」に使います。detail.js から
+        window.photosApi(fetchPhotos / uploadPhoto / deletePhoto / setPhotoHidden / reportPhoto / fetchReports /
+        fetchMyLikes / likePhoto / unlikePhoto / fetchComments / addComment / deleteComment / setCommentHidden)として使います。
+        1人が投稿できる枚数に制限はありません(Tips・Check-in・レビューと違い、1人1回ではない)。
+        画像ファイルは Cloudinary(無料の画像クラウドサービス。cloud name: e1tbcqtm、
+        upload preset: vietnam-foodie-photos の、署名不要アップロードを使う)に保存し、
+        Cloudinaryが返す secure_url(画像の公開URL)・public_id(識別子)・投稿者・投稿日時・非表示フラグ・
+        利用規約への同意記録(termsAgreed / termsVersion / agreedAt)・
+        報告された回数(reportCount)・いいねされた回数(likeCount)・状態(photoStatus。今は "published" だけ)は
+        Firestore(shops/{店舗ID}/photos/{写真ID})に保存します。
+        自分の写真を削除すると、Firestoreの記録は消えますが、Cloudinary上の画像ファイル自体は残り続けます
+        (署名付きの削除リクエストには API Secret が必要で、ブラウザからは安全に行えないため)。
+        アップロード前の圧縮・リサイズと、投稿前の同意チェック(4項目+利用規約への同意)は、detail.js 側(画面)で行います。
+        報告(reportPhoto)は、ログインしていなくても行えます。報告の記録は
+        shops/{店舗ID}/photos/{写真ID}/reports/{自動生成ID} に保存し(理由・日時のみ)、
+        fetchReports は、管理者だけが、その一覧(理由の内訳)を読めます。
+        いいね(likePhoto / unlikePhoto)は、Tips・Check-inと同じ「1人1回」の考え方で、
+        shops/{店舗ID}/photos/{写真ID}/likes/{ユーザーID} に記録します。
+        コメント(addComment / deleteComment)は、1人が何度でも投稿でき、
+        shops/{店舗ID}/photos/{写真ID}/comments/{自動生成ID} に保存します。
+      ・管理者(sales@compass-story.com でログインしたときだけ)は、Tips・Check-in・レビュー・写真・写真のコメントの
+        投稿を、非表示にしたり、元に戻したりできます(window.tipsApi.fetchVotes / setVoteHidden、
+        window.checkinApi.fetchCheckins / setCheckinHidden、window.reviewsApi.setReviewHidden、
+        window.photosApi.setPhotoHidden / setCommentHidden)。写真の報告理由の確認は window.photosApi.fetchReports で行います
+        (報告されても、自動では非表示になりません。管理者が内容を見て、非表示にするか判断します)。
+        いいねは、単純な数字なので、非表示機能は用意していません。
+        実際に「管理者だけができる」ことと「本人だけが削除できる」ことは、Firestore のルール
+        (ログインのトークンの情報で判定)が守ります。Cloudinary側は、署名不要アップロードのため、
+        誰でもアップロードはできますが(その代わり、削除はできません)、投稿内容の公開・非表示・削除は、
+        あくまで Firestore の記録(アプリの一覧・拡大表示)側で管理します。
+      ・いずれも、読み込みに失敗しても(オフラインなど)、ほかの機能には影響しません。
+    -->
+    <script type="module">
+      const FIREBASE_VERSION = "10.14.1";
+      const TIMEOUT_MS = 10000;
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBjVOEV5pn2NpZqV1ZWdIHE7t72vk7RljI",
+        authDomain: "vietnam-foodie.firebaseapp.com",
+        projectId: "vietnam-foodie",
+        storageBucket: "vietnam-foodie.firebasestorage.app",
+        messagingSenderId: "431106385765",
+        appId: "1:431106385765:web:eb143afac73c11ea58238c",
+      };
+
+      // 通信が返ってこないときに、いつまでも待たないようにする
+      const withTimeout = (promise) =>
+        Promise.race([
+          promise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)),
+        ]);
+
+      const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+
+      // Firebase の本体(Authentication と Firestore で共通)と、2つの部品を、いっしょに読み込む
+      let app = null;
+      let modules = [];
+      try {
+        const { initializeApp } = await import(`${base}/firebase-app.js`);
+        app = initializeApp(firebaseConfig);
+        modules = await Promise.allSettled([import(`${base}/firebase-auth.js`), import(`${base}/firebase-firestore.js`)]);
+      } catch (error) {
+        console.warn("Firebase の読み込みに失敗:", error);
+      }
+      const [authModule, firestoreModule] = modules;
+      const loaded = (m) => {
+        if (!app || !m || m.status !== "fulfilled") throw (m && m.reason) || new Error("no firebase app");
+        return m.value;
+      };
+
+      // --- Authentication(Google ログイン・メールアドレス+パスワードのログイン) ---
+      //   ・ログイン状態は、Firebase 標準の仕組みでブラウザに保存されるので、再読み込みしても復元される
+      //   ・Firestore より先に用意する(Firestore が、ログイン中のユーザーの情報を、書き込みに付けられるように)
+      let auth = null;
+      // createUserWithEmailAndPassword は、下の Firestore のところ(registerWithEmail)でも使うので、
+      // ここ(try の中)だけでなく、外からも見える場所に控えておく
+      let createUserWithEmailAndPassword_ = null;
+      try {
+        const {
+          getAuth,
+          GoogleAuthProvider,
+          signInWithPopup,
+          signInWithEmailAndPassword,
+          createUserWithEmailAndPassword,
+          sendPasswordResetEmail,
+          signOut,
+          onAuthStateChanged,
+        } = loaded(authModule);
+        auth = getAuth(app);
+        createUserWithEmailAndPassword_ = createUserWithEmailAndPassword;
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" }); // 毎回、アカウントを選べるようにする
+
+        window.authApi = {
+          // Google のアカウント選択画面(ポップアップ)を開いてログインする
+          signIn: () => signInWithPopup(auth, provider),
+          // メールアドレス+パスワードでログインする
+          signInWithEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
+          // パスワード再設定メールを送る
+          sendPasswordReset: (email) => sendPasswordResetEmail(auth, email),
+          signOut: () => signOut(auth),
+          // ログイン状態が変わるたび(最初の復元も含む)に、callback(user または null)が呼ばれる
+          onChange: (callback) => onAuthStateChanged(auth, callback),
+        };
+        window.dispatchEvent(new Event("auth-api-ready"));
+      } catch (error) {
+        console.warn("Authentication の読み込みに失敗:", error);
+        window.authApiFailed = true;
+        window.dispatchEvent(new Event("auth-api-failed"));
+      }
+
+      // --- Firestore(Tips・Check-in・ユーザー情報) ---
+      //   ・読み込みに失敗すると、tips-api-failed / checkin-api-failed を通知する(detail.js が、読み込めなかった旨を表示する)
+      try {
+        const {
+          getFirestore,
+          doc,
+          getDoc,
+          setDoc,
+          updateDoc,
+          deleteDoc,
+          writeBatch,
+          increment,
+          serverTimestamp,
+          collection,
+          query,
+          orderBy,
+          limit,
+          getDocs,
+        } = loaded(firestoreModule);
+        const db = getFirestore(app);
+
+        const checkShopId = (shopId) => {
+          if (!/^[A-Za-z0-9_-]+$/.test(String(shopId))) throw new Error("invalid shop id");
+          return shopId;
+        };
+        const tipsRef = (shopId) => doc(db, "shops", checkShopId(shopId), "tips", "counts");
+        const voteRef = (shopId, uid) => doc(db, "shops", checkShopId(shopId), "tipVotes", uid);
+        const voteCollection = (shopId) => collection(db, "shops", checkShopId(shopId), "tipVotes");
+        const currentUid = () => (auth && auth.currentUser ? auth.currentUser.uid : null);
+        // いまログイン中のユーザーが、管理者(sales@compass-story.com)かどうか
+        //   ・実際に、管理者だけが書き込める・一覧を見られる、というのは、Firestore のルールが守っている。
+        //     ここは、無駄なリクエストを送らないための、画面側の目安でしかない。
+        const isAdminNow = () => !!(auth && auth.currentUser && auth.currentUser.email === "sales@compass-story.com");
+
+        window.tipsApi = {
+          // そのお店の Tips の人数を { キー: 人数 } で返す(まだ誰も投稿していなければ {})
+          async fetchCounts(shopId) {
+            const snapshot = await withTimeout(getDoc(tipsRef(shopId)));
+            return snapshot.exists() ? snapshot.data() : {};
+          },
+          // ログイン中のユーザーが、そのお店に投稿した Tips のキーの配列を返す(未ログイン・まだ投稿していなければ null)
+          async fetchMyVote(shopId) {
+            const uid = currentUid();
+            if (!uid) return null;
+            const snapshot = await withTimeout(getDoc(voteRef(shopId, uid)));
+            const tips = snapshot.exists() ? snapshot.data().tips : null;
+            return Array.isArray(tips) ? tips : null;
+          },
+          // 選ばれた Tips(キーの配列)を投稿する。「投稿記録の作成」と「各人数の +1」を、1回にまとめて書き込む
+          //   すでに投稿済みのお店だと、ルールで拒否される(error.code === "permission-denied")
+          async addTips(shopId, keys) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            const counts = {};
+            keys.forEach((key) => (counts[key] = increment(1)));
+            const batch = writeBatch(db);
+            batch.set(voteRef(shopId, uid), { tips: keys, createdAt: serverTimestamp() });
+            batch.set(tipsRef(shopId), counts, { merge: true });
+            await withTimeout(batch.commit());
+          },
+          // 【管理者だけ】そのお店の、Tips の投稿(1人ずつの記録)を、すべて返す(非表示のものも含む)
+          async fetchVotes(shopId) {
+            if (!isAdminNow()) return [];
+            const snapshot = await withTimeout(getDocs(voteCollection(shopId)));
+            return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+          },
+          // 【管理者だけ】1件の投稿を、非表示にする / 元に戻す。集計(人数)も、あわせて増減する
+          async setVoteHidden(shopId, uid, hidden, tips) {
+            const counts = {};
+            (tips || []).forEach((key) => (counts[key] = increment(hidden ? -1 : 1)));
+            const batch = writeBatch(db);
+            batch.update(voteRef(shopId, uid), { hidden: !!hidden });
+            if (Object.keys(counts).length > 0) batch.set(tipsRef(shopId), counts, { merge: true });
+            await withTimeout(batch.commit());
+          },
+          // 自分の投稿を取り消す。「投稿記録の削除」と「各人数の -1」を、1回にまとめて書き込む(また投稿できる状態に戻る)
+          //   ・すでに管理者に非表示にされていた投稿は、人数がすでに -1 されているので、ここでは人数を触らない
+          //     (触ると、二重に減ってしまうため)
+          async deleteVote(shopId) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            const snapshot = await withTimeout(getDoc(voteRef(shopId, uid)));
+            if (!snapshot.exists()) return; // すでに削除済み(二重送信など)
+            const data = snapshot.data();
+            const tips = Array.isArray(data.tips) ? data.tips : [];
+            const wasHidden = !!data.hidden;
+            const batch = writeBatch(db);
+            batch.delete(voteRef(shopId, uid));
+            if (!wasHidden && tips.length > 0) {
+              const counts = {};
+              tips.forEach((key) => (counts[key] = increment(-1)));
+              batch.set(tipsRef(shopId), counts, { merge: true });
+            }
+            await withTimeout(batch.commit());
+          },
+        };
+        window.dispatchEvent(new Event("tips-api-ready"));
+
+        // --- Check-in ---
+        //   ・仕組みは Tips と同じ(1人につき、お店ごとに1回。記録の作成と、集計の +1 を、1回のバッチ書き込みでまとめて行う)
+        const checkinRef = (shopId, uid) => doc(db, "shops", checkShopId(shopId), "checkins", uid);
+        const checkinCollection = (shopId) => collection(db, "shops", checkShopId(shopId), "checkins");
+        const checkinCountRef = (shopId) => doc(db, "shops", checkShopId(shopId), "checkinCount", "total");
+
+        window.checkinApi = {
+          // そのお店の、チェックインした人数を返す(まだ誰もしていなければ 0)
+          async fetchCount(shopId) {
+            const snapshot = await withTimeout(getDoc(checkinCountRef(shopId)));
+            const n = snapshot.exists() ? Number(snapshot.data().count) : 0;
+            return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+          },
+          // ログイン中のユーザーが、そのお店にチェックイン済みかを返す(未ログインなら false)
+          async fetchMyCheckin(shopId) {
+            const uid = currentUid();
+            if (!uid) return false;
+            const snapshot = await withTimeout(getDoc(checkinRef(shopId, uid)));
+            return snapshot.exists();
+          },
+          // チェックインする。「記録の作成」と「人数の +1」を、1回にまとめて書き込む
+          //   すでにチェックイン済みのお店だと、ルールで拒否される(error.code === "permission-denied")
+          async checkIn(shopId) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            const batch = writeBatch(db);
+            batch.set(checkinRef(shopId, uid), { checkedInAt: serverTimestamp() });
+            batch.set(checkinCountRef(shopId), { count: increment(1) }, { merge: true });
+            await withTimeout(batch.commit());
+          },
+          // 【管理者だけ】そのお店の、チェックイン記録を、すべて返す(非表示のものも含む)
+          async fetchCheckins(shopId) {
+            if (!isAdminNow()) return [];
+            const snapshot = await withTimeout(getDocs(checkinCollection(shopId)));
+            return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+          },
+          // 【管理者だけ】1件のチェックインを、非表示にする / 元に戻す。合計人数も、あわせて増減する
+          async setCheckinHidden(shopId, uid, hidden) {
+            const batch = writeBatch(db);
+            batch.update(checkinRef(shopId, uid), { hidden: !!hidden });
+            batch.set(checkinCountRef(shopId), { count: increment(hidden ? -1 : 1) }, { merge: true });
+            await withTimeout(batch.commit());
+          },
+          // 自分のチェックインを取り消す。「記録の削除」と「合計人数の -1」を、1回にまとめて書き込む(またチェックインできる状態に戻る)
+          //   ・すでに管理者に非表示にされていた記録は、人数がすでに -1 されているので、ここでは人数を触らない
+          //     (触ると、二重に減ってしまうため)
+          async deleteCheckin(shopId) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            const snapshot = await withTimeout(getDoc(checkinRef(shopId, uid)));
+            if (!snapshot.exists()) return; // すでに削除済み(二重送信など)
+            const wasHidden = !!snapshot.data().hidden;
+            const batch = writeBatch(db);
+            batch.delete(checkinRef(shopId, uid));
+            if (!wasHidden) batch.set(checkinCountRef(shopId), { count: increment(-1) }, { merge: true });
+            await withTimeout(batch.commit());
+          },
+        };
+        window.dispatchEvent(new Event("checkin-api-ready"));
+
+        // --- レビュー ---
+        //   ・Tips・Check-in と同じ「1人につき、お店ごとに1回だけ」だが、レビューは中身(評価・コメント)を
+        //     みんなに見せる機能なので、Tips のように「投稿記録」と「集計」を分けず、
+        //     shops/{店舗ID}/reviews/{ユーザーID} の1つのドキュメントに、そのまま保存する
+        //     (ドキュメント名がユーザーIDなので、同じお店には1件しか作れない。ルールは firestore.rules)。
+        //   ・平均点は、レビュー一覧をもとに、画面側(detail.js)で計算する(集計専用のドキュメントは、持たない)
+        const reviewsCollection = (shopId) => collection(db, "shops", checkShopId(shopId), "reviews");
+        const reviewRef = (shopId, uid) => doc(db, "shops", checkShopId(shopId), "reviews", uid);
+
+        window.reviewsApi = {
+          // そのお店の、非表示ではないレビューの件数を返す(地図のポップアップ・件数エリアで使う)
+          //   ・「非表示ではない」は、hidden フィールドが無い(昔からのレビュー)場合も含む。Firestore のクエリで
+          //     「hidden != true」を調べると、hidden フィールドが無いドキュメントごと外れてしまうため、
+          //     ここでは一覧を取ってから、画面と同じ考え方(!r.hidden)で数える
+          async fetchCount(shopId) {
+            const q = query(reviewsCollection(shopId), limit(200));
+            const snapshot = await withTimeout(getDocs(q));
+            return snapshot.docs.filter((d) => !d.data().hidden).length;
+          },
+          // そのお店のレビューを、新しい順に返す([{ id(投稿したユーザーのID), rating, comment, authorName, createdAt, hidden }])
+          //   id が、いまログイン中のユーザーの uid と同じなら、「そのユーザーが投稿したもの」だと分かる。
+          //   非表示のレビューも、そのまま含めて返す(表示するかどうかは、呼び出す側で判断する。管理者の画面で使うため)
+          async fetchReviews(shopId) {
+            const q = query(reviewsCollection(shopId), orderBy("createdAt", "desc"), limit(100));
+            const snapshot = await withTimeout(getDocs(q));
+            return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+          },
+          // レビューを投稿する。1人1店舗1回(ルールで強制。2回目は permission-denied)
+          async addReview(shopId, { rating, comment, authorName }) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            await withTimeout(setDoc(reviewRef(shopId, uid), { rating, comment, authorName, createdAt: serverTimestamp() }));
+          },
+          // 【管理者だけ】1件のレビューを、非表示にする / 元に戻す(集計は無いので、これだけでよい)
+          async setReviewHidden(shopId, uid, hidden) {
+            await withTimeout(updateDoc(reviewRef(shopId, uid), { hidden: !!hidden }));
+          },
+          // 自分のレビューを削除する(集計は無いので、これだけでよい。また投稿できる状態に戻る)
+          async deleteReview(shopId) {
+            const uid = currentUid();
+            if (!uid) {
+              const error = new Error("login required");
+              error.code = "app/login-required";
+              throw error;
+            }
+            await withTimeout(deleteDoc(reviewRef(shopId, uid)));
+          },
+        };
+        window.dispatchEvent(new Event("reviews-api-ready"));
+
+        // --- ユーザー情報(ニックネーム) ---
+        //   ・保存先: users/{ユーザーID}(フィールド displayName)
+        //   ・メールアドレス+パスワードで新規登録したときに、ニックネームを、ここに保存する
+        //   ・Google でログインしたユーザーは、Google アカウントの名前をそのまま使うので、ここは使わない
+        //   ・Authentication(上のブロック)と Firestore(このブロック)の、両方が読み込めたときだけ、用意する
+        if (auth && typeof createUserWithEmailAndPassword_ === "function") {
+          const userDocRef = (uid) => doc(db, "users", uid);
+
+          // メールアドレス+パスワードで、新しいアカウントを作る。ニックネームは、Firestore に保存する
+          window.authApi.registerWithEmail = async (email, password, nickname) => {
+            const credential = await createUserWithEmailAndPassword_(auth, email, password);
+            try {
+              await withTimeout(setDoc(userDocRef(credential.user.uid), { displayName: nickname, createdAt: serverTimestamp() }));
+            } catch (error) {
+              // アカウントは作れたが、ニックネームの保存に失敗した(通信エラーなど)。ログイン自体は、そのまま進める
+              console.warn("ニックネームの保存に失敗:", error);
+            }
+            return credential;
+          };
+
+          // ユーザー情報(ニックネーム)を読む。メールでログインしたユーザーの、表示名を出すために使う
+          window.authApi.fetchUserProfile = async (uid) => {
+            const snapshot = await withTimeout(getDoc(userDocRef(uid)));
+            return snapshot.exists() ? snapshot.data() : null;
+          };
+        }
+
+        // --- 写真投稿(Firestore + Cloudinary) ---
+        //   ・画像ファイルは Cloudinary(無料の画像クラウドサービス)に保存し、
+        //     Firestore(shops/{店舗ID}/photos/{写真ID})には、Cloudinaryが返す secure_url(画像の公開URL)・
+        //     public_id(識別子)・投稿者・投稿日時・非表示フラグ・利用規約への同意記録などを保存する。
+        //   ・1人が投稿できる枚数に、制限は無い(Tips・Check-in・レビューと違って、1人1回ではない)。
+        //   ・画像の圧縮・リサイズは、detail.js 側(アップロード前に canvas で処理する)が行う。ここでは、届いた画像を、そのまま送る。
+        //   ・投稿前の同意チェック(4項目+利用規約)は、detail.js 側(画面)で必須にしている。ここでは、
+        //     「同意した」という記録(termsAgreed / termsVersion / agreedAt)を、そのまま保存するだけ。
+        //   ・このブロックだけ読み込みに失敗しても(オフラインなど)、Tips・Check-in・レビューには影響しない
+        //     (このブロックだけ、別の try/catch にしているため)
+        try {
+          // Cloudinary の「署名不要(Unsigned)アップロード」を使う。API Secret(秘密鍵)は、一切使わない・書かない
+          //   (秘密鍵を使う署名付きアップロード・削除は、ブラウザから安全に行えないため)
+          const CLOUDINARY_CLOUD_NAME = "e1tbcqtm";
+          const CLOUDINARY_UPLOAD_PRESET = "vietnam-foodie-photos";
+          const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+          // 画像(Blob)を1枚、Cloudinaryにアップロードする。戻り値: { secure_url, public_id }
+          async function uploadToCloudinary(blob) {
+            const formData = new FormData();
+            formData.append("file", blob);
+            formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+            const response = await withTimeout(fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData }));
+            if (!response.ok) {
+              const error = new Error(`cloudinary upload failed (${response.status})`);
+              error.code = "app/cloudinary-upload-failed";
+              throw error;
+            }
+            const data = await response.json();
+            return { secure_url: data.secure_url, public_id: data.public_id };
+          }
+
+          const photosCollection = (shopId) => collection(db, "shops", checkShopId(shopId), "photos");
+          const photoRef = (shopId, photoId) => doc(db, "shops", checkShopId(shopId), "photos", photoId);
+          const photoReportsCollection = (shopId, photoId) => collection(db, "shops", checkShopId(shopId), "photos", photoId, "reports");
+          const photoLikeRef = (shopId, photoId, uid) => doc(db, "shops", checkShopId(shopId), "photos", photoId, "likes", uid);
+          const photoCommentsCollection = (shopId, photoId) => collection(db, "shops", checkShopId(shopId), "photos", photoId, "comments");
+          const photoCommentRef = (shopId, photoId, commentId) =>
+            doc(db, "shops", checkShopId(shopId), "photos", photoId, "comments", commentId);
+          // 投稿時に同意を求めている、利用規約の版数(規約の内容を大きく変えたときは、ここも変える)
+          const PHOTO_TERMS_VERSION = "1";
+          // レポートの理由として受け付けるキー(js/i18n.js の reportPhotoReasons の key と、同じにする)
+          const PHOTO_REPORT_REASONS = ["copyright", "person", "privacy", "unrelated", "inappropriate", "misleading", "other"];
+
+          window.photosApi = {
+            // そのお店の写真を、新しい順で返す(非表示のものも含む。表示するかどうかは、呼び出す側で判断する)
+            async fetchPhotos(shopId) {
+              const q = query(photosCollection(shopId), orderBy("createdAt", "desc"), limit(200));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            },
+            // 写真を1枚、アップロードする(Cloudinaryに画像を保存してから、Firestoreに記録を作る)。blob は、detail.js 側で圧縮した JPEG 画像
+            //   ・投稿前の同意チェック(4項目+利用規約)は、detail.js 側の画面で必須にしているので、
+            //     ここに届いた時点で、同意済みとして扱う(termsAgreed: true として保存する)
+            //   ・extra.description(説明文)・extra.category(カテゴリー)は、どちらも任意。書かれていないときは、
+            //     フィールドごと保存しない(空文字を保存しない。ルール側も、フィールドが無いことを許している)
+            async uploadPhoto(shopId, blob, authorName, extra) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const { secure_url, public_id } = await uploadToCloudinary(blob);
+              const newDocRef = doc(photosCollection(shopId)); // 自動生成ID
+              const data = {
+                uid,
+                secure_url,
+                public_id,
+                authorName,
+                createdAt: serverTimestamp(),
+                reportCount: 0, // 報告された回数(まだ0)
+                likeCount: 0, // いいねされた回数(まだ0)
+                photoStatus: "published", // 今は "published" だけ使う。将来 "pending"/"hidden"/"deleted" などに広げられるようにしておく
+                termsAgreed: true,
+                termsVersion: PHOTO_TERMS_VERSION,
+                agreedAt: serverTimestamp(),
+              };
+              const description = extra && typeof extra.description === "string" ? extra.description.trim() : "";
+              const category = extra && typeof extra.category === "string" ? extra.category : "";
+              if (description) data.description = description;
+              if (category) data.category = category;
+              await withTimeout(setDoc(newDocRef, data));
+              return { id: newDocRef.id, ...data };
+            },
+            // 自分の写真を1枚、削除する。Firestoreの記録(表示上のデータ)だけを削除する
+            //   ・Cloudinary上の画像ファイル自体は、削除しない。安全に削除するには、API Secret(秘密鍵)を使った
+            //     署名付きリクエストが必要で、秘密鍵をブラウザのコードに書くと、誰でも読めてしまい危険なため。
+            //   ・そのため、画像ファイルは Cloudinary 上に残り続けるが、アプリの一覧・拡大表示からは消える。
+            async deletePhoto(shopId, photoId) {
+              await withTimeout(deleteDoc(photoRef(shopId, photoId)));
+            },
+            // 【管理者だけ】1枚の写真を、非表示にする / 元に戻す
+            async setPhotoHidden(shopId, photoId, hidden) {
+              await withTimeout(updateDoc(photoRef(shopId, photoId), { hidden: !!hidden }));
+            },
+            // この写真を報告する(ログインしていなくても行える)。報告記録の作成と、reportCountの+1を、1回にまとめて書き込む
+            async reportPhoto(shopId, photoId, reason) {
+              if (!PHOTO_REPORT_REASONS.includes(reason)) throw new Error("invalid report reason");
+              const reportRef = doc(photoReportsCollection(shopId, photoId));
+              const batch = writeBatch(db);
+              batch.set(reportRef, { reason, createdAt: serverTimestamp() });
+              batch.update(photoRef(shopId, photoId), { reportCount: increment(1) });
+              await withTimeout(batch.commit());
+            },
+            // 【管理者だけ】1枚の写真に寄せられた、報告(理由・日時)の一覧を返す
+            async fetchReports(shopId, photoId) {
+              if (!isAdminNow()) return [];
+              const q = query(photoReportsCollection(shopId, photoId), orderBy("createdAt", "desc"), limit(50));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            },
+            // ログイン中のユーザーが、渡された写真(複数)のうち、どれに「いいね」済みかを { 写真ID: true } の形で返す
+            //   ・未ログインのときは、空を返す(呼び出す側で、あらかじめ確認しているはずだが、念のため)
+            async fetchMyLikes(shopId, photoIds) {
+              const uid = currentUid();
+              if (!uid || !photoIds || !photoIds.length) return {};
+              const results = await Promise.all(
+                photoIds.map((photoId) =>
+                  withTimeout(getDoc(photoLikeRef(shopId, photoId, uid))).then((snapshot) => [photoId, snapshot.exists()])
+                )
+              );
+              const likes = {};
+              results.forEach(([photoId, liked]) => {
+                if (liked) likes[photoId] = true;
+              });
+              return likes;
+            },
+            // 写真に「いいね」する。「いいね記録の作成」と「likeCountの+1」を、1回にまとめて書き込む
+            //   すでに、いいね済みの写真だと、ルールで拒否される(error.code === "permission-denied")
+            async likePhoto(shopId, photoId) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const batch = writeBatch(db);
+              batch.set(photoLikeRef(shopId, photoId, uid), { createdAt: serverTimestamp() });
+              batch.update(photoRef(shopId, photoId), { likeCount: increment(1) });
+              await withTimeout(batch.commit());
+            },
+            // 写真への「いいね」を取り消す。「いいね記録の削除」と「likeCountの-1」を、1回にまとめて書き込む
+            async unlikePhoto(shopId, photoId) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const batch = writeBatch(db);
+              batch.delete(photoLikeRef(shopId, photoId, uid));
+              batch.update(photoRef(shopId, photoId), { likeCount: increment(-1) });
+              await withTimeout(batch.commit());
+            },
+            // その写真のコメントを、新しい順で返す(非表示のものも含む。表示するかどうかは、呼び出す側で判断する)
+            async fetchComments(shopId, photoId) {
+              const q = query(photoCommentsCollection(shopId, photoId), orderBy("createdAt", "desc"), limit(200));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            },
+            // コメントを1件、投稿する(Tips・Check-in・レビューと違い、1人が何度でも投稿できる)
+            async addComment(shopId, photoId, comment, authorName) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const newDocRef = doc(photoCommentsCollection(shopId, photoId)); // 自動生成ID
+              const data = { uid, authorName, comment, createdAt: serverTimestamp() };
+              await withTimeout(setDoc(newDocRef, data));
+              return { id: newDocRef.id, ...data };
+            },
+            // 自分のコメントを1件、削除する
+            async deleteComment(shopId, photoId, commentId) {
+              await withTimeout(deleteDoc(photoCommentRef(shopId, photoId, commentId)));
+            },
+            // 【管理者だけ】1件のコメントを、非表示にする / 元に戻す
+            async setCommentHidden(shopId, photoId, commentId, hidden) {
+              await withTimeout(updateDoc(photoCommentRef(shopId, photoId, commentId), { hidden: !!hidden }));
+            },
+          };
+          window.dispatchEvent(new Event("photos-api-ready"));
+        } catch (error) {
+          console.warn("写真機能(Firebase Storage)の読み込みに失敗:", error);
+          window.photosApiFailed = true;
+          window.dispatchEvent(new Event("photos-api-failed"));
+        }
+      } catch (error) {
+        console.warn("Firestore の読み込みに失敗:", error);
+        window.tipsApiFailed = true;
+        window.checkinApiFailed = true;
+        window.reviewsApiFailed = true;
+        window.photosApiFailed = true; // Firestore が読み込めなければ、写真機能も使えない
+        window.dispatchEvent(new Event("tips-api-failed"));
+        window.dispatchEvent(new Event("checkin-api-failed"));
+        window.dispatchEvent(new Event("reviews-api-failed"));
+        window.dispatchEvent(new Event("photos-api-failed"));
+      }
+    </script>
+  </body>
+</html>

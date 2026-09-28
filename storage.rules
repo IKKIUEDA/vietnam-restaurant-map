@@ -1,0 +1,13 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // 写真投稿の保存先は、Cloudinary(無料の画像クラウドサービス)に移行しました。
+    // Firebase Storage は、このアプリでは、もう使っていません。
+    // 念のため、すべてのアクセスを拒否しておきます(過去に shop-photos/ に保存されていたファイルが、
+    // まだバケットに残っていても、誰からも読み書きできないようにするため)。
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

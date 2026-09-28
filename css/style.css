@@ -1,0 +1,2402 @@
+/* ページ全体の余白をなくして、画面いっぱいに使う */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: #2e7d32;
+  color: white;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between; /* タイトルは左、言語の選択は右 */
+  align-items: center;
+  gap: 12px;
+}
+
+/* ロゴ + タイトル(左寄せで横に並べる) */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: inherit; /* リンクの青色・下線は、使わない */
+  text-decoration: none;
+}
+
+.app-logo {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: 48px;
+}
+
+.header-titles {
+  min-width: 0; /* 幅が狭いとき、サブタイトルを「…」で省略できるようにする */
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* ヘッダーの右側: ログイン表示 + 言語の切り替え */
+.header-actions {
+  position: relative; /* ログインのエラー表示の基準 */
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 「Googleでログイン」(白地に緑の文字)と「ログアウト」(緑地に白い枠) */
+.auth-btn {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #2e7d32;
+  white-space: nowrap;
+  cursor: pointer;
+  background: white;
+  border: 1px solid white;
+  border-radius: 6px;
+}
+
+/* 「Googleでログイン」の短い文字(「ログイン」)は、幅の狭い画面だけで出す */
+.auth-label-short {
+  display: none;
+}
+
+.auth-btn:hover:not(:disabled) {
+  background: #e8f5e9;
+}
+
+.auth-btn:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.auth-btn-outline {
+  color: white;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.auth-btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ログイン中のユーザー(アイコン + 名前) */
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.auth-avatar {
+  display: block;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  background: white;
+  border-radius: 50%;
+}
+
+/* アイコン画像が無いときの、名前の頭文字の丸 */
+.auth-avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #1b5e20;
+  background: #c8e6c9;
+}
+
+.auth-name {
+  max-width: 10em;
+  overflow: hidden;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ログインのエラー(ヘッダーの下に、しばらく出る) */
+.auth-message {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 3000; /* 地図より手前 */
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(320px, 90vw);
+  padding: 8px 12px;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #b71c1c;
+  background: white;
+  border: 1px solid #ef9a9a;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ログインのモーダル(Google / メールアドレス+パスワード) */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000; /* ヘッダーのエラー表示より、さらに手前 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.auth-modal-overlay[hidden] {
+  display: none;
+}
+
+.auth-modal {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100vh - 32px);
+  padding: 26px 20px 20px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #757575;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 50%;
+}
+
+.auth-modal-close:hover {
+  background: #f0f0f0;
+}
+
+.auth-modal h3 {
+  margin: 0 0 16px;
+  padding-right: 20px;
+  font-size: 1.1rem;
+  color: #2e7d32;
+}
+
+.auth-modal .auth-google-btn {
+  width: 100%;
+}
+
+.auth-modal-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  font-size: 0.8rem;
+  color: #9e9e9e;
+}
+
+.auth-modal-divider::before,
+.auth-modal-divider::after {
+  flex: 1;
+  height: 1px;
+  content: "";
+  background: #e0e0e0;
+}
+
+.auth-modal form label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.auth-modal form input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+.auth-modal form input:focus {
+  outline: 2px solid #2e7d32;
+  border-color: transparent;
+}
+
+.auth-modal form button[type="submit"] {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-modal-links {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.auth-modal-links a {
+  color: #2e7d32;
+  text-decoration: none;
+}
+
+.auth-modal-links a:hover {
+  text-decoration: underline;
+}
+
+.auth-modal-error {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: #c62828;
+}
+
+.auth-modal-error[hidden] {
+  display: none;
+}
+
+/* タイトルの下の小さなサブタイトル */
+#app-tagline {
+  margin: 2px 0 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+/* サイト全体のフッター(利用規約・プライバシーポリシー・運営者情報へのリンク。どのページでも、いちばん下に表示する) */
+#site-footer {
+  flex: none; /* #content・#detail-view・#content-page-view(flex:1)の分を残して、必要な高さだけ使う */
+  padding: 8px 16px;
+  text-align: center;
+  background: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+}
+
+.footer-link {
+  font-size: 0.8rem;
+  color: #555;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+/* ヘッダーのすぐ下の検索ボックス */
+#search-bar {
+  padding: 8px 16px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.search-box {
+  position: relative;
+  max-width: 640px;
+}
+
+#search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  font-size: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+#search-input:focus {
+  outline: 2px solid #2e7d32;
+  border-color: transparent;
+}
+
+/* 入力が空のときだけ出る案内文(本物の placeholder は1色しか使えないので、重ねて表示している) */
+.search-placeholder {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 13px;
+  right: 40px; /* 右端の「×」ボタンにかからないように */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #757575;
+  pointer-events: none; /* 下の入力欄をそのままクリックできるようにする */
+}
+
+/* 例の部分は、さらに薄く小さく */
+.search-example {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+  color: #bdbdbd;
+}
+
+/* 何か入力されたら、案内文を消す */
+#search-input:not(:placeholder-shown) + .search-placeholder {
+  display: none;
+}
+
+/* ヘッダーの残りの高さを使い、「一覧」と「地図」を横に並べる */
+#content {
+  position: relative; /* #scan-overlay を、この中いっぱいに重ねて表示するための基準にする */
+  flex: 1;
+  display: flex;
+  min-height: 0; /* 一覧が長くなっても、ページ全体が伸びないようにする */
+}
+
+/* 左側のお店一覧 */
+#shop-list {
+  width: 340px; /* 画像つきのカードを入れるため、少し広め */
+  overflow-y: auto; /* お店が増えたら一覧の中だけスクロール */
+  border-right: 1px solid #ddd;
+}
+
+#shop-list h2 {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 絞り込み(都道府県・エリア)まわり */
+#filter-panel {
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 絞り込みの見出し(スマホだけ表示する。PC は、いつも開いているので不要) */
+#filter-summary {
+  display: none;
+}
+
+.filter-label {
+  margin: 6px 0 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.filter-label:first-child {
+  margin-top: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* 料理が増えても、ボタンの欄が画面を占領しないように、高さを制限してスクロールさせる
+   (いまの9種類なら、全部見える高さ) */
+#dish-chips {
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+.chip {
+  padding: 3px 9px;
+  font-size: 0.8rem;
+  color: #2e7d32;
+  background: white;
+  border: 1px solid #2e7d32;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #e8f5e9;
+}
+
+/* 選ばれているボタン */
+.chip.active {
+  color: white;
+  background: #2e7d32;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#filter-count {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+/* 「× 条件をリセット」(絞り込み中だけ表示) */
+#filter-reset {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  color: #b71c1c;
+  background: white;
+  border: 1px solid #b71c1c;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+#filter-reset:hover {
+  background: #ffebee;
+}
+
+/* 位置情報の利用目的の注記(店舗詳細ページの「現在地からの距離」でも使う、共通の見た目) */
+.location-note {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #616161;
+}
+
+/* 地図(#map)と、その上に浮かべる「🔍スキャンする」ボタンを、まとめる入れ物 */
+#map-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
+/* 「お店一覧を見る」ボタンは、スマホ(幅の狭い画面)だけで使う。PC では、いつも非表示のまま
+   (見た目・位置の指定は、下の @media (max-width: 600px) の中にある) */
+#list-overlay-panel {
+  display: none;
+}
+
+/* スキャンボタン・「検索中」の表示を、地図の上部中央に浮かべる(Google マップなどの「このエリアを検索」に近い見た目)
+   ・Leaflet 標準のズームボタンは左上に出るので、上部「中央」に置けば、重ならない
+   ・pointer-events: none にして、ボタン・状態表示の「まわりのすき間」は、地図の操作(ドラッグなど)を邪魔しないようにする */
+#scan-panel {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 900; /* 地図のピン・ポップアップより手前、Leaflet 標準のコントロール(ズームボタンなど)より奥 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 20px); /* 幅の狭い画面でも、地図からはみ出さない */
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#scan-button {
+  pointer-events: auto; /* ボタン本体だけは、これまで通り押せるようにする */
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #2e7d32;
+  white-space: nowrap;
+  cursor: pointer;
+  background: white;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#scan-button:hover:not(:disabled) {
+  background: #f1f8f1;
+}
+
+#scan-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+#scan-status {
+  pointer-events: none;
+  max-width: 100%;
+  padding: 6px 14px;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.8rem;
+  color: #333;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: white;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+#scan-status[hidden] {
+  display: none;
+}
+
+/* =====================================================================
+   スキャン結果のオーバーレイ(「🔍スキャンする」を押すと、#content いっぱいに重なって出る)
+   ===================================================================== */
+
+#scan-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 920; /* #shop-list・#map-wrap の上、ログインモーダルより下 */
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+#scan-overlay[hidden] {
+  display: none;
+}
+
+/* 上部: 「← 戻る」ボタンと見出し(スクロールしても、いつも上に固定) */
+.scan-overlay-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.scan-overlay-back {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #2e7d32;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #2e7d32;
+  border-radius: 999px;
+}
+
+.scan-overlay-back:hover {
+  background: #e8f5e9;
+}
+
+#scan-overlay-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* 一覧+(その下に続く)地図を、まとめてスクロールする入れ物 */
+.scan-overlay-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.scan-overlay-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scan-overlay-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.scan-overlay-item:hover {
+  background: #e8f5e9;
+}
+
+.scan-overlay-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.scan-overlay-thumb-wrap {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  background: #e8f5e9; /* 読み込み中の色 */
+  border-radius: 8px;
+}
+
+.scan-overlay-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-overlay-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.scan-overlay-name {
+  font-weight: bold;
+}
+
+.scan-overlay-line {
+  margin-top: 3px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #555;
+}
+
+.scan-overlay-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.scan-overlay-empty {
+  padding: 24px 16px;
+  color: #555;
+  text-align: center;
+}
+
+.scan-overlay-tips strong,
+.scan-overlay-reviews strong {
+  color: #2e7d32;
+}
+
+/* 一覧の下に続けて置く、本物の地図(#map-wrap を、ここへそのまま移動させる)
+   ・高さを決めておかないと、#map-wrap の flex:1 が効かず、地図の高さが 0 になってしまう */
+.scan-overlay-map-slot {
+  display: flex;
+  height: 70vh;
+  min-height: 360px;
+}
+
+/* お店のピン: 絵文字「🍽️」を、白地に緑の丸で囲む(まとめ表示の丸い数字アイコンとは、別の見た目) */
+.shop-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  line-height: 1;
+  background: white;
+  border: 2px solid #2e7d32;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+/* 現在地(または起点)の目印: 脈打つ青い点。お店のピン(🍽️の丸)とは、形も色も違う */
+.user-location {
+  background: none;
+  border: none;
+}
+
+.user-dot {
+  display: block;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  background: #1a73e8;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.5), 0 1px 4px rgba(0, 0, 0, 0.45);
+  animation: user-pulse 2s ease-out infinite;
+}
+
+@keyframes user-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.5), 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(26, 115, 232, 0), 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(26, 115, 232, 0), 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
+}
+
+#shop-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* shop-item: 店舗カード(都道府県・エリアの見出しの <li> とは、別のクラスにして、見た目を分けている) */
+#shop-list-items .shop-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+#shop-list-items .shop-item:hover {
+  background: #e8f5e9;
+}
+
+/* お気に入りの「♡ / ♥」ボタン(一覧のカードと、地図のポップアップの両方で使う) */
+.fav-btn {
+  flex-shrink: 0;
+  padding: 0 4px;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #9e9e9e; /* ♡: 未登録 */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.fav-btn:hover {
+  color: #c62828;
+}
+
+.fav-btn.active {
+  color: #c62828; /* ♥: お気に入り登録済み */
+}
+
+/* 一覧のカードの右上: 📍(地図で見る)と ♡(お気に入り) */
+#shop-list-items .card-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+.map-btn {
+  padding: 0 4px;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  cursor: pointer;
+  background: none;
+  border: none;
+  opacity: 0.75;
+}
+
+.map-btn:hover {
+  opacity: 1;
+}
+
+/* 店名は、リンクだが、普通の文字と同じ見た目(押せることは、カード全体で分かる) */
+#shop-list-items a.shop-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+#shop-list-items .shop-item:hover a.shop-link {
+  text-decoration: underline;
+}
+
+/* 一覧のカードの1行目: 店名(左)と ♡(右) */
+#shop-list-items .shop-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* ポップアップの1行目: 店名と ♡ */
+.popup-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* 「♥ お気に入りのみ表示」(選ばれているときは、赤い塗りつぶし) */
+#favorite-chips {
+  margin-bottom: 8px;
+}
+
+#fav-only {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+#fav-only:hover {
+  background: #ffebee;
+}
+
+#fav-only.active {
+  color: white;
+  background: #c62828;
+}
+
+/* 選択中のお店(地図のポップアップが開いているお店)。濃い背景色・緑の枠・左の太い線・影で、はっきり目立たせる
+   (影が、となりのカードにかかるように、position と z-index を付けている) */
+#shop-list-items .shop-item.selected,
+#shop-list-items .shop-item.selected:hover {
+  position: relative;
+  z-index: 1;
+  background: #a5d6a7;
+  box-shadow: inset 6px 0 0 #1b5e20, inset 0 0 0 2px #2e7d32, 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+/* ポップアップが開いている間(一覧に has-selection が付いている間)は、選択中でないカードを薄くして、視線を選択中のカードに集める。
+   マウスを乗せたカードは、選びやすいように、少し濃く戻す */
+#shop-list-items.has-selection .shop-item:not(.selected) {
+  opacity: 0.45;
+}
+
+#shop-list-items.has-selection .shop-item:not(.selected):hover {
+  opacity: 0.85;
+}
+
+/* ポップアップが開いている間は、一覧の末尾に余白を足す(最後のほうのお店も、一覧の一番上までスクロールできるように) */
+#shop-list-items.has-selection::after {
+  content: "";
+  display: block;
+  height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #shop-list-items .shop-item {
+    transition: none;
+  }
+}
+
+/* 都道府県・エリアの見出し(アコーディオン)。店舗カード(.shop-item)とは、別の見た目にする */
+#shop-list-items .pref-group,
+#shop-list-items .area-group {
+  padding: 0;
+  border-bottom: none;
+  cursor: auto;
+}
+
+#shop-list-items .area-list,
+#shop-list-items .shop-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 見出し(<summary>)は、押せることが分かるように、ボタンらしい見た目にする。
+   ブラウザ標準の三角のマーカーは消して、自分で付けた ▸ に統一する(向きは details[open] で変える) */
+#shop-list-items summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+}
+
+#shop-list-items summary::-webkit-details-marker {
+  display: none;
+}
+
+#shop-list-items summary::before {
+  flex-shrink: 0;
+  content: "▸";
+  font-size: 0.75em;
+  color: #689f6f;
+  transition: transform 0.15s;
+}
+
+#shop-list-items details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+#shop-list-items .pref-header {
+  padding: 12px 14px;
+  font-weight: bold;
+  color: #1b5e20;
+  background: #e8f5e9;
+  border-bottom: 1px solid #dcedc8;
+}
+
+#shop-list-items .pref-header:hover {
+  background: #dcedc8;
+}
+
+#shop-list-items .area-header {
+  padding: 10px 14px 10px 30px; /* 都道府県より右にずらして、1つ下の階層だと分かるようにする */
+  font-weight: 600;
+  color: #2e7d32;
+  background: #f4faf4;
+  border-bottom: 1px solid #eee;
+}
+
+#shop-list-items .area-header:hover {
+  background: #e8f5e9;
+}
+
+#shop-list-items .group-count {
+  flex-shrink: 0;
+  font-weight: normal;
+  font-size: 0.85rem;
+  color: #689f6f;
+}
+
+/* エリアの見出しの中の、店名(area-name)・件数(group-count)は、いつも全部見える幅を確保する */
+#shop-list-items .area-header .area-name {
+  flex-shrink: 0;
+}
+
+/* 代表的な店舗名のプレビュー(例: 「- サンプル店、Hasunamuほか」)。薄い色にして、エリア名・件数より控えめにする。
+   幅が足りないときは、これだけが縮んで「…」で省略される(エリア名・件数は、常に全部見える) */
+#shop-list-items .area-preview {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: normal;
+  font-size: 0.8rem;
+  color: #8a9e8d;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#shop-list-items .shop-name {
+  font-weight: bold;
+}
+
+/* 店舗カード: 左に画像、右に情報(横長) */
+#shop-list-items .shop-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* 画像の枠: すべて同じ大きさ(88px の正方形)にそろえる。はみ出す部分は切り抜く */
+#shop-list-items .shop-thumb-wrap {
+  position: relative;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  background: #e8f5e9; /* 読み込み中の色 */
+  border-radius: 8px;
+}
+
+#shop-list-items .shop-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 縦横比を保ったまま、枠いっぱいに表示 */
+}
+
+/* 画像のクレジット(画像の下に、小さく) */
+#shop-list-items .thumb-credit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1px 4px;
+  overflow: hidden;
+  font-size: 0.6rem;
+  color: white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* 右側の情報。min-width: 0 は、長い店名を折り返して、カードが崩れないようにするための指定 */
+#shop-list-items .shop-body {
+  flex: 1;
+  min-width: 0;
+}
+
+#shop-list-items .shop-line {
+  margin-top: 3px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #555;
+}
+
+#shop-list-items .shop-dishes {
+  color: #8d5a00;
+}
+
+#shop-list-items .shop-feature {
+  color: #2e7d32;
+}
+
+/* ポップアップ内の、距離・Tips件数・レビュー件数の行 */
+.popup-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 2px 0 4px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.popup-distance {
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.popup-tips strong,
+.popup-reviews strong {
+  color: #2e7d32;
+}
+
+/* ポップアップ内のボタン: 「詳細を見る」(緑の塗りつぶし)
+   (Leaflet 標準のリンクの色に負けないよう、.leaflet-popup-content を付けている) */
+.popup-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.leaflet-popup-content a.detail-link {
+  display: inline-block;
+  padding: 6px 12px;
+  color: white;
+  text-decoration: none;
+  background: #2e7d32;
+  border: 2px solid #2e7d32;
+  border-radius: 4px;
+}
+
+.leaflet-popup-content a.detail-link:hover {
+  background: #1b5e20;
+}
+
+/* まとめて表示されたピン(クラスター)の丸いアイコン。数が多いほど大きく・色が変わる */
+.shop-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  color: white;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  background: #2e7d32; /* 10件未満 */
+}
+
+.shop-cluster-medium {
+  background: #ef6c00; /* 10件以上 */
+}
+
+.shop-cluster-large {
+  background: #c62828; /* 30件以上 */
+}
+
+/* 地図は、一覧の残りの幅をすべて使う(高さの指定が無いと地図は表示されません) */
+/* #map-wrap(flex: 1 で、一覧の残りの幅を取る)の中いっぱいに広げる */
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* スマホなど幅の狭い画面: 一覧を上、地図を下に縦並びにする */
+@media (max-width: 600px) {
+  /* 幅が狭いときは、ロゴを少し小さくする */
+  .app-logo {
+    height: 40px;
+  }
+
+  /* 幅が狭いときは、ログインのボタンを小さくして、ユーザー名は隠す(アイコンだけにする) */
+  .header-actions,
+  .auth-area {
+    gap: 6px;
+  }
+
+  .auth-btn {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+
+  .auth-label-long {
+    display: none;
+  }
+
+  .auth-label-short {
+    display: inline;
+  }
+
+  .auth-name {
+    display: none;
+  }
+
+  /* 店名は、1行に収める(入りきらないときは「…」) */
+  header h1 {
+    overflow: hidden;
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* キャッチコピーは、省略せず、入りきらなければ2行まで折り返して見せる(PC は、これまで通り1行で省略) */
+  #app-tagline {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  /* 幅が狭いときは、例の部分を隠す */
+  .search-example {
+    display: none;
+  }
+
+  #content {
+    flex-direction: column;
+  }
+
+  /* 画像が大きくなりすぎないように、小さくする */
+  #shop-list-items .shop-thumb-wrap {
+    flex-basis: 72px;
+    width: 72px;
+    height: 72px;
+  }
+
+  /* 絞り込みの見出し(タップで開閉) */
+  #filter-summary {
+    display: block;
+    padding: 2px 0 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #2e7d32;
+    cursor: pointer;
+  }
+
+  /* スマホでは、一覧をその場に並べて表示せず、地図を画面いっぱいに大きく使う。
+     一覧は、いつも #scan-overlay(一覧オーバーレイ)で見せる(js/app.js が、必要なときに開く) */
+  #shop-list {
+    display: none;
+  }
+
+  /* 「お店一覧を見る」ボタン(スマホだけ。地図の下部中央に浮かべる。🔍スキャンするボタンとは、上下で分ける) */
+  #list-overlay-panel {
+    display: block; /* PC 用の display: none を、ここで上書きする */
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    z-index: 900;
+    transform: translateX(-50%);
+  }
+
+  #list-overlay-panel[hidden] {
+    display: none;
+  }
+
+  #list-overlay-button {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: white;
+    white-space: nowrap;
+    cursor: pointer;
+    background: #2e7d32;
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  #list-overlay-button:hover {
+    background: #1b5e20;
+  }
+
+  .scan-overlay-thumb-wrap {
+    flex-basis: 60px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .scan-overlay-map-slot {
+    height: 60vh;
+    min-height: 280px;
+  }
+}
+
+
+/* =====================================================================
+   店舗詳細ページ(URLが「?shop=店舗ID」のとき)
+   ===================================================================== */
+
+/* 詳細ページ・固定ページ(利用規約など)のときは、一覧用の検索ボックスと、一覧+地図を隠す(ヘッダーは、そのまま) */
+body.view-detail #search-bar,
+body.view-detail #content,
+body.view-content-page #search-bar,
+body.view-content-page #content {
+  display: none;
+}
+
+#detail-view,
+#content-page-view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: white;
+}
+
+#detail-view[hidden],
+#content-page-view[hidden] {
+  display: none;
+}
+
+.detail-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 16px 48px;
+}
+
+/* ボタン(押しやすい大きさ: 高さ 44px 以上) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: bold;
+  line-height: 1.3;
+  color: #2e7d32;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  background: white;
+  border: 2px solid #2e7d32;
+  border-radius: 8px;
+}
+
+.btn:hover:not(:disabled) {
+  background: #e8f5e9;
+}
+
+.btn:disabled {
+  color: #9e9e9e;
+  cursor: not-allowed;
+  border-color: #cfcfcf;
+  background: #f5f5f5;
+}
+
+.btn-primary {
+  color: white;
+  background: #2e7d32;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1b5e20;
+}
+
+.btn-primary:disabled {
+  color: #9e9e9e;
+  background: #f5f5f5;
+}
+
+.btn-warn {
+  color: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.btn-warn:hover:not(:disabled) {
+  background: #ffebee;
+}
+
+.btn-small {
+  min-height: 40px;
+  font-size: 0.85rem;
+}
+
+.detail-back {
+  margin-bottom: 12px;
+}
+
+/* ① 店舗画像(大きく。画像が無いときは、デフォルトのイラスト) */
+.detail-hero {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #e8f5e9;
+  border-radius: 12px;
+}
+
+.detail-hero-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 縦横比を保ったまま、枠いっぱいに表示 */
+}
+
+.detail-credit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.detail-credit[hidden] {
+  display: none;
+}
+
+.detail-head {
+  margin-top: 16px;
+}
+
+.detail-name {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.detail-sub {
+  margin: 4px 0 0;
+  color: #555;
+}
+
+/* 件数エリア(店名の下): 💡 Tips ○件 / ⭐ レビュー ○件 */
+.detail-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.detail-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  color: #555;
+  background: #f4faf4;
+  border: 1px solid #dcedc8;
+  border-radius: 999px;
+}
+
+.detail-stat strong {
+  font-size: 1rem;
+  color: #2e7d32;
+}
+
+/* 各セクション */
+.detail-section {
+  padding-top: 16px;
+  margin-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.detail-section h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: #2e7d32;
+}
+
+.detail-section h4 {
+  margin: 12px 0 4px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* ② 基本情報(左に項目名、右に内容) */
+.detail-info {
+  display: grid;
+  grid-template-columns: 6.5em 1fr;
+  gap: 10px 12px;
+  margin: 0;
+}
+
+.detail-info dt {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.detail-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 「情報未登録」(薄い灰色) */
+.is-empty {
+  color: #9e9e9e;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  margin: 0 6px 6px 0;
+  font-size: 0.85rem;
+  color: #8d5a00;
+  background: #fff3e0;
+  border-radius: 12px;
+}
+
+.detail-placeholder,
+.detail-empty-review {
+  margin: 0 0 10px;
+  color: #757575;
+}
+
+.detail-note {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.muted {
+  font-size: 0.8rem;
+  color: #757575;
+}
+
+/* ④ 現在地からの距離 */
+.detail-distance {
+  margin-top: 12px;
+}
+
+.detail-distance-text {
+  margin: 0;
+  font-weight: bold;
+  color: #1a73e8;
+}
+
+/* ⑤ 地図(一覧と同じ背景) */
+#detail-map {
+  height: 260px;
+  overflow: hidden;
+  border-radius: 12px;
+  z-index: 0;
+}
+
+.detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ⑧ 情報の問題を報告 */
+.report-panel {
+  padding: 12px 14px;
+  margin-top: 12px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+}
+
+.report-panel[hidden] {
+  display: none;
+}
+
+.report-panel fieldset {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.report-panel legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.report-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px; /* 押しやすい高さ */
+  cursor: pointer;
+}
+
+.report-option input {
+  width: 20px;
+  height: 20px;
+  accent-color: #2e7d32;
+}
+
+.report-text {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.report-text textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* 💡 このお店のTips */
+.tips-list {
+  padding: 0;
+  margin: 0 0 12px;
+  list-style: none;
+}
+
+.tips-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #f4faf4;
+  border: 1px solid #dcedc8;
+  border-radius: 10px;
+}
+
+.tips-count {
+  flex: none;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.tips-form {
+  margin-bottom: 4px;
+}
+
+/* 自分が選んだTipsの印(✓) */
+.tips-mine {
+  margin-left: 4px;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+/* 「投稿済みです」 */
+.tips-posted {
+  color: #2e7d32;
+}
+
+/* Check-in: 人数(太字) */
+.checkin-status {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.checkin-status strong {
+  color: #2e7d32;
+}
+
+/* チェックイン済みボタン(緑地の枠。押せない状態でも、はっきり分かるように) */
+#checkin-btn:disabled {
+  color: #1b5e20;
+  background: #e8f5e9;
+  border-color: #a5d6a7;
+  opacity: 1;
+}
+
+.tips-error,
+.tips-message.is-error {
+  color: #c62828;
+}
+
+.tips-error {
+  margin: 0 0 10px;
+}
+
+#tips-open {
+  margin-top: 4px;
+}
+
+/* ⭐ レビュー */
+.reviews-summary {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.review-list {
+  padding: 0;
+  margin: 0 0 12px;
+  list-style: none;
+}
+
+.review-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f4faf4;
+  border: 1px solid #dcedc8;
+  border-radius: 10px;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.review-author {
+  overflow: hidden;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-head-right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-stars {
+  flex-shrink: 0;
+  color: #f5a623; /* 星の色 */
+  letter-spacing: 1px;
+}
+
+.review-comment-text {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere; /* 長い単語・URLでも、横にはみ出さない */
+  white-space: pre-wrap; /* 書いた改行を、そのまま表示する */
+}
+
+/* 管理者の「非表示にする」ボタン(レビュー1件ずつの、右下あたりに出す) */
+.review-item .admin-toggle-btn {
+  margin-top: 8px;
+}
+
+/* 星の入力(タップ/クリックで選ぶ。5つ並べる) */
+.star-input {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.star-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #d8d8d8; /* 未選択の星 */
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.star-btn.is-filled {
+  color: #f5a623;
+}
+
+.review-comment-label {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.review-comment-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+/* 🛡 管理者(sales@compass-story.com)専用: 非表示・元に戻すの操作パネル */
+.admin-panel {
+  padding: 10px 12px;
+  margin-top: 14px;
+  background: #fff8e1;
+  border: 1px dashed #e0b34d;
+  border-radius: 10px;
+}
+
+.admin-panel-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #8a6d1f;
+}
+
+.admin-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.admin-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: #fff;
+  border: 1px solid #eee0b8;
+  border-radius: 8px;
+}
+
+/* 非表示中の投稿は、少し薄くする(そのまま見えることが分かるように) */
+.admin-item.is-hidden,
+.review-item.is-hidden {
+  opacity: 0.6;
+}
+
+.admin-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+
+.admin-item-id {
+  overflow: hidden;
+  color: #666;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-item-detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-hidden-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 1px 8px;
+  font-size: 0.75rem;
+  color: #c62828;
+  background: #ffebee;
+  border-radius: 999px;
+}
+
+.admin-toggle-btn {
+  flex: none;
+}
+
+/* 📷 みんなの写真 */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 14px;
+  list-style: none;
+}
+
+.photo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.photo-thumb-btn {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 10px;
+}
+
+.photo-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+.photo-item.is-hidden .photo-thumb {
+  opacity: 0.5;
+}
+
+/* サムネイルの左上に重ねる、カテゴリーの小さなラベル */
+.photo-thumb-btn {
+  position: relative;
+}
+
+.photo-category-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 1px 8px;
+  font-size: 0.7rem;
+  color: white;
+  background: rgba(46, 125, 50, 0.85);
+  border-radius: 999px;
+}
+
+.photo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.photo-author {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 説明文(キャプション)。グリッドでは、長くなりすぎないように2行までにする */
+.photo-caption {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  font-size: 0.82rem;
+  color: #444;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.photo-actions .btn {
+  flex: 1 1 auto;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+}
+
+/* 拡大表示(ライトボックス) */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.photo-lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 6px;
+}
+
+.photo-lightbox-category {
+  display: inline-block;
+  padding: 2px 10px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: white;
+  background: rgba(46, 125, 50, 0.85);
+  border-radius: 999px;
+}
+
+.photo-lightbox-author {
+  margin: 8px 0 0;
+  color: #fff;
+}
+
+.photo-lightbox-caption {
+  max-width: 480px;
+  margin: 6px 0 0;
+  color: #eee;
+  text-align: center;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+}
+
+/* ♡ いいねボタン(グリッド・拡大表示の、どちらでも使う共通の部品) */
+.photo-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: #757575;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+}
+
+.photo-like-btn.is-liked {
+  color: #c62828;
+  background: #ffebee;
+  border-color: #ffcdd2;
+}
+
+.photo-like-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.photo-like-count {
+  font-weight: bold;
+}
+
+.photo-lightbox-like {
+  margin-top: 8px;
+}
+
+/* 💬 写真へのコメント(拡大表示=暗い背景の中に入るので、文字色を明るめにする) */
+.photo-comments {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.photo-comments-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+/* このセクションの中だけ、通常は暗い文字色のクラスを、明るい文字色に上書きする(背景が黒いため) */
+.photo-comments .detail-note,
+.photo-comments .detail-placeholder {
+  color: #ddd;
+}
+
+.photo-comment-list {
+  padding: 0;
+  margin: 0 0 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.photo-comment-item {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.photo-comment-item.is-hidden {
+  opacity: 0.55;
+}
+
+.photo-comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #ddd;
+}
+
+.photo-comment-author {
+  font-weight: bold;
+  color: #fff;
+}
+
+.photo-comment-text {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.photo-comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.photo-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photo-comment-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 3em;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+/* 💬 写真へのコメント(グリッド表示の中=背景が明るいので、拡大表示用の白文字を上書きする) */
+.photo-grid-comments {
+  margin-top: 8px;
+}
+
+.photo-comment-count {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.photo-grid-comments .photo-comment-form {
+  margin-bottom: 8px;
+}
+
+.photo-grid-comments .photo-comment-head,
+.photo-grid-comments .detail-note,
+.photo-grid-comments .detail-placeholder {
+  color: #666;
+}
+
+.photo-grid-comments .photo-comment-author,
+.photo-grid-comments .photo-comment-text {
+  color: #222;
+}
+
+.photo-grid-comments .photo-comment-item {
+  background: #f4f4f4;
+}
+
+/* 📷 写真の投稿フォーム(点線の枠・説明文・投稿先・カテゴリー) */
+.photo-composer {
+  padding: 14px;
+  margin-top: 14px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+}
+
+.photo-composer-cancel {
+  margin-bottom: 12px;
+}
+
+/* 点線の枠(押すとファイル選択。写真を選んだら、同じ枠にプレビューが入る) */
+.photo-add-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 160px;
+  padding: 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  background: #f4faf4;
+  border: 2px dashed #2e7d32;
+  border-radius: 12px;
+}
+
+.photo-add-box.has-preview {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  cursor: default;
+}
+
+.photo-add-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.photo-add-text {
+  margin-top: 8px;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.photo-add-preview {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: #000;
+}
+
+.photo-add-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  border-radius: 50%;
+}
+
+/* 説明文(任意) */
+.photo-description-label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.photo-description-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.5em;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+/* 投稿先のお店(店名だけ。距離・タグ・件数などは出さない) */
+.photo-shop-card {
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  background: white;
+  border: 1px solid #dcedc8;
+  border-radius: 8px;
+}
+
+.photo-shop-card-label {
+  margin-right: 6px;
+  color: #757575;
+}
+
+/* カテゴリー(単一選択のタグ) */
+.photo-category {
+  margin-bottom: 12px;
+}
+
+.photo-category-title {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.photo-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.photo-submit-btn {
+  width: 100%;
+}
+
+.detail-notfound {
+  padding: 24px 0;
+}
+
+/* 📷 写真投稿: 投稿前の注意事項・確認チェックボックス */
+.photo-notice {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #fff8e1;
+  border: 1px solid #e0b34d;
+  border-radius: 10px;
+}
+
+.photo-notice-title {
+  margin: 0 0 6px;
+  font-weight: bold;
+  color: #8a6d1f;
+}
+
+.photo-notice-list {
+  padding-left: 1.2em;
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  color: #6b551a;
+}
+
+.photo-notice-footer {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b551a;
+}
+
+.photo-notice-footer a,
+.consent-check a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.photo-consent {
+  padding: 0;
+  margin: 0 0 4px;
+  border: none;
+}
+
+.consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 2px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.consent-check input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+/* 📷 写真の報告(誰でも利用できる) */
+.photo-report-btn {
+  color: #757575;
+  border-color: #cfcfcf;
+}
+
+.photo-report-form {
+  margin-top: 8px;
+}
+
+/* 🛡 管理者用: 写真の報告件数・理由の一覧 */
+.admin-report-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.8rem;
+}
+
+.admin-report-count {
+  color: #c62828;
+  font-weight: bold;
+}
+
+.admin-report-list {
+  flex-basis: 100%;
+  padding-left: 1.2em;
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* 📄 利用規約ページ */
+.terms-page {
+  line-height: 1.7;
+}
+
+.terms-title {
+  margin: 16px 0 4px;
+}
+
+.terms-intro {
+  margin: 0 0 20px;
+  color: #555;
+}
+
+.terms-section {
+  margin-bottom: 22px;
+}
+
+.terms-section h3 {
+  margin-bottom: 6px;
+  color: #2e7d32;
+}
+
+.terms-section p {
+  margin: 0 0 6px;
+}
+
+.terms-list {
+  padding-left: 1.4em;
+  margin: 0;
+}
+
+.terms-list li {
+  margin-bottom: 4px;
+}
+
+/* スマホ: 画像は横幅いっぱいに、ボタンは横幅いっぱいに、情報は縦に整理する */
+@media (max-width: 600px) {
+  .detail-page {
+    padding: 8px 12px 40px;
+  }
+
+  .detail-hero {
+    margin: 0 -12px;
+    border-radius: 0;
+  }
+
+  .detail-name {
+    font-size: 1.3rem;
+  }
+
+  /* 小さいボタン(現在地からの距離など)も、指で押しやすい高さにする */
+  .detail-page .btn-small {
+    min-height: 44px;
+  }
+
+  .detail-info {
+    grid-template-columns: 5.5em 1fr;
+    gap: 8px 10px;
+  }
+
+  .detail-links .btn,
+  .report-actions .btn,
+  #detail-reviews .btn,
+  #tips-open,
+  #detail-photos .btn,
+  #detail-report > .btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  #detail-map {
+    height: 220px;
+  }
+}

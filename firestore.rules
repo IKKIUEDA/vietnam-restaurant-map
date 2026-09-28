@@ -1,0 +1,420 @@
+rules_version = "2";
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ログインしているか
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // 管理者か(このメールアドレスでログインしているときだけ。Google・メールアドレス、どちらのログインでも判定できる)
+    //   ・Firestore のルールは、クライアント(ブラウザ)から送られた情報を信用できないので、
+    //     ログイン時に Firebase が発行した、書き換えられない「トークン」の中のメールアドレスを見る。
+    function isAdmin() {
+      return signedIn() && request.auth.token.email == "sales@compass-story.com";
+    }
+
+    // そのユーザーの、そのお店への「Tips 投稿記録」の場所
+    function voteDoc(shopId, uid) {
+      return /databases/$(database)/documents/shops/$(shopId)/tipVotes/$(uid);
+    }
+
+    // そのユーザーの、そのお店への「Check-in 記録」の場所
+    function checkinDoc(shopId, uid) {
+      return /databases/$(database)/documents/shops/$(shopId)/checkins/$(uid);
+    }
+
+    // そのユーザーの、その写真への「いいね記録」の場所
+    function likeDoc(shopId, photoId, uid) {
+      return /databases/$(database)/documents/shops/$(shopId)/photos/$(photoId)/likes/$(uid);
+    }
+
+    // ---------------------------------------------------------------
+    // 💡 Tips(1人につき、お店ごとに、1回だけ。複数のお店には、自由に投稿できる)
+    //
+    //   shops/{店舗ID}/tipVotes/{ユーザーID} … そのユーザーの投稿記録(選んだTipsのキーの一覧)
+    //       ドキュメント名がユーザーIDなので、同じお店には、1件しか作れない。本人が削除すると、また投稿できる状態に戻る。
+    //   shops/{店舗ID}/tips/counts          … みんなの集計(フィールド名 = Tipsのキー、値 = 選んだ人数)
+    //
+    //   送信は、「投稿記録の作成」と「集計の +1」を、1回のバッチ書き込みでまとめて行う。
+    //   集計は、「そのユーザーの投稿記録が、同時に作られる」ときだけ、増やせる。
+    //   (キーは、js/i18n.js の tipOptions の key と、同じにする)
+    // ---------------------------------------------------------------
+
+    match /shops/{shopId}/tips/{docId} {
+      allow read: if true;
+
+      allow create, update: if docId == "counts" && (userStep() || deleteStep() || adminStep());
+
+      // 通常のユーザーが、新しく Tips を投稿したときの +1(投稿記録が、同時に作られるときだけ)
+      function userStep() {
+        return signedIn()
+          && !exists(voteDoc(shopId, request.auth.uid))
+          && existsAfter(voteDoc(shopId, request.auth.uid))
+          && request.resource.data.keys().hasOnly([
+            "delicious", "value", "portion", "staff", "atmosphere",
+            "solo", "family", "date", "takeout", "station"
+          ])
+          && changed().size() > 0
+          && changed().hasOnly(votedTips())
+          && changed().hasAll(votedTips())
+          && step("delicious") && step("value") && step("portion") && step("staff") && step("atmosphere")
+          && step("solo") && step("family") && step("date") && step("takeout") && step("station");
+      }
+
+      // 本人が、自分の投稿を削除したときの -1(投稿記録が、同時に削除されるときだけ)
+      //   ・すでに非表示にされていた投稿(人数はすでに -1 済み)の削除は、この分岐を通らない
+      //     (そのときは、集計を触らずに、投稿記録だけを削除する。detail.js 側の判断による)
+      function deleteStep() {
+        return signedIn()
+          && exists(voteDoc(shopId, request.auth.uid))
+          && !existsAfter(voteDoc(shopId, request.auth.uid))
+          && request.resource.data.keys().hasOnly([
+            "delicious", "value", "portion", "staff", "atmosphere",
+            "solo", "family", "date", "takeout", "station"
+          ])
+          && changed().size() > 0
+          && changed().hasOnly(oldVotedTips())
+          && changed().hasAll(oldVotedTips())
+          && stepDown("delicious") && stepDown("value") && stepDown("portion") && stepDown("staff") && stepDown("atmosphere")
+          && stepDown("solo") && stepDown("family") && stepDown("date") && stepDown("takeout") && stepDown("station");
+      }
+
+      // 管理者が、投稿の非表示・再表示にあわせて、人数を調整するとき(0以上の整数なら、いくつでもよい)
+      function adminStep() {
+        return isAdmin()
+          && request.resource.data.keys().hasOnly([
+            "delicious", "value", "portion", "staff", "atmosphere",
+            "solo", "family", "date", "takeout", "station"
+          ])
+          && adminValue("delicious") && adminValue("value") && adminValue("portion") && adminValue("staff") && adminValue("atmosphere")
+          && adminValue("solo") && adminValue("family") && adminValue("date") && adminValue("takeout") && adminValue("station");
+      }
+
+      function adminValue(k) {
+        return !(k in request.resource.data) || (request.resource.data[k] is int && request.resource.data[k] >= 0);
+      }
+
+      // 同時に作られる投稿記録の、Tipsのキーの一覧
+      function votedTips() {
+        return getAfter(voteDoc(shopId, request.auth.uid)).data.tips;
+      }
+
+      // 同時に削除される投稿記録の、Tipsのキーの一覧(削除される「前」の中身を読む)
+      function oldVotedTips() {
+        return get(voteDoc(shopId, request.auth.uid)).data.tips;
+      }
+
+      // 書き込む前の中身(まだドキュメントが無いときは、空)
+      function oldData() {
+        return resource == null ? {} : resource.data;
+      }
+
+      // この書き込みで変わるフィールド名
+      function changed() {
+        return request.resource.data.diff(oldData()).affectedKeys();
+      }
+
+      // フィールド k は、変わらない、または、整数で、ちょうど +1 されている
+      function step(k) {
+        return !(k in changed())
+          || (request.resource.data[k] is int
+              && request.resource.data[k] == (k in oldData() ? oldData()[k] : 0) + 1);
+      }
+
+      // フィールド k は、変わらない、または、整数で、ちょうど -1 されている
+      function stepDown(k) {
+        return !(k in changed())
+          || (request.resource.data[k] is int
+              && request.resource.data[k] == (k in oldData() ? oldData()[k] : 0) - 1);
+      }
+    }
+
+    match /shops/{shopId}/tipVotes/{uid} {
+      // 自分の投稿記録だけ読める(「投稿済みか」を調べるため)。管理者は、全員分を一覧できる(非表示の管理のため)
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if isAdmin();
+
+      // 自分の記録だけ、1回だけ作れる
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["tips", "createdAt"])
+        && request.resource.data.keys().hasAll(["tips", "createdAt"])
+        && request.resource.data.tips is list
+        && request.resource.data.tips.size() > 0
+        && request.resource.data.tips.size() <= 10
+        && request.resource.data.tips.toSet().size() == request.resource.data.tips.size()
+        && request.resource.data.tips.hasOnly([
+          "delicious", "value", "portion", "staff", "atmosphere",
+          "solo", "family", "date", "takeout", "station"
+        ])
+        && request.resource.data.createdAt == request.time;
+
+      // 本人だけ、自分の投稿を削除できる(削除すると、また投稿できる状態に戻る)
+      allow delete: if signedIn() && request.auth.uid == uid;
+
+      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(投稿の中身は、変えられない)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
+        && request.resource.data.hidden is bool;
+    }
+
+    // ---------------------------------------------------------------
+    // 📍 Check-in(1人につき、お店ごとに、1回だけ。複数のお店には、自由にできる)
+    //
+    //   shops/{店舗ID}/checkins/{ユーザーID}   … そのユーザーのチェックイン記録
+    //       ドキュメント名がユーザーIDなので、同じお店には、1件しか作れない。本人が削除すると、また投稿できる状態に戻る。
+    //   shops/{店舗ID}/checkinCount/total      … みんなの合計人数(フィールド count)
+    //
+    //   送信は、「チェックイン記録の作成」と「合計人数の +1」を、1回のバッチ書き込みでまとめて行う。
+    //   合計人数は、「そのユーザーのチェックイン記録が、同時に作られる」ときだけ、増やせる(Tips と同じ考え方)。
+    // ---------------------------------------------------------------
+
+    match /shops/{shopId}/checkinCount/{docId} {
+      allow read: if true;
+
+      allow create, update: if docId == "total" && (
+        (
+          // 通常のユーザーが、新しくチェックインしたときの +1(記録が、同時に作られるときだけ)
+          signedIn()
+          && !exists(checkinDoc(shopId, request.auth.uid))
+          && existsAfter(checkinDoc(shopId, request.auth.uid))
+          && request.resource.data.keys().hasOnly(["count"])
+          && request.resource.data.count is int
+          && request.resource.data.count == (resource == null ? 0 : resource.data.count) + 1
+        ) || (
+          // 本人が、自分のチェックインを取り消したときの -1(記録が、同時に削除されるときだけ)
+          //   ・すでに非表示にされていた記録(人数はすでに -1 済み)の削除は、この分岐を通らない
+          //     (そのときは、人数を触らずに、記録だけを削除する。detail.js 側の判断による)
+          signedIn()
+          && exists(checkinDoc(shopId, request.auth.uid))
+          && !existsAfter(checkinDoc(shopId, request.auth.uid))
+          && request.resource.data.keys().hasOnly(["count"])
+          && request.resource.data.count is int
+          && request.resource.data.count == resource.data.count - 1
+        ) || (
+          // 管理者が、チェックインの非表示・再表示にあわせて、人数を調整するとき(0以上の整数なら、いくつでもよい)
+          isAdmin()
+          && request.resource.data.keys().hasOnly(["count"])
+          && request.resource.data.count is int
+          && request.resource.data.count >= 0
+        )
+      );
+    }
+
+    match /shops/{shopId}/checkins/{uid} {
+      // 自分のチェックイン記録だけ読める(「チェックイン済みか」を調べるため)。管理者は、全員分を一覧できる
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if isAdmin();
+
+      // 自分の記録だけ、1回だけ作れる
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["checkedInAt"])
+        && request.resource.data.checkedInAt == request.time;
+
+      // 本人だけ、自分のチェックインを取り消せる(削除すると、またチェックインできる状態に戻る)
+      allow delete: if signedIn() && request.auth.uid == uid;
+
+      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
+        && request.resource.data.hidden is bool;
+    }
+
+    // ---------------------------------------------------------------
+    // ⭐ レビュー(1人につき、お店ごとに、1回だけ。複数のお店には、自由に投稿できる)
+    //
+    //   shops/{店舗ID}/reviews/{ユーザーID} … そのユーザーのレビュー(評価・コメント・投稿者名・投稿日時)
+    //       ドキュメント名がユーザーIDなので、同じお店には、1件しか作れない。本人が削除すると、また投稿できる状態に戻る。
+    //
+    //   Tips・Check-in とは違い、レビューは中身(評価・コメント)を、みんなに見せる機能なので、
+    //   「投稿記録」と「集計」を分けず、このドキュメント1つだけで完結させる(平均点・件数は、アプリ側で計算する)。
+    //   そのため、このドキュメントは、誰でも読めるようにする(allow read: if true)。
+    // ---------------------------------------------------------------
+
+    match /shops/{shopId}/reviews/{uid} {
+      // レビューの中身は、誰でも読める(一覧に表示するため。管理者が、非表示のレビューを見るのにも使う)
+      allow read: if true;
+
+      // 自分の記録だけ、1回だけ作れる
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["rating", "comment", "authorName", "createdAt"])
+        && request.resource.data.keys().hasAll(["rating", "comment", "authorName", "createdAt"])
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 500
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() > 0 && request.resource.data.authorName.size() <= 60
+        && request.resource.data.createdAt == request.time;
+
+      // 本人だけ、自分のレビューを削除できる(削除すると、また投稿できる状態に戻る)
+      allow delete: if signedIn() && request.auth.uid == uid;
+
+      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(投稿の中身は、変えられない)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
+        && request.resource.data.hidden is bool;
+    }
+
+    // ---------------------------------------------------------------
+    // 📷 写真投稿(1人が投稿できる枚数に、制限は無い。Tips・Check-in・レビューと違い、1人1回ではない)
+    //
+    //   shops/{店舗ID}/photos/{写真ID(自動生成)}
+    //       … 1枚ごとの記録(投稿者・画像の公開URL・識別子・投稿日時・非表示フラグ・報告された回数・状態・規約同意の記録)
+    //       画像ファイル自体は、Firestore ではなく Cloudinary(無料の画像クラウドサービス)に保存する。
+    //       secure_url(Cloudinaryが返す、画像の公開URL)が、必ずこのアプリのCloudinaryアカウント
+    //       (cloud name: e1tbcqtm)のものであることを、ここで確認する(でたらめなURLを、記録できないようにするため)。
+    //       自分の写真を削除しても、Cloudinary側の画像ファイルは残る(署名付きの削除にはAPI Secretが要るため、
+    //       ブラウザからは行わない。index.html の photosApi.deletePhoto を参照)。
+    //   shops/{店舗ID}/photos/{写真ID}/reports/{自動生成ID}
+    //       … その写真への、報告の記録(理由・報告日時のみ。誰が報告したかは、記録しない)
+    //       ログインしていなくても、誰でも報告できる。報告しても、自動では非表示にならない
+    //       (管理者が、reportCount・報告理由を見て、非表示にするか判断する)。
+    // ---------------------------------------------------------------
+
+    match /shops/{shopId}/photos/{photoId} {
+      // 写真の記録は、誰でも読める(一覧に表示するため。管理者が、非表示の写真を見るのにも使う)
+      allow read: if true;
+
+      // 自分の投稿として、新しく作れる(枚数の制限は無い)
+      //   ・投稿前の同意チェック(4項目+利用規約)は、detail.js 側の画面で必須にしている。
+      //     ここでは、「同意した」という記録(termsAgreed: true など)が、正しい形で保存されることだけ確認する。
+      //   ・description(説明文)・category(カテゴリー)は、どちらも任意。書かないとき(フィールドごと無いとき)は、
+      //     そのまま許可する。書くときは、内容の形を確認する。
+      allow create: if signedIn() && request.auth.uid == request.resource.data.uid
+        && request.resource.data.keys().hasOnly([
+          "uid", "secure_url", "public_id", "authorName", "createdAt",
+          "reportCount", "photoStatus", "termsAgreed", "termsVersion", "agreedAt",
+          "description", "category", "likeCount"
+        ])
+        && request.resource.data.keys().hasAll([
+          "uid", "secure_url", "public_id", "authorName", "createdAt",
+          "reportCount", "photoStatus", "termsAgreed", "termsVersion", "agreedAt", "likeCount"
+        ])
+        && request.resource.data.secure_url is string
+        && request.resource.data.secure_url.size() > 0 && request.resource.data.secure_url.size() <= 2000
+        && request.resource.data.secure_url.matches("^https://res[.]cloudinary[.]com/e1tbcqtm/.*")
+        && request.resource.data.public_id is string
+        && request.resource.data.public_id.size() > 0 && request.resource.data.public_id.size() <= 300
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() > 0 && request.resource.data.authorName.size() <= 60
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.reportCount == 0
+        && request.resource.data.likeCount == 0
+        && request.resource.data.photoStatus == "published"
+        && request.resource.data.termsAgreed == true
+        && request.resource.data.termsVersion is string && request.resource.data.termsVersion.size() > 0
+        && request.resource.data.agreedAt == request.time
+        && (!("description" in request.resource.data)
+            || (request.resource.data.description is string && request.resource.data.description.size() <= 200))
+        && (!("category" in request.resource.data)
+            || request.resource.data.category in ["dish", "interior", "exterior", "people", "menu"]);
+
+      // 本人だけ、自分の写真の記録を削除できる(Cloudinary側の画像ファイルは、残り続ける。上の説明を参照)
+      allow delete: if signedIn() && request.auth.uid == resource.data.uid;
+
+      allow update: if (
+        // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(投稿の中身は、変えられない)
+        isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
+        && request.resource.data.hidden is bool
+      ) || (
+        // 誰でも(ログインしていなくても)、写真を報告したときの reportCount の +1。
+        //   ・reports サブコレクションのドキュメントIDは自動採番のため、「報告の作成と、同時に行われているか」を
+        //     ここだけで厳密に確認することはできない。アプリ側(index.html の photosApi.reportPhoto)は、
+        //     必ず reports への作成と、この +1 を、同じバッチ書き込みで行う。ここでは、
+        //     「reportCount 以外は変えられない」「1ずつしか増えない」ことだけを保証する。
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["reportCount"])
+        && request.resource.data.reportCount is int
+        && request.resource.data.reportCount == resource.data.reportCount + 1
+      ) || (
+        // 本人が、いいねしたときの likeCount の +1(いいね記録が、同時に作られるときだけ)
+        //   ・likes のドキュメント名はユーザーIDなので、Tips・Check-inと同じ方法で、厳密に確認できる。
+        signedIn()
+        && !exists(likeDoc(shopId, photoId, request.auth.uid))
+        && existsAfter(likeDoc(shopId, photoId, request.auth.uid))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likeCount"])
+        && request.resource.data.likeCount == (resource.data.likeCount is int ? resource.data.likeCount : 0) + 1
+      ) || (
+        // 本人が、いいねを取り消したときの likeCount の -1(いいね記録が、同時に削除されるときだけ)
+        signedIn()
+        && exists(likeDoc(shopId, photoId, request.auth.uid))
+        && !existsAfter(likeDoc(shopId, photoId, request.auth.uid))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["likeCount"])
+        && request.resource.data.likeCount == (resource.data.likeCount is int ? resource.data.likeCount : 0) - 1
+      );
+    }
+
+    match /shops/{shopId}/photos/{photoId}/likes/{uid} {
+      // 自分のいいね記録だけ読める(「いいね済みか」を調べるため)
+      allow get: if signedIn() && request.auth.uid == uid;
+
+      // 自分の記録だけ、作れる(1枚の写真につき、1回だけ)
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["createdAt"])
+        && request.resource.data.createdAt == request.time;
+
+      // 本人だけ、いいねを取り消せる(削除すると、また、いいねできる状態に戻る)
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /shops/{shopId}/photos/{photoId}/comments/{commentId} {
+      // コメントは、誰でも読める(一覧に表示するため。管理者が、非表示のコメントを見るのにも使う)
+      allow read: if true;
+
+      // ログインしていれば、何度でも投稿できる(Tips・Check-in・レビューと違い、1回だけの制限は無い)
+      allow create: if signedIn() && request.auth.uid == request.resource.data.uid
+        && request.resource.data.keys().hasOnly(["uid", "authorName", "comment", "createdAt"])
+        && request.resource.data.keys().hasAll(["uid", "authorName", "comment", "createdAt"])
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() > 0 && request.resource.data.authorName.size() <= 60
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0 && request.resource.data.comment.size() <= 300
+        && request.resource.data.createdAt == request.time;
+
+      // 本人だけ、自分のコメントを削除できる(削除しても、また投稿できる。回数の制限が無いため)
+      allow delete: if signedIn() && request.auth.uid == resource.data.uid;
+
+      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(コメントの中身は、変えられない)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
+        && request.resource.data.hidden is bool;
+    }
+
+    match /shops/{shopId}/photos/{photoId}/reports/{reportId} {
+      // 報告の中身は、誰も読めない(報告した本人も、あとから読み返せない)。管理者だけ、一覧で確認できる
+      allow get, list: if isAdmin();
+
+      // ログインしていなくても、誰でも作れる(理由・日時だけを保存する。あとからの書き換え・削除はできない)
+      allow create: if request.resource.data.keys().hasOnly(["reason", "createdAt"])
+        && request.resource.data.keys().hasAll(["reason", "createdAt"])
+        && request.resource.data.reason is string
+        && request.resource.data.reason in
+             ["copyright", "person", "privacy", "unrelated", "inappropriate", "misleading", "other"]
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // ---------------------------------------------------------------
+    // 👤 ユーザー情報(ニックネーム)
+    //
+    //   users/{ユーザーID} … メールアドレス+パスワードで新規登録したときの、ニックネーム(フィールド displayName)
+    //       Google でログインしたユーザーは、ここを使わない(Google アカウントの名前を、そのまま使う)
+    //
+    //   自分の情報だけ、読み書きできる(他の人のニックネームは、読めない)。
+    //   update も許可しているのは、Firestore への保存だけ失敗した(アカウントは作れたが、通信エラーなどで
+    //   ニックネームが保存できなかった)ときに、もう一度、保存し直せるようにするため。
+    // ---------------------------------------------------------------
+
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["displayName", "createdAt"])
+        && request.resource.data.keys().hasAll(["displayName", "createdAt"])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.createdAt == request.time;
+    }
+  }
+}

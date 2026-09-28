@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="ベトナムフーディーのイメージイラスト">
+  <!-- 店舗の写真がないときに、詳細ページで使う、横長のイラスト(実際の店舗の写真ではありません) -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8f5e9" />
+      <stop offset="1" stop-color="#c8e6c9" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#bg)" />
+  <g transform="translate(120 15)">
+  <circle cx="120" cy="132" r="92" fill="#ffffff" opacity="0.55" />
+
+  <!-- 黄色い星(ベトナム国旗をイメージ) -->
+  <polygon points="200,34 204.7,48.3 219.7,48.3 207.5,57.1 212.2,71.4 200,62.6 187.8,71.4 192.5,57.1 180.3,48.3 195.3,48.3" fill="#ffca28" />
+
+  <!-- 湯気 -->
+  <g fill="none" stroke="#90a4ae" stroke-width="5" stroke-linecap="round" opacity="0.8">
+    <path d="M96 96 q-10 -12 0 -24 q10 -12 0 -24" />
+    <path d="M120 100 q-10 -12 0 -24 q10 -12 0 -24" />
+    <path d="M144 96 q-10 -12 0 -24 q10 -12 0 -24" />
+  </g>
+
+  <!-- 麺と具材 -->
+  <ellipse cx="120" cy="124" rx="66" ry="16" fill="#ffe0b2" />
+  <path d="M68 124 q12 -8 24 0 t24 0 t24 0 t24 0" fill="none" stroke="#ffb74d" stroke-width="3" stroke-linecap="round" />
+  <circle cx="98" cy="121" r="6" fill="#66bb6a" />
+  <circle cx="134" cy="126" r="6" fill="#66bb6a" />
+  <circle cx="116" cy="128" r="5" fill="#ef5350" />
+
+  <!-- どんぶり -->
+  <path d="M50 126 h140 a70 70 0 0 1 -140 0 z" fill="#c62828" />
+  <path d="M50 126 h140" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="120" cy="198" rx="34" ry="7" fill="#8e1a1a" />
+
+  <!-- 箸 -->
+  <g stroke="#8d6e63" stroke-width="5" stroke-linecap="round">
+    <line x1="150" y1="92" x2="198" y2="140" />
+    <line x1="162" y1="84" x2="208" y2="130" />
+  </g>
+  </g>
+</svg>
