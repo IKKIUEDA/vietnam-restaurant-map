@@ -718,6 +718,11 @@ header h1 {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
+/* 食材店(type: "grocery")のピンは、枠をオレンジにして、料理店と見分けやすくする */
+.shop-marker.shop-marker-grocery {
+  border-color: #ef6c00;
+}
+
 /* 現在地(または起点)の目印: 脈打つ青い点。お店のピン(🍽️の丸)とは、形も色も違う */
 .user-location {
   background: none;

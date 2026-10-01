@@ -458,7 +458,7 @@ function createDetailMap(shop) {
     dragging: !L.Browser.mobile, // スマホでは、地図の上で指を動かしても、画面がスクロールできるように
   }).setView([shop.lat, shop.lng], 16);
   createBaseLayer().addTo(detailMap); // 一覧の地図と、同じ背景
-  L.marker([shop.lat, shop.lng], { icon: createShopIcon() }).addTo(detailMap);
+  L.marker([shop.lat, shop.lng], { icon: createShopIcon(shop) }).addTo(detailMap);
   refreshDetailMap();
   setTimeout(() => detailMap && detailMap.invalidateSize(), 0);
 }

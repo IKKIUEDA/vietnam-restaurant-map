@@ -19,13 +19,15 @@ function createBaseLayer() {
 
 createBaseLayer().addTo(map);
 
-// お店のピン(絵文字「🍽️」の、白地に緑の丸)。一覧の地図と、詳細ページの地図で、同じものを使う
+// お店のピン(料理店は「🍽️」の白地に緑の丸、食材店(type: "grocery")は「🛒」の白地にオレンジの丸)。
+// 一覧の地図と、詳細ページの地図で、同じものを使う
 //   ・まとめ表示(クラスター)の丸い数字アイコンは、これとは別(.shop-cluster)で、変更していない
 //   ・現在地・起点の目印(.user-location の青い点)とも、別の見た目(形・色)にして、見分けられるようにしている
-function createShopIcon() {
+function createShopIcon(shop) {
+  const isGrocery = shop && shop.type === "grocery";
   return L.divIcon({
-    className: "shop-marker",
-    html: "🍽️",
+    className: isGrocery ? "shop-marker shop-marker-grocery" : "shop-marker",
+    html: isGrocery ? "🛒" : "🍽️",
     iconSize: [30, 30],
     iconAnchor: [15, 15], // 丸の中心が、実際の場所(緯度・経度)に来るようにする
     popupAnchor: [0, -18], // ポップアップは、丸の少し上に開く
@@ -178,7 +180,7 @@ const POPUP_OPTIONS = popupAutoPanOptions();
 // ピンと一覧の行を、お店ごとにしまっておく(言語を切り替えたときに文字を差し替えるため)
 const entries = restaurants.map((shop) => {
   // 地図に出すピン(ポップアップの中身は、あとで showTexts が入れる)
-  const marker = L.marker([shop.lat, shop.lng], { icon: createShopIcon() }).bindPopup("", POPUP_OPTIONS);
+  const marker = L.marker([shop.lat, shop.lng], { icon: createShopIcon(shop) }).bindPopup("", POPUP_OPTIONS);
 
   // 一覧に1行追加する(中身は、あとで showTexts が入れる)
   //   shop-item: 店舗カードの目印(都道府県・エリアの見出しの <li> と、見た目のCSSを分けるため)
