@@ -584,7 +584,7 @@ async function ensureSignedIn() {
 // ---------------------------------------------------------------------
 // 💡 このお店のTips(Firebase Firestore)
 // ---------------------------------------------------------------------
-//   ・選択肢は i18n.js の tipOptions、Firestore との通信は index.html の window.tipsApi
+//   ・選択肢は i18n.js の tipOptions(料理店)/ groceryTipOptions(食材店)。tipOptionsFor(店舗ID) で選ぶ。Firestore との通信は index.html の window.tipsApi
 //   ・保存先: shops/{店舗ID}/tips/counts(集計。フィールド名 = Tipsのキー、値 = 選んだ人数)
 //             shops/{店舗ID}/tipVotes/{ユーザーID}(そのユーザーの投稿記録)
 //   ・選択肢を選ぶところまでは、ログインしていなくてもできる。送信ボタンを押したときに、はじめてログインを求める
@@ -649,7 +649,7 @@ function getTipsApi() {
 // Firestore から来た値を、「選択肢にあるキーの、1以上の整数」だけにする(0人・知らないキー・変な値は、捨てる)
 function cleanTipCounts(data) {
   const counts = {};
-  tipOptions.forEach(({ key }) => {
+  allTipOptions.forEach(({ key }) => {
     const n = Number(data && data[key]);
     if (Number.isFinite(n) && n >= 1) counts[key] = Math.floor(n);
   });
@@ -803,7 +803,8 @@ function renderTips() {
   }
 
   // 多い順に(同じ人数のときは、選択肢の順)。まだ誰も選んでいないTipsは出さない
-  const ranked = tipOptions.filter((o) => state.counts[o.key] > 0).sort((a, b) => state.counts[b.key] - state.counts[a.key]);
+  const options = tipOptionsFor(state.shopId); // 料理店か食材店かで、選択肢が変わる
+  const ranked = options.filter((o) => state.counts[o.key] > 0).sort((a, b) => state.counts[b.key] - state.counts[a.key]);
   const mine = new Set(Array.isArray(state.myTips) ? state.myTips : []); // 自分が選んだTipsには、印を付ける
   const listHtml = ranked.length
     ? `<ul class="tips-list">${ranked
@@ -820,7 +821,7 @@ function renderTips() {
     ? `<form class="report-panel tips-form" id="tips-form">
          <fieldset ${state.sending ? "disabled" : ""}>
            <legend>${esc(t.tipsFormTitle)}</legend>
-           ${tipOptions
+           ${options
              .map(
                (o) =>
                  `<label class="report-option"><input type="checkbox" name="tip" value="${o.key}" ${state.selected.has(o.key) ? "checked" : ""}> <span>${o.icon} ${esc(pick(o.label))}</span></label>`
@@ -917,7 +918,7 @@ function renderAdminVotesHtml(state, t) {
     bodyHtml = `<ul class="admin-list">${state.adminVotes
       .map((v) => {
         const labels = (Array.isArray(v.tips) ? v.tips : [])
-          .map((key) => tipOptions.find((o) => o.key === key))
+          .map((key) => tipOptionsFor(state.shopId).find((o) => o.key === key))
           .filter(Boolean)
           .map((o) => `${o.icon} ${esc(pick(o.label))}`)
           .join("、");
@@ -947,7 +948,7 @@ function renderAdminVotesHtml(state, t) {
 //   ・ポップアップを閉じただけのときは、エラーにせず、選んだ内容を残したまま、送信中をやめる(もう一度、押せる)
 async function submitTips(state) {
   if (state.sending) return;
-  const keys = tipOptions.map((o) => o.key).filter((key) => state.selected.has(key));
+  const keys = tipOptionsFor(state.shopId).map((o) => o.key).filter((key) => state.selected.has(key));
   if (keys.length === 0) {
     state.message = { key: "tipsNoneSelected", error: true };
     renderTips();
