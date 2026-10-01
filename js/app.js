@@ -679,11 +679,18 @@ scanOverlayList.addEventListener(
 // 5. 絞り込み(料理・お気に入り・検索・スキャン): 条件に合うお店だけを、地図とリストに表示する
 //   都道府県・エリアは、絞り込みボタンではなく、一覧の階層(アコーディオン。下のほう)で選びます
 const dishChips = document.getElementById("dish-chips");
+const typeChips = document.getElementById("type-chips");
 const filterCount = document.getElementById("filter-count");
 const filterReset = document.getElementById("filter-reset");
 
 const ALL = "all"; // 「すべて」が選ばれている状態
 let selectedDish = ALL; // 選択中の料理(dishTypes の key)
+let selectedType = ALL; // 選択中のお店の種類("restaurant" か "grocery")
+
+// お店の種類。data.js で type を書いていないお店は、料理店("restaurant")として扱う
+function shopType(shop) {
+  return shop.type === "grocery" ? "grocery" : "restaurant";
+}
 let searchTerms = []; // 検索ボックスに入力された言葉(スペース区切り。整えたもの)
 let lastFitKey = entries.map((_, i) => i).join(","); // 前回、地図を合わせたときの「表示中のお店」
 
@@ -795,6 +802,7 @@ function buildSearchTerms(text) {
 function matchesFilter(shop) {
   if (favoritesOnly && !isFavorite(shop)) return false;
   if (!matchesSearch(shop)) return false;
+  if (selectedType !== ALL && shopType(shop) !== selectedType) return false;
   if (selectedDish !== ALL && !(shop.dishes || []).includes(selectedDish)) return false;
   if (!matchesScan(shop)) return false;
   return true;
@@ -831,6 +839,18 @@ function makeChip(label, isActive, onClick) {
 function renderFilters() {
   const t = ui[currentLang];
   document.getElementById("dish-label").textContent = t.filterDish;
+  document.getElementById("type-label").textContent = t.filterType;
+
+  // 種類のボタン(すべて/料理店/食材店)
+  typeChips.replaceChildren(
+    makeChip(t.filterAll, selectedType === ALL, () => selectType(ALL)),
+    makeChip(t.typeRestaurant, selectedType === "restaurant", () => selectType("restaurant")),
+    makeChip(t.typeGrocery, selectedType === "grocery", () => selectType("grocery"))
+  );
+  // 食材店を選んでいるときは、料理の絞り込みは関係ないので隠す
+  const hideDish = selectedType === "grocery";
+  document.getElementById("dish-label").hidden = hideDish;
+  dishChips.hidden = hideDish;
 
   dishChips.replaceChildren(
     makeChip(t.filterAll, selectedDish === ALL, () => selectDish(ALL)),
@@ -878,12 +898,13 @@ narrowScreen.addEventListener("change", () => {
 // 絞り込み条件が、1つでも選ばれているか(検索の言葉の入力も含む)
 //   都道府県・エリアは、絞り込みではなく、一覧の階層(アコーディオン)の開閉なので、ここには含めない
 function isFilterActive() {
-  return favoritesOnly || selectedDish !== ALL || searchTerms.length > 0 || scanBounds !== null;
+  return favoritesOnly || selectedType !== ALL || selectedDish !== ALL || searchTerms.length > 0 || scanBounds !== null;
 }
 
 // すべての絞り込み条件を解除する(料理は「すべて」に、検索ボックスは空にする。スキャンの絞り込みも解除する)
 function resetFilters() {
   favoritesOnly = false;
+  selectedType = ALL;
   selectedDish = ALL;
   searchInput.value = "";
   searchTerms = [];
@@ -1113,6 +1134,13 @@ function applyFilters(onlyIfChanged = false, skipFit = false) {
     });
   }
   syncMobileListOverlay(); // スマホでは、絞り込み条件に合わせて、一覧オーバーレイを自動で開閉する(PC では何もしない)
+}
+
+// 種類を選ぶ(食材店を選んだときは、料理の絞り込みを「すべて」に戻す。食材店には料理の情報がないため)
+function selectType(key) {
+  selectedType = key;
+  if (key === "grocery") selectedDish = ALL;
+  applyFilters();
 }
 
 function selectDish(key) {

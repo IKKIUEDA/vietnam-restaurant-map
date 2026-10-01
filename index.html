@@ -18,7 +18,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261001b" />
+    <link rel="stylesheet" href="css/style.css?v=20261002a" />
   </head>
   <body>
     <header>
@@ -76,6 +76,10 @@
             <button id="fav-only" type="button" class="chip" aria-pressed="false">♥ お気に入りのみ表示</button>
           </div>
           <!-- 都道府県・エリアは、絞り込みボタンではなく、一覧の階層(アコーディオン)で選びます -->
+          <!-- お店の種類(すべて/料理店/食材店) -->
+          <div class="filter-label" id="type-label">種類</div>
+          <div class="chips" id="type-chips"></div>
+          <!-- 料理の絞り込み(食材店を選んだときは、隠す) -->
           <div class="filter-label" id="dish-label">料理</div>
           <div class="chips" id="dish-chips"></div>
           </details>
@@ -149,15 +153,15 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261001b"></script>
-    <script src="js/data.js?v=20261001b"></script>
-    <script src="js/app.js?v=20261001b"></script>
+    <script src="js/i18n.js?v=20261002a"></script>
+    <script src="js/data.js?v=20261002a"></script>
+    <script src="js/app.js?v=20261002a"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261001b"></script>
+    <script src="js/auth.js?v=20261002a"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261001b"></script>
+    <script src="js/auth-modal.js?v=20261002a"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
-    <script src="js/detail.js?v=20261001b"></script>
+    <script src="js/detail.js?v=20261002a"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。

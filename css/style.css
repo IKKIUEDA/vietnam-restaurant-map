@@ -437,6 +437,12 @@ header h1 {
   overflow-y: auto;
 }
 
+/* 食材店を選んだときに、料理の絞り込みを隠す(display: flex より優先させる) */
+#dish-chips[hidden],
+#dish-label[hidden] {
+  display: none;
+}
+
 .chip {
   padding: 3px 9px;
   font-size: 0.8rem;
