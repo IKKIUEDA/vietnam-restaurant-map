@@ -14,6 +14,17 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email == "sales@compass-story.com";
     }
 
+    // Tips のキーの一覧(料理店 10個 + 食材店だけのもの 7個)
+    //   ・js/i18n.js の tipOptions(料理店)と groceryTipOptions(食材店)の key を、すべて書く
+    //   ・食材店の value / staff / station は、料理店と同じキーなので、ここでは1回だけ書く
+    function tipKeys() {
+      return [
+        "delicious", "value", "portion", "staff", "atmosphere",
+        "solo", "family", "date", "takeout", "station",
+        "herbs", "variety", "frozen", "dried", "deli", "japanese", "parking"
+      ];
+    }
+
     // そのユーザーの、そのお店への「Tips 投稿記録」の場所
     function voteDoc(shopId, uid) {
       return /databases/$(database)/documents/shops/$(shopId)/tipVotes/$(uid);
@@ -51,15 +62,13 @@ service cloud.firestore {
         return signedIn()
           && !exists(voteDoc(shopId, request.auth.uid))
           && existsAfter(voteDoc(shopId, request.auth.uid))
-          && request.resource.data.keys().hasOnly([
-            "delicious", "value", "portion", "staff", "atmosphere",
-            "solo", "family", "date", "takeout", "station"
-          ])
+          && request.resource.data.keys().hasOnly(tipKeys())
           && changed().size() > 0
           && changed().hasOnly(votedTips())
           && changed().hasAll(votedTips())
           && step("delicious") && step("value") && step("portion") && step("staff") && step("atmosphere")
-          && step("solo") && step("family") && step("date") && step("takeout") && step("station");
+          && step("solo") && step("family") && step("date") && step("takeout") && step("station")
+          && step("herbs") && step("variety") && step("frozen") && step("dried") && step("deli") && step("japanese") && step("parking");
       }
 
       // 本人が、自分の投稿を削除したときの -1(投稿記録が、同時に削除されるときだけ)
@@ -69,26 +78,22 @@ service cloud.firestore {
         return signedIn()
           && exists(voteDoc(shopId, request.auth.uid))
           && !existsAfter(voteDoc(shopId, request.auth.uid))
-          && request.resource.data.keys().hasOnly([
-            "delicious", "value", "portion", "staff", "atmosphere",
-            "solo", "family", "date", "takeout", "station"
-          ])
+          && request.resource.data.keys().hasOnly(tipKeys())
           && changed().size() > 0
           && changed().hasOnly(oldVotedTips())
           && changed().hasAll(oldVotedTips())
           && stepDown("delicious") && stepDown("value") && stepDown("portion") && stepDown("staff") && stepDown("atmosphere")
-          && stepDown("solo") && stepDown("family") && stepDown("date") && stepDown("takeout") && stepDown("station");
+          && stepDown("solo") && stepDown("family") && stepDown("date") && stepDown("takeout") && stepDown("station")
+          && stepDown("herbs") && stepDown("variety") && stepDown("frozen") && stepDown("dried") && stepDown("deli") && stepDown("japanese") && stepDown("parking");
       }
 
       // 管理者が、投稿の非表示・再表示にあわせて、人数を調整するとき(0以上の整数なら、いくつでもよい)
       function adminStep() {
         return isAdmin()
-          && request.resource.data.keys().hasOnly([
-            "delicious", "value", "portion", "staff", "atmosphere",
-            "solo", "family", "date", "takeout", "station"
-          ])
+          && request.resource.data.keys().hasOnly(tipKeys())
           && adminValue("delicious") && adminValue("value") && adminValue("portion") && adminValue("staff") && adminValue("atmosphere")
-          && adminValue("solo") && adminValue("family") && adminValue("date") && adminValue("takeout") && adminValue("station");
+          && adminValue("solo") && adminValue("family") && adminValue("date") && adminValue("takeout") && adminValue("station")
+          && adminValue("herbs") && adminValue("variety") && adminValue("frozen") && adminValue("dried") && adminValue("deli") && adminValue("japanese") && adminValue("parking");
       }
 
       function adminValue(k) {
@@ -143,10 +148,7 @@ service cloud.firestore {
         && request.resource.data.tips.size() > 0
         && request.resource.data.tips.size() <= 10
         && request.resource.data.tips.toSet().size() == request.resource.data.tips.size()
-        && request.resource.data.tips.hasOnly([
-          "delicious", "value", "portion", "staff", "atmosphere",
-          "solo", "family", "date", "takeout", "station"
-        ])
+        && request.resource.data.tips.hasOnly(tipKeys())
         && request.resource.data.createdAt == request.time;
 
       // 本人だけ、自分の投稿を削除できる(削除すると、また投稿できる状態に戻る)

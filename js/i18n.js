@@ -1174,6 +1174,31 @@ const tipOptions = [
   { key: "station", icon: "🚉", label: { ja: "駅から行きやすい", en: "Easy to reach from the station", vi: "Dễ đến từ ga" } },
 ];
 
+// 食材店(data.js で type: "grocery" のお店)の「Tips」の選択肢
+//   ・value / staff / station は、料理店と同じキーを使っています(人数はお店ごとに数えるので、混ざりません)
+//   ・キーを増やしたり変えたりするときは、firestore.rules の tipKeys() も同じように直してください
+const groceryTipOptions = [
+  { key: "herbs", icon: "🌿", label: { ja: "ハーブ・生鮮野菜がある", en: "Fresh herbs & vegetables", vi: "Có rau thơm, rau tươi" } },
+  { key: "variety", icon: "🛒", label: { ja: "品揃えが豊富", en: "Wide selection", vi: "Hàng hóa đa dạng" } },
+  { key: "value", icon: "💰", label: { ja: "価格が手ごろ", en: "Reasonable prices", vi: "Giá cả phải chăng" } },
+  { key: "frozen", icon: "🧊", label: { ja: "冷凍食品・肉・魚がある", en: "Frozen food, meat & fish", vi: "Có đồ đông lạnh, thịt, cá" } },
+  { key: "dried", icon: "🍜", label: { ja: "麺・ライスペーパーなどの乾物が充実", en: "Good range of noodles & rice paper", vi: "Nhiều bún, phở khô, bánh tráng" } },
+  { key: "deli", icon: "🥖", label: { ja: "惣菜・バインミーなどが買える", en: "Ready-made food & banh mi", vi: "Có đồ ăn sẵn, bánh mì" } },
+  { key: "staff", icon: "😊", label: { ja: "店員さんが親切", en: "Friendly staff", vi: "Nhân viên thân thiện" } },
+  { key: "japanese", icon: "🗣️", label: { ja: "日本語が通じる", en: "Japanese spoken", vi: "Có thể nói tiếng Nhật" } },
+  { key: "station", icon: "🚉", label: { ja: "駅から行きやすい", en: "Easy to reach from the station", vi: "Dễ đến từ ga" } },
+  { key: "parking", icon: "🅿️", label: { ja: "駐車場がある", en: "Parking available", vi: "Có chỗ đậu xe" } },
+];
+
+// そのお店で使う Tips の選択肢(食材店なら groceryTipOptions、それ以外は tipOptions)
+function tipOptionsFor(shopId) {
+  const shop = typeof restaurants !== "undefined" ? restaurants.find((s) => s.id === shopId) : null;
+  return shop && shop.type === "grocery" ? groceryTipOptions : tipOptions;
+}
+
+// 料理店・食材店の、すべての選択肢(同じキーは1つだけ)。Firestore から来た人数を整えるときに使う
+const allTipOptions = [...tipOptions, ...groceryTipOptions.filter((g) => !tipOptions.some((o) => o.key === g.key))];
+
 // 今選ばれている言語
 let currentLang = "ja";
 
