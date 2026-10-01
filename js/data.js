@@ -24,6 +24,8 @@
 //   price   : 価格帯(省略してもOK。※ 今は、画面には表示していません。データだけ残しています)
 //   hours   : 営業時間(省略してもOK。※ 今は、画面には表示していません。データだけ残しています)
 //             どちらも、まだ調べていないお店は { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" } としています。
+//   type    : お店の種類。"restaurant"(料理店) か "grocery"(食材店)。省略すると "restaurant" として扱います。
+//             食材店は dishes(取り扱い料理)を書かなくてOKです。
 //   category : カテゴリー(例: "ベトナム料理・居酒屋")。省略してもOK。詳細ページに出ます。英語・ベトナム語は categoryLabels に書きます。
 //   closed  : 定休日(例: "水曜日")。{ ja, en, vi } でもOK。省略してもOK。※ 今は、画面には表示していません(データだけ残しています)。
 //   feature : お店の特徴(省略してもOK。書いたお店だけ画面に表示されます)
@@ -85,6 +87,7 @@ const categoryLabels = {
   "バインミー": { en: "Banh mi", vi: "Bánh mì" },
   "バインミー・フォー": { en: "Banh mi / Pho", vi: "Bánh mì / Phở" },
   "惣菜・テイクアウト": { en: "Deli / Takeout", vi: "Món ăn sẵn / Mang đi" },
+  "ベトナム食材店": { en: "Vietnamese grocery", vi: "Tạp hóa Việt" },
 };
 
 const restaurants = [
@@ -1679,5 +1682,127 @@ const restaurants = [
     category: "フォー専門",
     price: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
     hours: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
+  },
+  // ---- ここから ベトナム食材店(type: "grocery")----
+  // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(金田東6丁目のお店は「丁目」までの精度)。
+  {
+    id: "dung-huyen-shin-matsudo",
+    type: "grocery",
+    name: "ベトナム食材 ズンフェン (Quan Dung Huyen)",
+    address: {
+      ja: "千葉県松戸市新松戸1-420",
+      en: "1-420 Shin-Matsudo, Matsudo, Chiba",
+      vi: "1-420 Shin-Matsudo, Matsudo, Chiba",
+    },
+    lat: 35.8279800,
+    lng: 139.9205170,
+    prefecture: "千葉県",
+    area: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "xuan-shop-shin-matsudo",
+    type: "grocery",
+    name: "XUAN SHOP VIET NHAT 新松戸",
+    address: {
+      ja: "千葉県松戸市新松戸1-498 コンフォートビル3F",
+      en: "Comfort Bldg. 3F, 1-498 Shin-Matsudo, Matsudo, Chiba",
+      vi: "Comfort Bldg. 3F, 1-498 Shin-Matsudo, Matsudo, Chiba",
+    },
+    lat: 35.8265150,
+    lng: 139.9201970,
+    prefecture: "千葉県",
+    area: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "kien-shop-shin-matsudo",
+    type: "grocery",
+    name: "Kien Shop / Chợ Việt Chiba",
+    address: {
+      ja: "千葉県松戸市新松戸3-124-2",
+      en: "3-124-2 Shin-Matsudo, Matsudo, Chiba",
+      vi: "3-124-2 Shin-Matsudo, Matsudo, Chiba",
+    },
+    lat: 35.8237080,
+    lng: 139.9181980,
+    prefecture: "千葉県",
+    area: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "tap-hoa-viet-nhat-funabashi",
+    type: "grocery",
+    name: "Tap Hoa Viet Nhat",
+    address: {
+      ja: "千葉県船橋市本町2-16-22",
+      en: "2-16-22 Honcho, Funabashi, Chiba",
+      vi: "2-16-22 Honcho, Funabashi, Chiba",
+    },
+    lat: 35.6987690,
+    lng: 139.9806210,
+    prefecture: "千葉県",
+    area: { ja: "船橋駅", en: "Funabashi Station", vi: "Funabashi Station" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "mai-toan-motoyawata",
+    type: "grocery",
+    name: "Thực Phẩm Việt Mai Toán",
+    address: {
+      ja: "千葉県市川市南八幡5-3-6 102",
+      en: "#102, 5-3-6 Minami-Yawata, Ichikawa, Chiba",
+      vi: "#102, 5-3-6 Minami-Yawata, Ichikawa, Chiba",
+    },
+    lat: 35.7213750,
+    lng: 139.9241180,
+    prefecture: "千葉県",
+    area: { ja: "本八幡", en: "Motoyawata", vi: "Motoyawata" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "hong-nhung-kisarazu",
+    type: "grocery",
+    name: "Hồng Nhung Quán Tạp Hoá Việt Nam",
+    address: {
+      ja: "千葉県木更津市金田東6丁目26-5",
+      en: "6-26-5 Kaneda-Higashi, Kisarazu, Chiba",
+      vi: "6-26-5 Kaneda-Higashi, Kisarazu, Chiba",
+    },
+    lat: 35.4304810,
+    lng: 139.9275510,
+    prefecture: "千葉県",
+    area: { ja: "木更津・金田", en: "Kisarazu / Kaneda", vi: "Kisarazu / Kaneda" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "tap-hoa-viet-asian-food-kisarazu",
+    type: "grocery",
+    name: "TAP HOA VIET ASIAN FOOD",
+    address: {
+      ja: "千葉県木更津市貝渕2丁目10-2",
+      en: "2-10-2 Kaibuchi, Kisarazu, Chiba",
+      vi: "2-10-2 Kaibuchi, Kisarazu, Chiba",
+    },
+    lat: 35.3754350,
+    lng: 139.9228060,
+    prefecture: "千葉県",
+    area: { ja: "木更津駅", en: "Kisarazu Station", vi: "Kisarazu Station" },
+    category: "ベトナム食材店",
+  },
+  {
+    id: "hai-ban-shop-kisarazu",
+    type: "grocery",
+    name: "ハイバンショップ",
+    address: {
+      ja: "千葉県木更津市東中央1丁目1-2 102",
+      en: "#102, 1-1-2 Higashi-Chuo, Kisarazu, Chiba",
+      vi: "#102, 1-1-2 Higashi-Chuo, Kisarazu, Chiba",
+    },
+    lat: 35.3821600,
+    lng: 139.9269260,
+    prefecture: "千葉県",
+    area: { ja: "木更津駅", en: "Kisarazu Station", vi: "Kisarazu Station" },
+    category: "ベトナム食材店",
   },
 ];
