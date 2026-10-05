@@ -202,8 +202,8 @@ function updateLandmarkMode(e) {
     const w = Math.abs(se.x - nw.x);
     const h = Math.abs(se.y - nw.y);
     if (Math.min(w, h) >= BIG_NAME_MIN_PX) {
-      // 敷地が大きく見えるほど、文字も大きく(14〜34px)。2px きざみにして、切り替えすぎないようにする
-      fontSize = Math.round(Math.min(34, Math.max(14, Math.sqrt(w * h) / 9)) / 2) * 2;
+      // 敷地が大きく見えるほど、文字も大きく(14〜28px)。2px きざみにして、切り替えすぎないようにする
+      fontSize = Math.round(Math.min(28, Math.max(14, Math.sqrt(w * h) / 9)) / 2) * 2;
       maxWidth = Math.round(w * 0.85);
       mode = `big:${fontSize}:${maxWidth}`;
     }
