@@ -3,6 +3,7 @@
 //   ・優先順位(下の landmarkKinds の priority)の順に、地図を引いた状態から出ます。
 //       1 駅 → 2 大型ショッピングモール・空港 → 3 大学・観光地 の順。数字が小さいほど、文字も大きい
 //   ・文字が、お店のピンや、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
+//   ・モール・大学・観光地・空港は、敷地の範囲を、うすい色と線で囲んで表示します(js/landmark-areas.js)
 //   ・位置(緯度・経度)は、OpenStreetMap のデータ(Nominatim の検索)か、国土地理院の住所検索で調べた値です。
 //     ※ 横浜中華街・みなとみらい・川越・空港は、おおよその位置です(コメントに「※」)
 //   ・目印を増やしたいときは、下の landmarks に1行足すだけでOKです
@@ -104,6 +105,20 @@ const landmarks = [
 
 const LANDMARK_MIN_ZOOM = 11; // このズームより引いた地図(関東全体など)では、目印を1つも出さない
 
+// 種類ごとの色(css/style.css の .lm-station などと同じ色にする)
+const landmarkColors = {
+  station: "#1a73e8",
+  mall: "#c2185b",
+  airport: "#455a64",
+  university: "#795548",
+  sight: "#8e24aa",
+};
+
+// 敷地の範囲(うすく色をぬった四角形など)は、目印の名前より下に置く
+map.createPane("landmarkAreaPane");
+map.getPane("landmarkAreaPane").style.zIndex = 420; // 地図の絵(200)より上、目印の名前(450)より下
+map.getPane("landmarkAreaPane").style.pointerEvents = "none";
+
 // 目印は、お店のピンより下・地図の絵より上の、専用の重なり(pane)に置く
 map.createPane("landmarkPane");
 map.getPane("landmarkPane").style.zIndex = 450; // 地図の絵(200)より上、お店のピン(600)より下
@@ -139,6 +154,22 @@ const landmarkEntries = landmarks
   .sort((a, b) => a.kind.priority - b.kind.priority || a.order - b.order);
 const landmarkLayer = L.layerGroup(landmarkEntries.map((e) => e.marker));
 
+// 敷地の範囲(js/landmark-areas.js にあるものだけ)。うすく色をぬって、ふちを線で囲む
+landmarkEntries.forEach((e) => {
+  const area = typeof landmarkAreas !== "undefined" ? landmarkAreas[e.lm.name.ja] : null;
+  if (!area) return;
+  const color = landmarkColors[e.lm.kind] || landmarkColors.sight;
+  e.area = L.polygon(area, {
+    pane: "landmarkAreaPane",
+    interactive: false, // クリックしても、何も開かない
+    color,
+    weight: 1.5,
+    opacity: 0.7,
+    fillColor: color,
+    fillOpacity: 0.12,
+  });
+});
+
 // 2つの四角形(画面上の位置)が重なっているか(少しすき間をあけて判定する)
 function rectsOverlap(a, b, gap = 3) {
   return a.left < b.right + gap && b.left < a.right + gap && a.top < b.bottom + gap && b.top < a.bottom + gap;
@@ -147,6 +178,13 @@ function rectsOverlap(a, b, gap = 3) {
 // いまのズームで出す目印を決めて、重なるものを隠す
 function declutterLandmarks() {
   const z = map.getZoom();
+  // 敷地の範囲: その種類の目印を出すズームのときだけ出す
+  landmarkEntries.forEach((e) => {
+    if (!e.area) return;
+    const show = z >= Math.max(LANDMARK_MIN_ZOOM, e.kind.minZoom);
+    if (show && !map.hasLayer(e.area)) e.area.addTo(map);
+    if (!show && map.hasLayer(e.area)) map.removeLayer(e.area);
+  });
   if (z < LANDMARK_MIN_ZOOM) {
     if (map.hasLayer(landmarkLayer)) map.removeLayer(landmarkLayer);
     return;
