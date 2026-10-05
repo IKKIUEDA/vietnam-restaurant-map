@@ -118,13 +118,61 @@ function landmarkText(lm) {
   return currentLang === "ja" ? lm.name.ja : lm.name.en || lm.name.ja;
 }
 
+// 名前の HTML。日本語の画面では「英語(小さく)の下に日本語」、それ以外の画面では英語だけ
+function landmarkNameHtml(lm) {
+  const en = lm.name.en ? `<span class="lm-en">${esc(lm.name.en.replace(/ Sta\.$/, " Station"))}</span>` : "";
+  return currentLang === "ja" ? `${en}<span class="lm-name">${esc(lm.name.ja)}</span>` : `<span class="lm-name">${esc(landmarkText(lm))}</span>`;
+}
+
+// 駅に乗り入れている鉄道会社(文字だけの小さな札で表示する。各社のロゴマークは使っていません)
+const railOperators = {
+  jr: { ja: "JR", en: "JR" },
+  metro: { ja: "東京メトロ", en: "Tokyo Metro" },
+  toei: { ja: "都営", en: "Toei" },
+  keio: { ja: "京王", en: "Keio" },
+  odakyu: { ja: "小田急", en: "Odakyu" },
+  tokyu: { ja: "東急", en: "Tokyu" },
+  keikyu: { ja: "京急", en: "Keikyu" },
+  seibu: { ja: "西武", en: "Seibu" },
+  tobu: { ja: "東武", en: "Tobu" },
+  keisei: { ja: "京成", en: "Keisei" },
+  sotetsu: { ja: "相鉄", en: "Sotetsu" },
+  ysubway: { ja: "横浜市営地下鉄", en: "Yokohama Subway" },
+  mm: { ja: "みなとみらい線", en: "Minatomirai Line" },
+  shuttle: { ja: "ニューシャトル", en: "New Shuttle" },
+  monorail: { ja: "千葉モノレール", en: "Chiba Monorail" },
+};
+const stationLines = {
+  東京駅: ["jr", "metro"],
+  新宿駅: ["jr", "metro", "toei", "keio", "odakyu"],
+  渋谷駅: ["jr", "metro", "tokyu", "keio"],
+  池袋駅: ["jr", "metro", "seibu", "tobu"],
+  上野駅: ["jr", "metro", "keisei"],
+  品川駅: ["jr", "keikyu"],
+  横浜駅: ["jr", "tokyu", "keikyu", "sotetsu", "ysubway", "mm"],
+  川崎駅: ["jr", "keikyu"],
+  大宮駅: ["jr", "tobu", "shuttle"],
+  千葉駅: ["jr", "keisei", "monorail"],
+  船橋駅: ["jr", "tobu", "keisei"],
+  柏駅: ["jr", "tobu"],
+};
+function stationLinesHtml(lm) {
+  const lines = lm.kind === "station" ? stationLines[lm.name.ja] : null;
+  if (!lines) return "";
+  return (
+    `<span class="lm-lines">` +
+    lines.map((k) => `<span class="lm-line lm-line-${k}">${esc(currentLang === "ja" ? railOperators[k].ja : railOperators[k].en)}</span>`).join("") +
+    `</span>`
+  );
+}
+
 // ふだんの表示: 色つきの丸いマーク(中に白い絵) + その右に名前。マークの中心が、実際の場所に来る
 function landmarkLabel(lm) {
   const kind = landmarkKinds[lm.kind] || landmarkKinds.sight;
   return (
     `<span class="landmark-label lm-${lm.kind} landmark-p${kind.priority}">` +
     `<span class="lm-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${kind.icon}"/></svg></span>` +
-    `<span class="lm-text">${esc(landmarkText(lm))}</span></span>`
+    `<span class="lm-text">${landmarkNameHtml(lm)}${stationLinesHtml(lm)}</span></span>`
   );
 }
 function landmarkIcon(lm) {
@@ -138,7 +186,7 @@ function landmarkBigIcon(lm, fontSize, maxWidth) {
     iconSize: null,
     html:
       `<span class="landmark-label landmark-big lm-${lm.kind}" style="font-size:${fontSize}px;max-width:${maxWidth}px">` +
-      `${esc(landmarkText(lm))}</span>`,
+      `${landmarkNameHtml(lm)}</span>`,
   });
 }
 
