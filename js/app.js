@@ -113,6 +113,7 @@ const clusterGroup = L.markerClusterGroup({
   maxClusterRadius: 60, // この距離(画面上のpx)より近いピンを、1つにまとめる
   showCoverageOnHover: false, // マウスを乗せたときの、範囲の線は出さない
   spiderfyOnMaxZoom: true, // それ以上ズームできないほど重なっているピンは、放射状に広げる
+  disableClusteringAtZoom: 18, // ここまで拡大したら、まとめずに、すべてのピンを個別に出す(一度分かれたピンが、またまとまらないように)
   iconCreateFunction: (cluster) => {
     const count = cluster.getChildCount();
     const size = count >= 30 ? "large" : count >= 10 ? "medium" : "small";
@@ -177,10 +178,26 @@ function popupAutoPanOptions() {
 }
 const POPUP_OPTIONS = popupAutoPanOptions();
 
+// 緯度・経度がまったく同じお店(同じビルに2軒ある、など)は、ピンが完全に重なって、どれだけ拡大しても分かれない。
+// そこで、2軒目以降のピンだけ、地図の上で少し(十数メートル)ずらして立てる。
+//   ・ずらすのは、地図のピンの位置だけ。お店のデータ(shop.lat / shop.lng)は変えないので、ルート・距離は、元の位置で計算される
+const samePlaceCount = {}; // 「緯度,経度」ごとに、これまでに何軒あったか
+function markerLatLng(shop) {
+  const key = `${shop.lat},${shop.lng}`;
+  const n = samePlaceCount[key] || 0; // この場所の、何軒目か(0 = 1軒目)
+  samePlaceCount[key] = n + 1;
+  if (n === 0) return [shop.lat, shop.lng];
+  const angle = (n - 1) * (Math.PI / 2); // 2軒目は東、3軒目は北…と、90度ずつ向きを変える
+  const meters = 15;
+  const dLat = (meters / 111320) * Math.sin(angle);
+  const dLng = (meters / (111320 * Math.cos((shop.lat * Math.PI) / 180))) * Math.cos(angle);
+  return [shop.lat + dLat, shop.lng + dLng];
+}
+
 // ピンと一覧の行を、お店ごとにしまっておく(言語を切り替えたときに文字を差し替えるため)
 const entries = restaurants.map((shop) => {
   // 地図に出すピン(ポップアップの中身は、あとで showTexts が入れる)
-  const marker = L.marker([shop.lat, shop.lng], { icon: createShopIcon(shop) }).bindPopup("", POPUP_OPTIONS);
+  const marker = L.marker(markerLatLng(shop), { icon: createShopIcon(shop) }).bindPopup("", POPUP_OPTIONS);
 
   // 一覧に1行追加する(中身は、あとで showTexts が入れる)
   //   shop-item: 店舗カードの目印(都道府県・エリアの見出しの <li> と、見た目のCSSを分けるため)
