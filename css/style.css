@@ -2414,9 +2414,10 @@ body.view-content-page #content {
 
 
 /* ---------------------------------------------------------------------
-   地図の目印(js/landmarks.js): 駅・大型ショッピングモール・空港・大学・観光地の名前
-   ・クリックできない文字だけの表示
-   ・優先順位(landmark-p1 〜 p3)が高いほど、文字が大きい。地図を拡大するほど、さらに大きくなる(#map の data-landmark-size)
+   地図の目印(js/landmarks.js): 駅・大型ショッピングモール・空港・大学・観光地
+   ・Google マップのように「色つきの丸いマーク(中に白い絵)+ 右に名前」で表示する。クリックはできない
+   ・優先順位(landmark-p1 〜 p3)が高いほど、大きい。地図を拡大するほど、さらに大きくなる(#map の data-landmark-size)
+   ・種類ごとの色は、下の --lm-color で決める
    --------------------------------------------------------------------- */
 .landmark-icon {
   width: 0;
@@ -2424,32 +2425,64 @@ body.view-content-page #content {
 }
 
 .landmark-label {
+  --lm-size: 20px; /* 丸いマークの大きさ */
   position: absolute;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  /* マークの中心を、実際の場所に合わせる */
+  transform: translate(calc(var(--lm-size) / -2), calc(var(--lm-size) / -2));
+  display: flex;
+  align-items: center;
+  gap: 4px;
   white-space: nowrap;
+  font-size: 12px;
   font-weight: bold;
-  color: #1f2d3d;
-  /* 白いふち取り(地図の上でも読みやすくする) */
-  text-shadow:
-    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
-    0 0 4px #fff;
+  line-height: 1.2;
+  color: var(--lm-color);
   pointer-events: none;
   visibility: hidden; /* 最初は隠しておき、重なりを判定してから出す(js/landmarks.js の declutterLandmarks) */
 }
 
-/* 文字の大きさ(優先順位 × ズーム) */
-.landmark-p1 { font-size: 14px; }
-.landmark-p2 { font-size: 13px; }
-.landmark-p3 { font-size: 12px; font-weight: 600; }
-[data-landmark-size="medium"] .landmark-p1 { font-size: 16px; }
-[data-landmark-size="medium"] .landmark-p2 { font-size: 14px; }
-[data-landmark-size="medium"] .landmark-p3 { font-size: 13px; }
-[data-landmark-size="large"] .landmark-p1 { font-size: 18px; }
-[data-landmark-size="large"] .landmark-p2 { font-size: 16px; }
-[data-landmark-size="large"] .landmark-p3 { font-size: 14px; }
+.lm-badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--lm-size);
+  height: var(--lm-size);
+  box-sizing: border-box;
+  background: var(--lm-color);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
 
-/* 種類ごとの色 */
-.landmark-mall { color: #6b2d82; }
-.landmark-sight,
-.landmark-airport { color: #8a3b12; }
-.landmark-university { color: #1d3f8a; }
+.lm-badge svg {
+  width: 62%;
+  height: 62%;
+  fill: #fff;
+}
+
+.lm-text {
+  /* 白いふち取り(地図の上でも読みやすくする) */
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
+    0 0 3px #fff;
+}
+
+/* 大きさ(優先順位 × ズーム) */
+.landmark-p1 { --lm-size: 22px; font-size: 13px; }
+.landmark-p3 { --lm-size: 18px; font-size: 11px; }
+[data-landmark-size="medium"] .landmark-p1 { --lm-size: 24px; font-size: 15px; }
+[data-landmark-size="medium"] .landmark-p2 { --lm-size: 22px; font-size: 13px; }
+[data-landmark-size="medium"] .landmark-p3 { --lm-size: 20px; font-size: 12px; }
+[data-landmark-size="large"] .landmark-p1 { --lm-size: 26px; font-size: 16px; }
+[data-landmark-size="large"] .landmark-p2 { --lm-size: 24px; font-size: 15px; }
+[data-landmark-size="large"] .landmark-p3 { --lm-size: 22px; font-size: 14px; }
+
+/* 種類ごとの色(お店のピンの緑・オレンジと、見分けやすい色) */
+.lm-station { --lm-color: #1a73e8; }
+.lm-mall { --lm-color: #c2185b; }
+.lm-airport { --lm-color: #455a64; }
+.lm-university { --lm-color: #795548; }
+.lm-sight { --lm-color: #8e24aa; }

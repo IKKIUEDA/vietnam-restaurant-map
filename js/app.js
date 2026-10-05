@@ -9,11 +9,17 @@ const map = L.map("map").setView([36.0, 137.0], 5);
 //    からのアクセスを拒否し、CARTO は無料だと「API KEY REQUIRED」の透かしが入るため、
 //    どちらも使っていません。
 // 背景のタイル(地図の絵)を作る関数。一覧の地図と、詳細ページの地図で、同じものを使う
+//   ・国土地理院の「淡色地図」を使う(色が薄く、細かい文字や道路番号が少ないので、お店のピンや目印が見やすい)
+//   ・無料・APIキー不要。出典(国土地理院)の表示だけ必要
+//   ・淡色地図の画像はズーム18までしかないので、19 では 18 の画像を拡大して表示する(maxNativeZoom)
+//   ・目印(駅・モールなど)は、OpenStreetMap のデータで調べた位置なので、その出典も一緒に出す
 function createBaseLayer() {
-  return L.tileLayer("https://tile.openstreetmap.jp/styles/osm-bright-ja/{z}/{x}/{y}{r}.png", {
+  return L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
     maxZoom: 19,
+    maxNativeZoom: 18,
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+      '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener noreferrer">国土地理院</a>' +
+      ' | &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
   });
 }
 

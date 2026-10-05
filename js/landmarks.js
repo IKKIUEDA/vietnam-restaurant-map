@@ -10,12 +10,34 @@
 //       name : { ja, en }(ベトナム語の画面では、en の文字を出します)
 
 // 種類ごとの記号・優先順位・表示を始めるズーム(この数字以上で出る。大きいほど、拡大しないと出ない)
+//   icon : 丸いマークの中に描く、白い絵(SVG の線。Google マップのような、色つきの丸 + 白い絵)
+//   ※ 色は css/style.css の .lm-station など(種類ごと)で決めています
 const landmarkKinds = {
-  station: { icon: "🚉", priority: 1, minZoom: 11 },
-  mall: { icon: "🛍️", priority: 2, minZoom: 12 },
-  airport: { icon: "✈️", priority: 2, minZoom: 12 },
-  university: { icon: "🎓", priority: 3, minZoom: 13 },
-  sight: { icon: "📍", priority: 3, minZoom: 13 },
+  station: {
+    priority: 1,
+    minZoom: 11,
+    icon: "M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-7H6V6h5v4zm2 0V6h5v4h-5zm3.5 7c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z",
+  },
+  mall: {
+    priority: 2,
+    minZoom: 12,
+    icon: "M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 4c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2zm2-6c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm4 6c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2z",
+  },
+  airport: {
+    priority: 2,
+    minZoom: 12,
+    icon: "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z",
+  },
+  university: {
+    priority: 3,
+    minZoom: 13,
+    icon: "M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z",
+  },
+  sight: {
+    priority: 3,
+    minZoom: 13,
+    icon: "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",
+  },
 };
 
 const landmarks = [
@@ -90,7 +112,12 @@ map.getPane("landmarkPane").style.pointerEvents = "none"; // クリックは、�
 function landmarkLabel(lm) {
   const kind = landmarkKinds[lm.kind] || landmarkKinds.sight;
   const text = currentLang === "ja" ? lm.name.ja : lm.name.en || lm.name.ja;
-  return `<span class="landmark-label landmark-${lm.kind} landmark-p${kind.priority}">${kind.icon} ${esc(text)}</span>`;
+  // 色つきの丸いマーク(中に白い絵) + その右に名前。マークの中心が、実際の場所に来る
+  return (
+    `<span class="landmark-label lm-${lm.kind} landmark-p${kind.priority}">` +
+    `<span class="lm-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${kind.icon}"/></svg></span>` +
+    `<span class="lm-text">${esc(text)}</span></span>`
+  );
 }
 function landmarkIcon(lm) {
   return L.divIcon({ className: "landmark-icon", html: landmarkLabel(lm), iconSize: null });
