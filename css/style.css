@@ -2427,7 +2427,7 @@ body.view-content-page #content {
   transform: translate(-50%, -50%);
   white-space: nowrap;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 13px;
   color: #1f2d3d;
   /* 白いふち取り(地図の上でも読みやすくする) */
   text-shadow:
@@ -2437,11 +2437,11 @@ body.view-content-page #content {
 }
 
 [data-landmark-size="medium"] .landmark-label {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 [data-landmark-size="large"] .landmark-label {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* 観光地・空港は、少しだけ色を変えて見分けやすくする */
