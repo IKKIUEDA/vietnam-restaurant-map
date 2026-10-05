@@ -2411,3 +2411,45 @@ body.view-content-page #content {
     height: 220px;
   }
 }
+
+
+/* ---------------------------------------------------------------------
+   地図の目印(js/landmarks.js): 大きな駅・大学・観光地・空港の名前
+   ・クリックできない文字だけの表示。地図を拡大するほど、文字が大きくなる(#map の data-landmark-size)
+   --------------------------------------------------------------------- */
+.landmark-icon {
+  width: 0;
+  height: 0;
+}
+
+.landmark-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-weight: bold;
+  font-size: 12px;
+  color: #1f2d3d;
+  /* 白いふち取り(地図の上でも読みやすくする) */
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
+    0 0 4px #fff;
+  pointer-events: none;
+}
+
+[data-landmark-size="medium"] .landmark-label {
+  font-size: 14px;
+}
+
+[data-landmark-size="large"] .landmark-label {
+  font-size: 16px;
+}
+
+/* 観光地・空港は、少しだけ色を変えて見分けやすくする */
+.landmark-sight,
+.landmark-airport {
+  color: #8a3b12;
+}
+
+.landmark-university {
+  color: #1d3f8a;
+}
