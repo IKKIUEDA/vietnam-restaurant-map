@@ -2434,6 +2434,7 @@ body.view-content-page #content {
     -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
     0 0 4px #fff;
   pointer-events: none;
+  visibility: hidden; /* 最初は隠しておき、重なりを判定してから出す(js/landmarks.js の declutterLandmarks) */
 }
 
 /* 文字の大きさ(優先順位 × ズーム) */
