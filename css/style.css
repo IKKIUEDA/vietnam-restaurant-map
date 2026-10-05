@@ -2432,7 +2432,7 @@ body.view-content-page #content {
   /* マークの中心を、実際の場所に合わせる */
   transform: translate(calc(var(--lm-size) / -2), calc(var(--lm-size) / -2));
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* マークは上にそろえる(英語・路線の行が増えても、マークの位置が動かないように) */
   gap: 4px;
   white-space: nowrap;
   font-size: 12px;
@@ -2464,6 +2464,11 @@ body.view-content-page #content {
 }
 
 .lm-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: var(--lm-size);
+  justify-content: center;
   /* 白いふち取り(地図の上でも読みやすくする) */
   text-shadow:
     -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
@@ -2480,11 +2485,42 @@ body.view-content-page #content {
 [data-landmark-size="large"] .landmark-p2 { --lm-size: 24px; font-size: 15px; }
 [data-landmark-size="large"] .landmark-p3 { --lm-size: 22px; font-size: 14px; }
 
+/* 日本語の画面で、名前の上に出す英語(小さめ) */
+.lm-en {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+/* 駅に乗り入れている鉄道会社の札(文字だけ。引いた地図では出さない) */
+.lm-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 2px;
+  max-width: 220px;
+  text-shadow: none;
+}
+.lm-line {
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 15px;
+  color: #3c4043;
+  background: #fff;
+  border: 1px solid #9aa0a6;
+  border-radius: 3px;
+}
+[data-landmark-size="small"] .lm-lines { display: none; }
+
 /* 敷地が大きく見えるときの、敷地の真ん中に出す大きな名前(文字の大きさ・幅は js/landmarks.js が決める)
    サンプルの地図のように、色は少し落ち着かせて、白いふちで地図の上でも読めるようにする */
 .landmark-big {
   transform: translate(-50%, -50%);
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   white-space: normal;
   text-align: center;
   line-height: 1.15;
@@ -2512,3 +2548,45 @@ body.view-content-page #content {
 .leaflet-tile-pane {
   filter: contrast(0.7) brightness(1.12) saturate(0.9);
 }
+
+/* ---------------------------------------------------------------------
+   区・市の名前(js/place-names.js)
+   ・地図の画像の小さな地名の上に、大きめ・太めの文字で重ねて出す
+   ・ズームごとの大きさは、#map の data-place-zoom で決める(東京23区は、市より少し大きく)
+   --------------------------------------------------------------------- */
+.place-name-icon {
+  width: 0;
+  height: 0;
+}
+.place-name {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.1;
+  color: #4a5562;
+  opacity: 0.9;
+  pointer-events: none;
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
+    0 0 4px #fff;
+}
+.place-en {
+  font-size: 0.55em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+[data-place-zoom="10"] .place-name { font-size: 14px; }
+[data-place-zoom="11"] .place-name { font-size: 16px; }
+[data-place-zoom="11"] .place-ward { font-size: 17px; }
+[data-place-zoom="12"] .place-name { font-size: 19px; }
+[data-place-zoom="12"] .place-ward { font-size: 21px; }
+[data-place-zoom="13"] .place-name { font-size: 22px; }
+[data-place-zoom="13"] .place-ward { font-size: 25px; }
+[data-place-zoom="14"] .place-name { font-size: 24px; }
+[data-place-zoom="14"] .place-ward { font-size: 28px; }
+[data-place-zoom="15"] .place-ward { font-size: 28px; }
