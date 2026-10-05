@@ -3,7 +3,8 @@
 //   ・優先順位(下の landmarkKinds の priority)の順に、地図を引いた状態から出ます。
 //       1 駅 → 2 大型ショッピングモール・空港 → 3 大学・観光地 の順。数字が小さいほど、文字も大きい
 //   ・文字が、お店のピンや、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
-//   ・モール・大学・観光地・空港は、敷地の範囲を、うすい色と線で囲んで表示します(js/landmark-areas.js)
+//   ・モール・大学・観光地・空港は、拡大して敷地が大きく見えるようになると、
+//     マークの代わりに、敷地の真ん中に大きな名前を出します(敷地の範囲は js/landmark-areas.js。範囲そのものは描きません)
 //   ・位置(緯度・経度)は、OpenStreetMap のデータ(Nominatim の検索)か、国土地理院の住所検索で調べた値です。
 //     ※ 横浜中華街・みなとみらい・川越・空港は、おおよその位置です(コメントに「※」)
 //   ・目印を増やしたいときは、下の landmarks に1行足すだけでOKです
@@ -105,70 +106,120 @@ const landmarks = [
 
 const LANDMARK_MIN_ZOOM = 11; // このズームより引いた地図(関東全体など)では、目印を1つも出さない
 
-// 種類ごとの色(css/style.css の .lm-station などと同じ色にする)
-const landmarkColors = {
-  station: "#1a73e8",
-  mall: "#c2185b",
-  airport: "#455a64",
-  university: "#795548",
-  sight: "#8e24aa",
-};
-
-// 敷地の範囲(うすく色をぬった四角形など)は、目印の名前より下に置く
-map.createPane("landmarkAreaPane");
-map.getPane("landmarkAreaPane").style.zIndex = 420; // 地図の絵(200)より上、目印の名前(450)より下
-map.getPane("landmarkAreaPane").style.pointerEvents = "none";
-
 // 目印は、お店のピンより下・地図の絵より上の、専用の重なり(pane)に置く
 map.createPane("landmarkPane");
 map.getPane("landmarkPane").style.zIndex = 450; // 地図の絵(200)より上、お店のピン(600)より下
 map.getPane("landmarkPane").style.pointerEvents = "none"; // クリックは、下の地図にそのまま通す
 
+// 敷地が画面上でこの大きさ(px。短いほうの辺)以上に見えたら、名前を敷地の真ん中に大きく出す
+const BIG_NAME_MIN_PX = 110;
+
+function landmarkText(lm) {
+  return currentLang === "ja" ? lm.name.ja : lm.name.en || lm.name.ja;
+}
+
+// ふだんの表示: 色つきの丸いマーク(中に白い絵) + その右に名前。マークの中心が、実際の場所に来る
 function landmarkLabel(lm) {
   const kind = landmarkKinds[lm.kind] || landmarkKinds.sight;
-  const text = currentLang === "ja" ? lm.name.ja : lm.name.en || lm.name.ja;
-  // 色つきの丸いマーク(中に白い絵) + その右に名前。マークの中心が、実際の場所に来る
   return (
     `<span class="landmark-label lm-${lm.kind} landmark-p${kind.priority}">` +
     `<span class="lm-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${kind.icon}"/></svg></span>` +
-    `<span class="lm-text">${esc(text)}</span></span>`
+    `<span class="lm-text">${esc(landmarkText(lm))}</span></span>`
   );
 }
 function landmarkIcon(lm) {
   return L.divIcon({ className: "landmark-icon", html: landmarkLabel(lm), iconSize: null });
 }
 
+// 敷地が大きく見えるときの表示: 敷地の真ん中に、大きな名前だけ(サイズは敷地の大きさで決める)
+function landmarkBigIcon(lm, fontSize, maxWidth) {
+  return L.divIcon({
+    className: "landmark-icon",
+    iconSize: null,
+    html:
+      `<span class="landmark-label landmark-big lm-${lm.kind}" style="font-size:${fontSize}px;max-width:${maxWidth}px">` +
+      `${esc(landmarkText(lm))}</span>`,
+  });
+}
+
+// 敷地の範囲(js/landmark-areas.js)から、真ん中の点を求める
+//   ・形の重心を使う。重心が敷地の外に出てしまう形(L字など)のときは、目印の元の位置を使う
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [yi, xi] = ring[i];
+    const [yj, xj] = ring[j];
+    if (yi > pt[0] !== yj > pt[0] && pt[1] < ((xj - xi) * (pt[0] - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function ringCenter(ring, fallback) {
+  let a = 0;
+  let cy = 0;
+  let cx = 0;
+  for (let i = 0; i < ring.length - 1; i++) {
+    const f = ring[i][1] * ring[i + 1][0] - ring[i + 1][1] * ring[i][0];
+    a += f;
+    cx += (ring[i][1] + ring[i + 1][1]) * f;
+    cy += (ring[i][0] + ring[i + 1][0]) * f;
+  }
+  if (a === 0) return fallback;
+  const c = [cy / (3 * a), cx / (3 * a)];
+  return pointInRing(c, ring) ? c : fallback;
+}
+
 // 優先順位の高い順(同じ順位なら、上の一覧の順)に並べておく。重なったときは、先に置いたほうを残す
 const landmarkEntries = landmarks
-  .map((lm, i) => ({
-    lm,
-    order: i,
-    kind: landmarkKinds[lm.kind] || landmarkKinds.sight,
-    marker: L.marker([lm.lat, lm.lng], {
-      pane: "landmarkPane",
-      interactive: false, // クリックしても、何も開かない
-      keyboard: false,
-      icon: landmarkIcon(lm),
-    }),
-  }))
+  .map((lm, i) => {
+    const area = typeof landmarkAreas !== "undefined" ? landmarkAreas[lm.name.ja] : null;
+    return {
+      lm,
+      order: i,
+      kind: landmarkKinds[lm.kind] || landmarkKinds.sight,
+      bounds: area ? L.latLngBounds(area) : null, // 敷地の範囲(画面には描かない。大きさを測るためだけに使う)
+      center: area ? ringCenter(area, [lm.lat, lm.lng]) : null,
+      mode: "badge", // いまの表示("badge" = マーク+名前 / "big:文字の大きさ" = 敷地の真ん中に大きな名前)
+      marker: L.marker([lm.lat, lm.lng], {
+        pane: "landmarkPane",
+        interactive: false, // クリックしても、何も開かない
+        keyboard: false,
+        icon: landmarkIcon(lm),
+      }),
+    };
+  })
   .sort((a, b) => a.kind.priority - b.kind.priority || a.order - b.order);
 const landmarkLayer = L.layerGroup(landmarkEntries.map((e) => e.marker));
 
-// 敷地の範囲(js/landmark-areas.js にあるものだけ)。うすく色をぬって、ふちを線で囲む
-landmarkEntries.forEach((e) => {
-  const area = typeof landmarkAreas !== "undefined" ? landmarkAreas[e.lm.name.ja] : null;
-  if (!area) return;
-  const color = landmarkColors[e.lm.kind] || landmarkColors.sight;
-  e.area = L.polygon(area, {
-    pane: "landmarkAreaPane",
-    interactive: false, // クリックしても、何も開かない
-    color,
-    weight: 1.5,
-    opacity: 0.7,
-    fillColor: color,
-    fillOpacity: 0.12,
-  });
-});
+// その目印を、いまのズームでどちらの表示にするか決めて、必要なら切り替える
+//   戻り値: 大きな名前の表示なら true
+function updateLandmarkMode(e) {
+  let mode = "badge";
+  let fontSize = 0;
+  let maxWidth = 0;
+  if (e.bounds) {
+    const nw = map.latLngToContainerPoint(e.bounds.getNorthWest());
+    const se = map.latLngToContainerPoint(e.bounds.getSouthEast());
+    const w = Math.abs(se.x - nw.x);
+    const h = Math.abs(se.y - nw.y);
+    if (Math.min(w, h) >= BIG_NAME_MIN_PX) {
+      // 敷地が大きく見えるほど、文字も大きく(14〜34px)。2px きざみにして、切り替えすぎないようにする
+      fontSize = Math.round(Math.min(34, Math.max(14, Math.sqrt(w * h) / 9)) / 2) * 2;
+      maxWidth = Math.round(w * 0.85);
+      mode = `big:${fontSize}:${maxWidth}`;
+    }
+  }
+  if (mode !== e.mode) {
+    e.mode = mode;
+    if (mode === "badge") {
+      e.marker.setLatLng([e.lm.lat, e.lm.lng]);
+      e.marker.setIcon(landmarkIcon(e.lm));
+    } else {
+      e.marker.setLatLng(e.center);
+      e.marker.setIcon(landmarkBigIcon(e.lm, fontSize, maxWidth));
+    }
+  }
+  return mode !== "badge";
+}
 
 // 2つの四角形(画面上の位置)が重なっているか(少しすき間をあけて判定する)
 function rectsOverlap(a, b, gap = 3) {
@@ -178,13 +229,6 @@ function rectsOverlap(a, b, gap = 3) {
 // いまのズームで出す目印を決めて、重なるものを隠す
 function declutterLandmarks() {
   const z = map.getZoom();
-  // 敷地の範囲: その種類の目印を出すズームのときだけ出す
-  landmarkEntries.forEach((e) => {
-    if (!e.area) return;
-    const show = z >= Math.max(LANDMARK_MIN_ZOOM, e.kind.minZoom);
-    if (show && !map.hasLayer(e.area)) e.area.addTo(map);
-    if (!show && map.hasLayer(e.area)) map.removeLayer(e.area);
-  });
   if (z < LANDMARK_MIN_ZOOM) {
     if (map.hasLayer(landmarkLayer)) map.removeLayer(landmarkLayer);
     return;
@@ -192,17 +236,36 @@ function declutterLandmarks() {
   if (!map.hasLayer(landmarkLayer)) landmarkLayer.addTo(map);
   map.getContainer().dataset.landmarkSize = z >= 15 ? "large" : z >= 13 ? "medium" : "small";
 
-  // お店のピン・数字の丸は、目印より優先する(その場所には、目印の文字を出さない)
-  const taken = [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")].map((el) =>
-    el.getBoundingClientRect()
-  );
+  // 1) 表示のしかたを決める(敷地が大きく見えるものは、大きな名前にする)
+  const visible = landmarkEntries.filter((e) => z >= e.kind.minZoom);
   landmarkEntries.forEach((e) => {
+    if (z < e.kind.minZoom) {
+      const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
+      if (el) el.style.visibility = "hidden";
+    }
+  });
+  const big = [];
+  const small = [];
+  visible.forEach((e) => (updateLandmarkMode(e) ? big : small).push(e));
+
+  // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。大きな名前どうしは重ならないようにする)
+  const bigTaken = [];
+  big.forEach((e) => {
     const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
     if (!el) return;
-    if (z < e.kind.minZoom) {
-      el.style.visibility = "hidden";
-      return;
-    }
+    el.style.visibility = "visible";
+    const r = el.getBoundingClientRect();
+    if (bigTaken.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
+    else bigTaken.push(r);
+  });
+
+  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前と重ならないところだけに出す
+  const taken = [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")]
+    .map((el) => el.getBoundingClientRect())
+    .concat(bigTaken);
+  small.forEach((e) => {
+    const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
+    if (!el) return;
     el.style.visibility = "visible";
     const r = el.getBoundingClientRect();
     if (taken.some((t) => rectsOverlap(r, t))) {
@@ -225,6 +288,8 @@ declutterLandmarks();
 
 // 言語を切り替えたら、目印の文字も切り替える(文字の長さが変わるので、重なりも判定し直す)
 document.getElementById("lang-select").addEventListener("change", () => {
-  landmarkEntries.forEach((e) => e.marker.setIcon(landmarkIcon(e.lm)));
+  landmarkEntries.forEach((e) => {
+    e.mode = ""; // 次の判定で、必ず作り直す
+  });
   scheduleDeclutter();
 });

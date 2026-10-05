@@ -2480,6 +2480,21 @@ body.view-content-page #content {
 [data-landmark-size="large"] .landmark-p2 { --lm-size: 24px; font-size: 15px; }
 [data-landmark-size="large"] .landmark-p3 { --lm-size: 22px; font-size: 14px; }
 
+/* 敷地が大きく見えるときの、敷地の真ん中に出す大きな名前(文字の大きさ・幅は js/landmarks.js が決める)
+   サンプルの地図のように、色は少し落ち着かせて、白いふちで地図の上でも読めるようにする */
+.landmark-big {
+  transform: translate(-50%, -50%);
+  display: block;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.15;
+  width: max-content;
+  opacity: 0.85;
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
+    0 0 4px #fff;
+}
+
 /* 種類ごとの色(お店のピンの緑・オレンジと、見分けやすい色) */
 .lm-station { --lm-color: #1a73e8; }
 .lm-mall { --lm-color: #c2185b; }
