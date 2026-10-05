@@ -8,13 +8,81 @@ const map = L.map("map").setView([36.0, 137.0], 5);
 // ※ OpenStreetMap の公式サーバーは、index.html をダブルクリックで開いた状態(file://)
 //    からのアクセスを拒否し、CARTO は無料だと「API KEY REQUIRED」の透かしが入るため、
 //    どちらも使っていません。
-// 背景のタイル(地図の絵)を作る関数。一覧の地図と、詳細ページの地図で、同じものを使う
+// 背景の地図を作る関数。一覧の地図と、詳細ページの地図で、同じものを使う
+//   ・ふだんは、OSMFJ の「osm-bright-ja」を、画像ではなく「データ(ベクトルタイル)」で受け取り、MapLibre で描く。
+//     データで受け取ると、文字の大きさを自分で決められるので、大学・観光地・大きな公園など、
+//     重要度の高い場所の名前と、駅名を、大きく・濃く表示している(emphasizeMainLabels)。
+//   ・MapLibre を読み込めなかったとき・古い端末で使えないときは、これまでどおりの「画像」の地図にする。
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+
 function createBaseLayer() {
+  if (canUseVectorMap()) {
+    try {
+      const layer = L.maplibreGL({
+        style: "https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json",
+        attribution: MAP_ATTRIBUTION,
+        attributionControl: false, // 出典は、Leaflet の右下の表示に出す(上の attribution)
+      });
+      layer.on("add", () => {
+        const gl = layer.getMaplibreMap();
+        if (!gl) return;
+        if (gl.isStyleLoaded()) emphasizeMainLabels(gl);
+        else gl.once("load", () => emphasizeMainLabels(gl));
+      });
+      return layer;
+    } catch (e) {
+      // 失敗したときは、下の「画像」の地図にする
+    }
+  }
   return L.tileLayer("https://tile.openstreetmap.jp/styles/osm-bright-ja/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    attribution: MAP_ATTRIBUTION,
   });
+}
+
+// MapLibre(と、Leaflet 用のプラグイン)が読み込めていて、端末が WebGL(地図を描く機能)に対応しているか
+function canUseVectorMap() {
+  if (typeof L.maplibreGL !== "function" || typeof maplibregl === "undefined") return false;
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  } catch (e) {
+    return false;
+  }
+}
+
+// 重要度の高い場所(rank が小さいほど重要)と駅名を、大きく・濃く表示する
+//   ・rank は、OpenStreetMap のデータ(OpenMapTiles)に付いている「重要度」。Wikipedia の記事があるかなどで決まる
+//   ・文字の大きさは、地図を拡大するほど大きくなる(interpolate: ズーム14 → 18 の間で、なめらかに変わる)
+//   ・大きさを変えたいときは、下の数字(文字の大きさ px)を直す
+function emphasizeMainLabels(gl) {
+  const set = (fn) => {
+    try {
+      fn();
+    } catch (e) {
+      // 地図のデザインが変わって、そのレイヤーが無くなっていても、地図は壊さない
+    }
+  };
+  const darkText = (id) => {
+    set(() => gl.setPaintProperty(id, "text-color", "#333"));
+    set(() => gl.setPaintProperty(id, "text-halo-width", 1.5));
+  };
+
+  // いちばん重要な場所(rank 1〜14): ふだんより早く(ズーム13から)出して、重要度が特に高いもの(rank 6 まで)は、より大きく
+  set(() => gl.setLayerZoomRange("poi-level-1", 13, 24));
+  set(() =>
+    gl.setLayoutProperty("poi-level-1", "text-size", [
+      "interpolate", ["linear"], ["zoom"],
+      13, ["case", ["<=", ["get", "rank"], 6], 14, 12],
+      18, ["case", ["<=", ["get", "rank"], 6], 20, 16],
+    ])
+  );
+  darkText("poi-level-1");
+
+  // 駅名: 少し大きく、濃く
+  set(() => gl.setLayoutProperty("poi-railway", "text-size", ["interpolate", ["linear"], ["zoom"], 13, 13, 18, 17]));
+  darkText("poi-railway");
 }
 
 createBaseLayer().addTo(map);
