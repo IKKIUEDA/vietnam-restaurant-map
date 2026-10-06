@@ -72,6 +72,41 @@ function stationLabelField() {
     : ["format", en, {}];
 }
 
+// 周りのお店・施設の種類分け(地図のデータの class で分ける)
+const POI_FOOD = ["restaurant", "fast_food", "cafe", "bar", "beer", "ice_cream", "bakery", "food_court", "pub"];
+const POI_SHOP = ["shop", "grocery", "supermarket", "convenience", "clothing_store", "department_store", "mall", "alcohol_shop", "books", "hardware", "furniture", "jewelry", "shoes", "mobile_phone", "electronics", "florist", "gift", "cosmetics", "chemist", "pharmacy"];
+const POI_COLORS = { food: "#e8710a", shop: "#1a73e8", other: "#70757a" };
+function poiIconExpression() {
+  return ["match", ["get", "class"], POI_FOOD, "app-poi-food", POI_SHOP, "app-poi-shop", "app-poi-other"];
+}
+function poiColorExpression() {
+  return ["match", ["get", "class"], POI_FOOD, "#b35400", POI_SHOP, "#1558b0", "#5f6368"];
+}
+// 周りのお店・施設のマーク(白いふちの、色つきの小さな丸)
+function addPoiIcons(gl) {
+  Object.entries(POI_COLORS).forEach(([key, color]) => {
+    const name = `app-poi-${key}`;
+    if (gl.hasImage(name)) return;
+    try {
+      const size = 28;
+      const c = document.createElement("canvas");
+      c.width = size;
+      c.height = size;
+      const ctx = c.getContext("2d");
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+      gl.addImage(name, ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
+    } catch (e) {
+      // マークを描けなかったときは、文字だけで出す
+    }
+  });
+}
+
 // 駅のマーク(色つきの丸に、白い電車の絵)を、地図に登録する
 //   ・電車の絵は、目印(js/landmarks.js)の駅と同じ、一般的な電車の形。鉄道会社のロゴではありません
 function addStationIcons(gl) {
@@ -169,6 +204,7 @@ function addAppStations(gl) {
     .catch(() => {
       // 駅のデータを読み込めなかったときは、地図のデータの駅を出す(引いた地図では一部だけになる)
       try {
+        gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["has", "name"]]);
         gl.setLayoutProperty("poi_label", "visibility", "visible");
       } catch (e) {
         // 何もしない
@@ -200,9 +236,34 @@ function customizeBaseMap(gl) {
   set(() => gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["==", "class", "railway"]]));
   // ③' 駅: 地図のデータの駅は、引いた地図では一部しか入っていないので使わず(非表示)、
   //    全国の駅のデータ(data/stations-jp.json、約8,700駅)から、このアプリで駅のマークと名前を描く(addAppStations)
-  set(() => gl.setLayoutProperty("poi_label", "visibility", "none"));
   addStationIcons(gl);
   addAppStations(gl);
+  // ③'' 周りのお店・施設(飲食店・コンビニ・スーパー・病院など): 大きく拡大したとき(一覧の地図のズーム16以上)だけ出す
+  //    ・地図のデータの「施設」(poi_label)を使う。駅は、上の全国の駅のデータで描くので、ここでは出さない
+  //    ・種類ごとに色を分けた小さな丸のマーク(飲食はオレンジ、買い物は青、そのほかは灰色)
+  addPoiIcons(gl);
+  //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
+  set(() =>
+    gl.setFilter("poi_label", [
+      "all",
+      ["==", "$type", "Point"],
+      ["has", "name"],
+      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "toilets", "entrance", "information", "aerialway"],
+    ])
+  );
+  set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
+  set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
+  set(() => gl.setLayoutProperty("poi_label", "icon-size", 0.75));
+  set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
+  set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
+  set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.8, 0]));
+  set(() => gl.setLayoutProperty("poi_label", "text-size", ["interpolate", ["linear"], ["zoom"], 15, 11, 18, 13]));
+  set(() => gl.setLayoutProperty("poi_label", "text-optional", false));
+  set(() => gl.setLayoutProperty("poi_label", "symbol-sort-key", ["get", "rank"])); // 有名な施設ほど、先に場所を取る
+  set(() => gl.setPaintProperty("poi_label", "text-color", poiColorExpression()));
+  set(() => gl.setPaintProperty("poi_label", "text-halo-color", "#ffffff"));
+  set(() => gl.setPaintProperty("poi_label", "text-halo-width", 1.2));
+  set(() => gl.setLayoutProperty("poi_label", "visibility", "visible"));
   // ④ 道路の名前は、少し薄く(お店のピンや目印を目立たせる)
   set(() => gl.setPaintProperty("road_major_label", "text-color", "#8a8f96"));
 }
