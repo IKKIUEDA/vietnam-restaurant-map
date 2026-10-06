@@ -64,11 +64,11 @@ function cityLabelField() {
     : ["format", en, {}];
 }
 
-// 駅の名前の書き方(日本語の画面: 英語(小さく)の下に日本語 / それ以外: 英語だけ)
+// 駅の名前の書き方(日本語の画面: 英語(小さく)の下に「〇〇駅」 / それ以外: 英語だけ)
 function stationLabelField() {
   const en = ["case", ["!=", ["get", "en"], ""], ["get", "en"], ["get", "name"]];
   return currentLang === "ja"
-    ? ["format", en, { "font-scale": 0.75 }, "\n", {}, ["get", "name"], {}]
+    ? ["format", en, { "font-scale": 0.75 }, "\n", {}, ["concat", ["get", "name"], "駅"], {}] // 日本語は「〇〇駅」と書く(駅だと分かりやすいように)
     : ["format", en, {}];
 }
 
