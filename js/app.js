@@ -1,5 +1,7 @@
 // 1. 地図を作る(最初は日本全体が見える位置に表示)
-const map = L.map("map").setView([36.0, 137.0], 5);
+// ※ maxZoom(いちばん拡大できる段階)は、ここで決めておく。ピンをまとめる部品(markercluster)が、これが無いと動かないため
+//   (前は、地図の画像の設定(maxZoom: 19)から自動で決まっていたが、データから描く地図ではそれが無い)
+const map = L.map("map", { maxZoom: 19 }).setView([36.0, 137.0], 5);
 
 // 2. 背景の地図
 //   ・OpenStreetMap Japan(OSMFJ)の「MapTiler Basic(日本語)」を、画像ではなく「データ(ベクトルタイル)」で受け取り、

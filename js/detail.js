@@ -454,6 +454,7 @@ function bindDetailButtons() {
 
 function createDetailMap(shop) {
   detailMap = L.map("detail-map", {
+    maxZoom: 19, // いちばん拡大できる段階(js/app.js の一覧の地図と同じ)
     scrollWheelZoom: false, // 画面をスクロールしているときに、地図が拡大されてしまわないように
     dragging: !L.Browser.mobile, // スマホでは、地図の上で指を動かしても、画面がスクロールできるように
   }).setView([shop.lat, shop.lng], 16);
