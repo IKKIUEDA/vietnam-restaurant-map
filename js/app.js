@@ -24,7 +24,10 @@ function createBaseLayer() {
         attribution: MAP_ATTRIBUTION,
         attributionControl: false, // 出典は、Leaflet の右下の表示に出す(上の attribution)
       });
-      layer.on("add", () => {
+      layer.on("add", (event) => {
+        // 出典(OpenMapTiles・OpenStreetMap)を、地図の右下に出す(このプラグインは自動では出さないため)
+        const m = event.target._map;
+        if (m && m.attributionControl) m.attributionControl.addAttribution(MAP_ATTRIBUTION);
         const gl = layer.getMaplibreMap();
         if (!gl) return;
         if (!vectorMaps.includes(gl)) vectorMaps.push(gl);
