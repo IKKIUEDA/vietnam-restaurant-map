@@ -350,8 +350,8 @@ function createShopIcon(shop) {
     className: isGrocery ? "shop-marker shop-marker-grocery" : "shop-marker",
     html: `<span class="shop-pin"><span class="shop-pin-icon">${isGrocery ? "🛒" : "🍽️"}</span></span>`,
     iconSize: [36, 44],
-    iconAnchor: [18, 43], // ピンの先が、実際の場所に来るようにする
-    popupAnchor: [0, -40], // ポップアップは、ピンの上に開く
+    iconAnchor: [18, 38], // ピンの先が、実際の場所に来るようにする
+    popupAnchor: [0, -36], // ポップアップは、ピンの上に開く
   });
 }
 
