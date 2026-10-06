@@ -66,7 +66,7 @@ function cityLabelField() {
 
 // 駅の名前の書き方(日本語の画面: 英語(小さく)の下に日本語 / それ以外: 英語だけ)
 function stationLabelField() {
-  const en = ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]];
+  const en = ["case", ["!=", ["get", "en"], ""], ["get", "en"], ["get", "name"]];
   return currentLang === "ja"
     ? ["format", en, { "font-scale": 0.75 }, "\n", {}, ["get", "name"], {}]
     : ["format", en, {}];
@@ -106,6 +106,76 @@ function addStationIcons(gl) {
   }
 }
 
+// 全国の駅のデータ(data/stations-jp.json)。1回だけ読み込んで、一覧の地図と詳細ページの地図で使い回す
+//   形: { ops: [{ ja, en }, ...](鉄道会社), st: [[緯度, 経度, 駅名, 英語名, 地下鉄なら1, 鉄道会社の番号...], ...] }
+//   ・OpenStreetMap の駅(railway=station / halt)から作ったデータです(© OpenStreetMap contributors)
+let appStationsPromise = null;
+function loadAppStations() {
+  if (!appStationsPromise) {
+    appStationsPromise = fetch("data/stations-jp.json?v=20261006i")
+      .then((r) => r.json())
+      .then((d) => {
+        window.appStationOps = d.ops; // 鉄道会社の名前(js/station-lines.js の札で使う)
+        return {
+          type: "FeatureCollection",
+          features: d.st.map((s) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [s[1], s[0]] },
+            properties: {
+              name: s[2],
+              en: s[3] || "",
+              subway: s[4] === 1,
+              ops: s.slice(5).join(","), // 鉄道会社の番号(カンマ区切り)
+              rank: -s.slice(5).length, // 乗り入れる会社が多い駅ほど、先に場所を取る(重なったときに残る)
+            },
+          })),
+        };
+      });
+  }
+  return appStationsPromise;
+}
+
+// 駅のマークと名前を、地図に描く
+function addAppStations(gl) {
+  loadAppStations()
+    .then((geojson) => {
+      if (gl.getSource("app-stations")) return;
+      gl.addSource("app-stations", { type: "geojson", data: geojson });
+      gl.addLayer({
+        id: "app-stations",
+        type: "symbol",
+        source: "app-stations",
+        minzoom: 11, // 一覧の地図のズーム12くらいから(この地図の数字は、Leaflet より1小さい)
+        layout: {
+          "symbol-sort-key": ["get", "rank"],
+          "icon-image": ["case", ["get", "subway"], "app-subway", "app-train"],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.65, 15, 0.9],
+          "text-field": stationLabelField(),
+          "text-font": ["migu1c-bold"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 11, 11, 13, 13, 15, 15],
+          "text-anchor": "left",
+          "text-justify": "left",
+          "text-offset": [0.9, 0],
+          "text-optional": false, // 駅名が出せないところは、マークも出さない
+          "text-padding": 4,
+        },
+        paint: {
+          "text-color": ["case", ["get", "subway"], "#2f3e8f", "#1a5fc8"],
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
+    })
+    .catch(() => {
+      // 駅のデータを読み込めなかったときは、地図のデータの駅を出す(引いた地図では一部だけになる)
+      try {
+        gl.setLayoutProperty("poi_label", "visibility", "visible");
+      } catch (e) {
+        // 何もしない
+      }
+    });
+}
+
 // 背景の地図の見た目を、このアプリ向けに変える(地図のデザインが変わってレイヤーが無くなっても、壊れないようにする)
 function customizeBaseMap(gl) {
   const set = (fn) => {
@@ -128,23 +198,11 @@ function customizeBaseMap(gl) {
   // ③ 番地と、お店・施設の名前を消す(駅の名前だけ残す)
   set(() => gl.setLayoutProperty("housenumber", "visibility", "none"));
   set(() => gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["==", "class", "railway"]]));
-  // ③' 駅: 全国のすべての駅を、電車マーク付きで表示する(地図のデータに駅が入っている ズーム14 くらいから出る)
-  //    ・地図のデータに入っている駅をそのまま使うので、日本中どこでも出る
-  //    ・地下鉄の駅(subclass が subway)は紺色、それ以外の駅は青色のマーク(どちらも、このアプリで描いた一般的な電車の絵。各社のロゴではありません)
+  // ③' 駅: 地図のデータの駅は、引いた地図では一部しか入っていないので使わず(非表示)、
+  //    全国の駅のデータ(data/stations-jp.json、約8,700駅)から、このアプリで駅のマークと名前を描く(addAppStations)
+  set(() => gl.setLayoutProperty("poi_label", "visibility", "none"));
   addStationIcons(gl);
-  set(() => gl.setLayerZoomRange("poi_label", 12, 24));
-  set(() => gl.setLayoutProperty("poi_label", "icon-image", ["match", ["get", "subclass"], "subway", "app-subway", "app-train"]));
-  set(() => gl.setLayoutProperty("poi_label", "icon-size", ["interpolate", ["linear"], ["zoom"], 12, 0.7, 15, 0.9]));
-  set(() => gl.setLayoutProperty("poi_label", "text-field", stationLabelField()));
-  set(() => gl.setLayoutProperty("poi_label", "text-font", ["migu1c-bold"]));
-  set(() => gl.setLayoutProperty("poi_label", "text-size", ["interpolate", ["linear"], ["zoom"], 12, 11, 14, 13, 16, 15]));
-  set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
-  set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.9, 0]));
-  set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
-  set(() => gl.setLayoutProperty("poi_label", "text-optional", false)); // 駅名が出せないところは、マークも出さない(名前のないマークが並ばないように)
-  set(() => gl.setPaintProperty("poi_label", "text-color", ["match", ["get", "subclass"], "subway", "#2f3e8f", "#1a5fc8"]));
-  set(() => gl.setPaintProperty("poi_label", "text-halo-color", "#ffffff"));
-  set(() => gl.setPaintProperty("poi_label", "text-halo-width", 1.5));
+  addAppStations(gl);
   // ④ 道路の名前は、少し薄く(お店のピンや目印を目立たせる)
   set(() => gl.setPaintProperty("road_major_label", "text-color", "#8a8f96"));
 }
@@ -156,7 +214,7 @@ document.getElementById("lang-select").addEventListener("change", () => {
     vectorMaps.forEach((gl) => {
       try {
         gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
-        gl.setLayoutProperty("poi_label", "text-field", stationLabelField());
+        if (gl.getLayer("app-stations")) gl.setLayoutProperty("app-stations", "text-field", stationLabelField());
       } catch (e) {
         // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
       }
