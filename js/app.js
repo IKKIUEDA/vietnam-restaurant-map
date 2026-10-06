@@ -80,14 +80,14 @@ const POI_CATEGORIES = [
   { key: "beauty", emoji: "💇", color: "#c2185b", subclass: ["hairdresser", "beauty", "massage", "nail_salon", "nails", "barber"] },
   { key: "cafe", emoji: "☕", color: "#8d5524", class: ["cafe", "ice_cream"], subclass: ["bakery", "confectionery", "pastry", "tea", "coffee"] },
   { key: "food", emoji: "🍜", color: "#e8710a", class: ["restaurant", "fast_food", "bar", "beer", "pub", "food_court"] },
-  { key: "grocery", emoji: "🛒", color: "#2e7d32", class: ["grocery"], subclass: ["supermarket", "convenience", "greengrocer", "butcher", "seafood"] },
+  { key: "grocery", emoji: "🛒", color: "#2e7d32", class: ["grocery"], subclass: ["supermarket", "convenience", "greengrocer", "butcher", "seafood"], exclude: ["department_store"] },
   { key: "hospital", emoji: "🏥", color: "#d32f2f", class: ["hospital"], subclass: ["hospital", "clinic", "doctors", "dentist"] },
   { key: "school", emoji: "🏫", color: "#f57f17", class: ["school", "college"], subclass: ["school", "university", "college", "kindergarten"] },
   { key: "library", emoji: "📚", color: "#6a1b9a", class: ["library"], subclass: ["library"] },
   { key: "bank", emoji: "🏦", color: "#00897b", class: ["bank"], subclass: ["bank", "atm", "bureau_de_change"] },
   { key: "public", emoji: "🏢", color: "#3949ab", class: ["town_hall", "post", "police", "fire_station"], subclass: ["townhall", "post_office", "police", "fire_station", "courthouse", "community_centre"] },
 ];
-const POI_SHOP_CLASSES = ["shop", "clothing_store", "alcohol_shop", "department_store", "mall"];
+const POI_SHOP_CLASSES = ["shop", "clothing_store", "alcohol_shop", "department_store", "mall", "grocery"];
 
 // どのアイコンを使うか(上の POI_CATEGORIES の順に調べて、最初に当てはまったもの)
 function poiCategoryExpression(field) {
@@ -96,7 +96,10 @@ function poiCategoryExpression(field) {
     const conds = [];
     if (c.subclass) conds.push(["in", ["get", "subclass"], ["literal", c.subclass]]);
     if (c.class) conds.push(["in", ["get", "class"], ["literal", c.class]]);
-    expr.push(conds.length > 1 ? ["any", ...conds] : conds[0], field === "icon" ? `app-poi-${c.key}` : c.color);
+    let cond = conds.length > 1 ? ["any", ...conds] : conds[0];
+    // exclude: この subclass は、この種類に入れない(例: デパートは「食材・スーパー」ではなく、ふつうのお店)
+    if (c.exclude) cond = ["all", cond, ["!", ["in", ["get", "subclass"], ["literal", c.exclude]]]];
+    expr.push(cond, field === "icon" ? `app-poi-${c.key}` : c.color);
   });
   expr.push(["in", ["get", "class"], ["literal", POI_SHOP_CLASSES]], field === "icon" ? "app-poi-shop" : "#1558b0");
   expr.push(field === "icon" ? "app-poi-other" : "#5f6368");
@@ -297,7 +300,7 @@ function customizeBaseMap(gl) {
       "all",
       ["==", "$type", "Point"],
       ["has", "name"],
-      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "toilets", "entrance", "information", "aerialway"],
+      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "bicycle_rental", "toilets", "entrance", "information", "aerialway"],
     ])
   );
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
