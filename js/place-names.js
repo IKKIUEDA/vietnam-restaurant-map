@@ -1,7 +1,9 @@
 // 地図の上に、区・市の名前を大きく表示します(サンプルの地図のように、地域の名前を目立たせる)
 //   ・地図の画像にも小さく書かれていますが、その上に、大きめ・太めの文字で重ねて出します
 //   ・日本語の画面では「英語(小さく)の下に日本語」、English / Tiếng Việt の画面では英語だけを出します
-//   ・東京23区は ズーム 11〜15、そのほかの市は ズーム 10〜14 で表示します(それ以上拡大すると、細かい地図の邪魔になるため)
+//   ・東京23区は ズーム 12〜15、そのほかの市は ズーム 11〜14 で表示します(それ以上拡大すると、細かい地図の邪魔になるため)
+//   ・名前どうし、または お店のピン・駅などの目印と重なる名前は、出しません(拡大してすき間ができると出ます)
+//   ・日本語の名前の中心を、地図の画像に書かれている同じ地名の位置にぴったり重ねて、下の小さな地名が見えにくいようにしています
 //   ・位置と英語名は、OpenStreetMap のデータ(Overpass API)で調べた値です(© OpenStreetMap contributors)
 //   ・クリックはできません。お店のピンや、駅・モールなどの目印より下に出ます
 
@@ -67,7 +69,8 @@ const placeNames = [
 // ここから下は、表示のしくみ(ふだんは触らなくてOK)
 
 // 表示するズームの範囲(この範囲の外では出さない)
-const PLACE_ZOOM = { ward: [11, 15], city: [10, 14] };
+// (引いた地図では名前どうしが重なるので、少し拡大してから出す)
+const PLACE_ZOOM = { ward: [12, 15], city: [11, 14] };
 
 // 区・市の名前は、目印(450)より下・地図の絵(200)より上に置く
 map.createPane("placeNamePane");
@@ -100,6 +103,34 @@ function updatePlaceNames() {
 }
 map.on("zoomend", updatePlaceNames);
 updatePlaceNames();
+
+// 重なる名前を隠す(js/landmarks.js の declutterLandmarks から、最後に呼ばれる)
+//   taken: すでに使われている場所(お店のピン・目印の画面上の四角形)
+//   ・23区を先に、市をあとに置く。先に置いた名前と重なるものは隠す
+function declutterPlaces(taken) {
+  const used = taken.slice();
+  placeNameEntries
+    .filter((e) => map.hasLayer(e.marker))
+    .sort((a, b) => (a.p.kind === b.p.kind ? 0 : a.p.kind === "ward" ? -1 : 1))
+    .forEach((e) => {
+      const el = e.marker.getElement() && e.marker.getElement().querySelector(".place-name");
+      if (!el) return;
+      el.style.visibility = "visible";
+      // 英語の行(日本語の上に乗せている)も含めた、名前全体の四角形
+      const ja = el.getBoundingClientRect();
+      const enEl = el.querySelector(".place-en");
+      const en = enEl ? enEl.getBoundingClientRect() : ja;
+      const r = {
+        left: Math.min(ja.left, en.left),
+        right: Math.max(ja.right, en.right),
+        top: Math.min(ja.top, en.top),
+        bottom: Math.max(ja.bottom, en.bottom),
+      };
+      const hit = used.some((t) => r.left < t.right + 4 && t.left < r.right + 4 && r.top < t.bottom + 4 && t.top < r.bottom + 4);
+      if (hit) el.style.visibility = "hidden";
+      else used.push(r);
+    });
+}
 
 // 言語を切り替えたら、文字も切り替える
 document.getElementById("lang-select").addEventListener("change", () => {
