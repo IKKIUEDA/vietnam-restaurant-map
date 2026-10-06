@@ -242,7 +242,15 @@ function customizeBaseMap(gl) {
   //    ・地図のデータの「施設」(poi_label)を使う。駅は、上の全国の駅のデータで描くので、ここでは出さない
   //    ・種類ごとに色を分けた小さな丸のマーク(飲食はオレンジ、買い物は青、そのほかは灰色)
   addPoiIcons(gl);
-  set(() => gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["!=", "class", "railway"], ["has", "name"]]));
+  //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
+  set(() =>
+    gl.setFilter("poi_label", [
+      "all",
+      ["==", "$type", "Point"],
+      ["has", "name"],
+      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "toilets", "entrance", "information", "aerialway"],
+    ])
+  );
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
   set(() => gl.setLayoutProperty("poi_label", "icon-size", 0.75));
