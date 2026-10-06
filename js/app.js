@@ -91,14 +91,17 @@ function customizeBaseMap(gl) {
 }
 
 // 言語を切り替えたら、区・市の名前の書き方も変える
+//   (currentLang は、このあと別の処理で書き換わるので、少し待ってから反映する)
 document.getElementById("lang-select").addEventListener("change", () => {
-  vectorMaps.forEach((gl) => {
-    try {
-      gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
-    } catch (e) {
-      // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
-    }
-  });
+  setTimeout(() => {
+    vectorMaps.forEach((gl) => {
+      try {
+        gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
+      } catch (e) {
+        // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
+      }
+    });
+  }, 0);
 });
 
 createBaseLayer().addTo(map);
