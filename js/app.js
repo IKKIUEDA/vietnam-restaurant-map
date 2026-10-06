@@ -1,26 +1,108 @@
 // 1. 地図を作る(最初は日本全体が見える位置に表示)
-const map = L.map("map").setView([36.0, 137.0], 5);
+// ※ maxZoom(いちばん拡大できる段階)は、ここで決めておく。ピンをまとめる部品(markercluster)が、これが無いと動かないため
+//   (前は、地図の画像の設定(maxZoom: 19)から自動で決まっていたが、データから描く地図ではそれが無い)
+const map = L.map("map", { maxZoom: 19 }).setView([36.0, 137.0], 5);
 
-// 2. 地図の絵(タイル)を、OpenStreetMap Japan(OSMFJ)の「osm-bright-ja」から読み込む
-// ※ 道路は黄色、公園は緑、水辺は青と色分けされた、Google マップに近い見た目です。
-//    地名は日本語で、APIキーは不要です(出典の表示だけ必要です)。
-// ※ {r} は、Retina などの高精細な画面のときだけ「@2x」(高解像度の画像)に置き換わります。
-// ※ OpenStreetMap の公式サーバーは、index.html をダブルクリックで開いた状態(file://)
-//    からのアクセスを拒否し、CARTO は無料だと「API KEY REQUIRED」の透かしが入るため、
-//    どちらも使っていません。
-// 背景のタイル(地図の絵)を作る関数。一覧の地図と、詳細ページの地図で、同じものを使う
-//   ・OpenStreetMap Japan(OSMFJ)の「MapTiler Basic(日本語)」を使う
-//     (陸は薄いグレー、水辺は水色。細かいお店の名前が少なく、お店のピンや目印が見やすい)
+// 2. 背景の地図
+//   ・OpenStreetMap Japan(OSMFJ)の「MapTiler Basic(日本語)」を、画像ではなく「データ(ベクトルタイル)」で受け取り、
+//     MapLibre でブラウザの中に描く。データで受け取ると、文字の種類ごとに、出す・出さない・大きさを決められる
+//     (customizeBaseMap で、丁目・埋立地などの細かい地名や番地を消し、区・市の名前を大きく・英語つきにしている)
+//   ・MapLibre を読み込めなかったとき・古い端末で使えないときは、これまでどおりの「画像」の地図にする
 //   ・無料・APIキー不要。出典の表示だけ必要
-//   ・{r} は、Retina などの高精細な画面のときだけ「@2x」(高解像度の画像)に置き換わる
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a>' +
+  ' &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+
+const vectorMaps = []; // ベクトル地図(一覧の地図・詳細ページの地図)。言語を切り替えたときに、地名の書き方を変えるため
+
+// 背景の地図を作る関数。一覧の地図と、詳細ページの地図で、同じものを使う
 function createBaseLayer() {
+  if (canUseVectorMap()) {
+    try {
+      const layer = L.maplibreGL({
+        style: "https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json",
+        attribution: MAP_ATTRIBUTION,
+        attributionControl: false, // 出典は、Leaflet の右下の表示に出す(上の attribution)
+      });
+      layer.on("add", (event) => {
+        // 出典(OpenMapTiles・OpenStreetMap)を、地図の右下に出す(このプラグインは自動では出さないため)
+        const m = event.target._map;
+        if (m && m.attributionControl) m.attributionControl.addAttribution(MAP_ATTRIBUTION);
+        const gl = layer.getMaplibreMap();
+        if (!gl) return;
+        if (!vectorMaps.includes(gl)) vectorMaps.push(gl);
+        if (gl.isStyleLoaded()) customizeBaseMap(gl);
+        else gl.once("load", () => customizeBaseMap(gl));
+      });
+      return layer;
+    } catch (e) {
+      // うまく作れなかったときは、下の「画像」の地図にする
+    }
+  }
   return L.tileLayer("https://tile.openstreetmap.jp/styles/maptiler-basic-ja/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
-    attribution:
-      '&copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a>' +
-      ' &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    attribution: MAP_ATTRIBUTION,
   });
 }
+
+// MapLibre(と、Leaflet 用のプラグイン)が読み込めていて、端末が WebGL(地図を描く機能)に対応しているか
+function canUseVectorMap() {
+  if (typeof L.maplibreGL !== "function" || typeof maplibregl === "undefined") return false;
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  } catch (e) {
+    return false;
+  }
+}
+
+// 区・市の名前の書き方(日本語の画面: 英語(小さく)の下に日本語 / それ以外: 英語だけ)
+function cityLabelField() {
+  const en = ["coalesce", ["get", "name:en"], ["get", "name:latin"], ["get", "name"]];
+  return currentLang === "ja"
+    ? ["format", ["upcase", en], { "font-scale": 0.5 }, "\n", {}, ["get", "name"], {}]
+    : ["format", en, {}];
+}
+
+// 背景の地図の見た目を、このアプリ向けに変える(地図のデザインが変わってレイヤーが無くなっても、壊れないようにする)
+function customizeBaseMap(gl) {
+  const set = (fn) => {
+    try {
+      fn();
+    } catch (e) {
+      // そのレイヤーが無いときは、何もしない
+    }
+  };
+  // ① 丁目・埋立地・島などの細かい地名を消す(町・村などの名前だけ残す)
+  set(() => gl.setFilter("place_label_other", ["all", ["==", "$type", "Point"], ["in", "class", "town", "village", "suburb"]]));
+  // ② 区・市の名前を、大きく・太く(拡大するほど大きい)。「東京都」の文字は出さない
+  set(() => gl.setFilter("place_label_city", ["all", ["==", "$type", "Point"], ["==", "class", "city"], ["!=", "name", "東京都"]]));
+  set(() => gl.setLayoutProperty("place_label_city", "text-field", cityLabelField()));
+  set(() => gl.setLayoutProperty("place_label_city", "text-font", ["migu1c-bold"]));
+  set(() => gl.setLayoutProperty("place_label_city", "text-size", ["interpolate", ["linear"], ["zoom"], 9, 13, 11, 18, 13, 24, 15, 28]));
+  set(() => gl.setPaintProperty("place_label_city", "text-color", "#4a5562"));
+  set(() => gl.setPaintProperty("place_label_city", "text-halo-color", "#ffffff"));
+  set(() => gl.setPaintProperty("place_label_city", "text-halo-width", 2));
+  // ③ 番地と、お店・施設の名前を消す(駅の名前だけ残す)
+  set(() => gl.setLayoutProperty("housenumber", "visibility", "none"));
+  set(() => gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["==", "class", "railway"]]));
+  // ④ 道路の名前は、少し薄く(お店のピンや目印を目立たせる)
+  set(() => gl.setPaintProperty("road_major_label", "text-color", "#8a8f96"));
+}
+
+// 言語を切り替えたら、区・市の名前の書き方も変える
+//   (currentLang は、このあと別の処理で書き換わるので、少し待ってから反映する)
+document.getElementById("lang-select").addEventListener("change", () => {
+  setTimeout(() => {
+    vectorMaps.forEach((gl) => {
+      try {
+        gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
+      } catch (e) {
+        // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
+      }
+    });
+  }, 0);
+});
 
 createBaseLayer().addTo(map);
 
