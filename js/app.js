@@ -73,13 +73,19 @@ function stationLabelField() {
 }
 
 // 周りのお店・施設の種類分け(地図のデータの class / subclass で分ける)
-//   アイコン付きの4種類: 🍜 レストラン / ☕ カフェ / 🛒 食材・スーパー / 💇 美容・サロン
-//   それ以外のお店は青い小さな丸、そのほかの施設(銀行・病院など)は灰色の小さな丸
+//   アイコン付き: 🍜 レストラン / ☕ カフェ / 🛒 食材・スーパー / 💇 美容・サロン /
+//                🏥 病院 / 🏫 学校 / 📚 図書館 / 🏦 銀行・金融 / 🏢 行政・公共施設(市役所・郵便局・警察など)
+//   それ以外のお店は青い小さな丸、そのほかの施設は灰色の小さな丸
 const POI_CATEGORIES = [
   { key: "beauty", emoji: "💇", color: "#c2185b", subclass: ["hairdresser", "beauty", "massage", "nail_salon", "nails", "barber"] },
   { key: "cafe", emoji: "☕", color: "#8d5524", class: ["cafe", "ice_cream"], subclass: ["bakery", "confectionery", "pastry", "tea", "coffee"] },
   { key: "food", emoji: "🍜", color: "#e8710a", class: ["restaurant", "fast_food", "bar", "beer", "pub", "food_court"] },
   { key: "grocery", emoji: "🛒", color: "#2e7d32", class: ["grocery"], subclass: ["supermarket", "convenience", "greengrocer", "butcher", "seafood"] },
+  { key: "hospital", emoji: "🏥", color: "#d32f2f", class: ["hospital"], subclass: ["hospital", "clinic", "doctors", "dentist"] },
+  { key: "school", emoji: "🏫", color: "#f57f17", class: ["school", "college"], subclass: ["school", "university", "college", "kindergarten"] },
+  { key: "library", emoji: "📚", color: "#6a1b9a", class: ["library"], subclass: ["library"] },
+  { key: "bank", emoji: "🏦", color: "#00897b", class: ["bank"], subclass: ["bank", "atm", "bureau_de_change"] },
+  { key: "public", emoji: "🏢", color: "#3949ab", class: ["town_hall", "post", "police", "fire_station"], subclass: ["townhall", "post_office", "police", "fire_station", "courthouse", "community_centre"] },
 ];
 const POI_SHOP_CLASSES = ["shop", "clothing_store", "alcohol_shop", "department_store", "mall"];
 
@@ -104,7 +110,7 @@ function poiColorExpression() {
 }
 
 // 周りのお店・施設のマークを、地図に登録する
-//   ・4種類は「白い丸に、色のふち + 絵文字」。それ以外は、色つきの小さな丸
+//   ・アイコン付きの種類は「白い丸に、色のふち + 絵文字」。それ以外は、色つきの小さな丸
 function addPoiIcons(gl) {
   const draw = (name, size, paint) => {
     if (gl.hasImage(name)) return;
@@ -283,7 +289,7 @@ function customizeBaseMap(gl) {
   addAppStations(gl);
   // ③'' 周りのお店・施設(飲食店・コンビニ・スーパー・病院など): 大きく拡大したとき(一覧の地図のズーム16以上)だけ出す
   //    ・地図のデータの「施設」(poi_label)を使う。駅は、上の全国の駅のデータで描くので、ここでは出さない
-  //    ・種類ごとのアイコン(🍜 レストラン / ☕ カフェ / 🛒 食材・スーパー / 💇 美容・サロン)。それ以外は小さな丸
+  //    ・種類ごとのアイコン(🍜 ☕ 🛒 💇 🏥 🏫 📚 🏦 🏢。くわしくは POI_CATEGORIES)。それ以外は小さな丸
   addPoiIcons(gl);
   //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
   set(() =>
