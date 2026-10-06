@@ -2550,3 +2550,29 @@ body.view-content-page #content {
 .leaflet-tile-pane .leaflet-tile {
   filter: contrast(0.7) brightness(1.12) saturate(0.9);
 }
+
+/* ---------------------------------------------------------------------
+   駅の鉄道会社の札(js/station-lines.js)
+   ・駅名(背景の地図に描かれている)の、すぐ下に並べる。札そのものの見た目は .lm-line(目印の札と同じ)
+   --------------------------------------------------------------------- */
+.station-lines-icon {
+  width: 0;
+  height: 0;
+}
+.station-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* 駅のマークの右・駅名の下に来るようにずらす(日本語の画面は、英語と日本語の2行ぶん下げる) */
+  transform: translate(12px, 17px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: max-content;
+  max-width: 200px;
+  pointer-events: none;
+}
+[data-lang="en"] .station-lines,
+[data-lang="vi"] .station-lines {
+  transform: translate(12px, 10px);
+}
