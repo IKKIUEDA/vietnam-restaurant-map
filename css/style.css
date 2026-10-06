@@ -2560,11 +2560,12 @@ body.view-content-page #content {
 }
 .place-name {
   position: absolute;
+  /* 日本語の名前の中心を、実際の位置(= 地図の画像の地名と同じ位置)に合わせる。英語は、その上に乗せる */
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
+  text-align: center;
   white-space: nowrap;
+  visibility: hidden; /* 重なりを判定してから出す(js/place-names.js の declutterPlaces) */
   font-size: 16px;
   font-weight: bold;
   line-height: 1.1;
@@ -2576,9 +2577,21 @@ body.view-content-page #content {
     0 0 4px #fff;
 }
 .place-en {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
   font-size: 0.55em;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.place-ja {
+  display: block;
+  /* 白いふちを太めにして、下に書かれている地図の画像の小さな地名を隠す */
+  text-shadow:
+    -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff,
+    0 -2px 0 #fff, 0 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff,
+    0 0 6px #fff, 0 0 10px #fff;
 }
 [data-place-zoom="10"] .place-name { font-size: 14px; }
 [data-place-zoom="11"] .place-name { font-size: 16px; }

@@ -277,8 +277,11 @@ function rectsOverlap(a, b, gap = 3) {
 // いまのズームで出す目印を決めて、重なるものを隠す
 function declutterLandmarks() {
   const z = map.getZoom();
+  const pinRects = () =>
+    [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")].map((el) => el.getBoundingClientRect());
   if (z < LANDMARK_MIN_ZOOM) {
     if (map.hasLayer(landmarkLayer)) map.removeLayer(landmarkLayer);
+    if (typeof declutterPlaces === "function") declutterPlaces(pinRects()); // 区・市の名前の重なりも判定する
     return;
   }
   if (!map.hasLayer(landmarkLayer)) landmarkLayer.addTo(map);
@@ -322,6 +325,9 @@ function declutterLandmarks() {
       taken.push(r);
     }
   });
+
+  // 4) 最後に、区・市の名前を、お店のピン・目印と重ならないところだけに出す(js/place-names.js)
+  if (typeof declutterPlaces === "function") declutterPlaces(taken);
 }
 
 // 地図を動かしたり拡大したりしたあと、お店のピンのまとめ直し(アニメーション)が終わるのを待ってから判定する
