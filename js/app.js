@@ -128,7 +128,7 @@ function customizeBaseMap(gl) {
   // ③ 番地と、お店・施設の名前を消す(駅の名前だけ残す)
   set(() => gl.setLayoutProperty("housenumber", "visibility", "none"));
   set(() => gl.setFilter("poi_label", ["all", ["==", "$type", "Point"], ["==", "class", "railway"]]));
-  // ③' 駅: 全国のすべての駅を、少し引いた地図(ズーム12)から、電車マーク付きで表示する
+  // ③' 駅: 全国のすべての駅を、電車マーク付きで表示する(地図のデータに駅が入っている ズーム14 くらいから出る)
   //    ・地図のデータに入っている駅をそのまま使うので、日本中どこでも出る
   //    ・地下鉄の駅(subclass が subway)は紺色、それ以外の駅は青色のマーク(どちらも、このアプリで描いた一般的な電車の絵。各社のロゴではありません)
   addStationIcons(gl);
@@ -141,7 +141,7 @@ function customizeBaseMap(gl) {
   set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
   set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.9, 0]));
   set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
-  set(() => gl.setLayoutProperty("poi_label", "text-optional", true)); // 文字が重なるときは、マークだけ出す
+  set(() => gl.setLayoutProperty("poi_label", "text-optional", false)); // 駅名が出せないところは、マークも出さない(名前のないマークが並ばないように)
   set(() => gl.setPaintProperty("poi_label", "text-color", ["match", ["get", "subclass"], "subway", "#2f3e8f", "#1a5fc8"]));
   set(() => gl.setPaintProperty("poi_label", "text-halo-color", "#ffffff"));
   set(() => gl.setPaintProperty("poi_label", "text-halo-width", 1.5));

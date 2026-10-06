@@ -1520,7 +1520,8 @@ function updateStationLines() {
         }
       });
       if (!best || bestD > 800) return;
-      const key = `${name}|${lat.toFixed(4)}|${lng.toFixed(4)}`;
+      // 同じ駅に、地図のデータ上の点が いくつもあることがある(出入口・ホームごと など)。札は1つの駅に1つだけ
+      const key = `${best[2]}|${best[0]}|${best[1]}`;
       if (seen.has(key)) return;
       seen.add(key);
       if (!stationLineMarkers.has(key)) {
