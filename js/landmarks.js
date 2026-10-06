@@ -217,7 +217,11 @@ function ringCenter(ring, fallback) {
 }
 
 // 優先順位の高い順(同じ順位なら、上の一覧の順)に並べておく。重なったときは、先に置いたほうを残す
+//   ・データから描く地図(js/app.js)では、全国の駅が地図そのものに出るので、ここの駅(kind: "station")は使わない
+//     (同じ駅が二重に出ないように)。画像の地図になったとき(古い端末など)だけ、ここの駅を出す
+const useMapStations = typeof canUseVectorMap === "function" && canUseVectorMap();
 const landmarkEntries = landmarks
+  .filter((lm) => !(useMapStations && lm.kind === "station"))
   .map((lm, i) => {
     const area = typeof landmarkAreas !== "undefined" ? landmarkAreas[lm.name.ja] : null;
     return {
