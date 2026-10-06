@@ -708,7 +708,7 @@ header h1 {
   min-height: 360px;
 }
 
-/* お店のピン: 絵文字「🍽️」を、白地に緑の丸で囲む(まとめ表示の丸い数字アイコンとは、別の見た目) */
+/* お店のピン: しずく形。料理店は赤、食材店は青(まとめ表示の丸い数字アイコンとは、別の見た目) */
 .shop-marker {
   width: 36px;
   height: 44px;
@@ -746,6 +746,11 @@ header h1 {
   background: #ffffff;
   border-radius: 50%;
   transform: rotate(45deg);
+}
+
+/* 食材店のピンは青 */
+.shop-marker-grocery .shop-pin {
+  background: #1e63d6;
 }
 
 /* 現在地(または起点)の目印: 脈打つ青い点。お店のピン(🍽️の丸)とは、形も色も違う */
