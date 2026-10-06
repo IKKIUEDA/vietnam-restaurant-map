@@ -341,14 +341,17 @@ createBaseLayer().addTo(map);
 // 一覧の地図と、詳細ページの地図で、同じものを使う
 //   ・まとめ表示(クラスター)の丸い数字アイコンは、これとは別(.shop-cluster)で、変更していない
 //   ・現在地・起点の目印(.user-location の青い点)とも、別の見た目(形・色)にして、見分けられるようにしている
+// ※ 地図の周りの施設(🍜 などの白い丸)と見分けやすいよう、このアプリのお店は「赤い しずく形のピン」にしている
+//   ・ピンの先が、お店の場所(緯度・経度)を指す
+//   ・中の白い丸に、料理店は 🍽️、食材店は 🛒
 function createShopIcon(shop) {
   const isGrocery = shop && shop.type === "grocery";
   return L.divIcon({
     className: isGrocery ? "shop-marker shop-marker-grocery" : "shop-marker",
-    html: isGrocery ? "🛒" : "🍽️",
-    iconSize: [30, 30],
-    iconAnchor: [15, 15], // 丸の中心が、実際の場所(緯度・経度)に来るようにする
-    popupAnchor: [0, -18], // ポップアップは、丸の少し上に開く
+    html: `<span class="shop-pin"><span class="shop-pin-icon">${isGrocery ? "🛒" : "🍽️"}</span></span>`,
+    iconSize: [36, 44],
+    iconAnchor: [18, 43], // ピンの先が、実際の場所に来るようにする
+    popupAnchor: [0, -40], // ポップアップは、ピンの上に開く
   });
 }
 

@@ -710,23 +710,42 @@ header h1 {
 
 /* お店のピン: 絵文字「🍽️」を、白地に緑の丸で囲む(まとめ表示の丸い数字アイコンとは、別の見た目) */
 .shop-marker {
+  width: 36px;
+  height: 44px;
+  background: none;
+  border: none;
+}
+
+/* 赤い しずく形のピン(正方形の3つの角を丸めて、45度まわすと しずく形になる) */
+.shop-pin {
+  position: absolute;
+  left: 3px;
+  top: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   width: 30px;
   height: 30px;
-  font-size: 16px;
-  line-height: 1;
-  background: white;
-  border: 2px solid #2e7d32;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  background: #e53935;
+  border: 2px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: -1px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-/* 食材店(type: "grocery")のピンは、枠をオレンジにして、料理店と見分けやすくする */
-.shop-marker.shop-marker-grocery {
-  border-color: #ef6c00;
+/* ピンの中の白い丸と、料理店・食材店の絵文字(ピンと逆にまわして、まっすぐに戻す) */
+.shop-pin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 13px;
+  line-height: 1;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: rotate(45deg);
 }
 
 /* 現在地(または起点)の目印: 脈打つ青い点。お店のピン(🍽️の丸)とは、形も色も違う */
