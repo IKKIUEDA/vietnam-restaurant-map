@@ -305,7 +305,7 @@ function customizeBaseMap(gl) {
   );
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
-  set(() => gl.setLayoutProperty("poi_label", "icon-size", 0.85));
+  set(() => gl.setLayoutProperty("poi_label", "icon-size", 1));
   set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
   set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
   set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.8, 0]));
