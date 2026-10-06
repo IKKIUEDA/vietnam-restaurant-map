@@ -728,23 +728,21 @@ header h1 {
   width: 30px;
   height: 30px;
   background: #e53935;
-  border: 2px solid #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   box-shadow: -1px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-/* ピンの中の白い丸と、料理店・食材店の絵文字(ピンと逆にまわして、まっすぐに戻す) */
+/* ピンの中の料理店・食材店の絵文字(白い丸はなし。ピンと逆にまわして、まっすぐに戻す) */
 .shop-pin-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1;
-  background: #ffffff;
-  border-radius: 50%;
   transform: rotate(45deg);
 }
 
