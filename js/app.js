@@ -72,27 +72,82 @@ function stationLabelField() {
     : ["format", en, {}];
 }
 
-// 周りのお店・施設の種類分け(地図のデータの class で分ける)
-const POI_FOOD = ["restaurant", "fast_food", "cafe", "bar", "beer", "ice_cream", "bakery", "food_court", "pub"];
-const POI_SHOP = ["shop", "grocery", "supermarket", "convenience", "clothing_store", "department_store", "mall", "alcohol_shop", "books", "hardware", "furniture", "jewelry", "shoes", "mobile_phone", "electronics", "florist", "gift", "cosmetics", "chemist", "pharmacy"];
-const POI_COLORS = { food: "#e8710a", shop: "#1a73e8", other: "#70757a" };
+// 周りのお店・施設の種類分け(地図のデータの class / subclass で分ける)
+//   アイコン付き: 🍜 レストラン / ☕ カフェ / 🛒 食材・スーパー / 💇 美容・サロン /
+//                🏥 病院 / 🏫 学校 / 📚 図書館 / 🏦 銀行・金融 / 🏢 行政・公共施設(市役所・郵便局・警察など)
+//   それ以外のお店は青い小さな丸、そのほかの施設は灰色の小さな丸
+const POI_CATEGORIES = [
+  { key: "beauty", emoji: "💇", color: "#c2185b", subclass: ["hairdresser", "beauty", "massage", "nail_salon", "nails", "barber"] },
+  { key: "cafe", emoji: "☕", color: "#8d5524", class: ["cafe", "ice_cream"], subclass: ["bakery", "confectionery", "pastry", "tea", "coffee"] },
+  { key: "food", emoji: "🍜", color: "#e8710a", class: ["restaurant", "fast_food", "bar", "beer", "pub", "food_court"] },
+  { key: "grocery", emoji: "🛒", color: "#2e7d32", class: ["grocery"], subclass: ["supermarket", "convenience", "greengrocer", "butcher", "seafood"], exclude: ["department_store"] },
+  { key: "hospital", emoji: "🏥", color: "#d32f2f", class: ["hospital"], subclass: ["hospital", "clinic", "doctors", "dentist"] },
+  { key: "school", emoji: "🏫", color: "#f57f17", class: ["school", "college"], subclass: ["school", "university", "college", "kindergarten"] },
+  { key: "library", emoji: "📚", color: "#6a1b9a", class: ["library"], subclass: ["library"] },
+  { key: "bank", emoji: "🏦", color: "#00897b", class: ["bank"], subclass: ["bank", "atm", "bureau_de_change"] },
+  { key: "public", emoji: "🏢", color: "#3949ab", class: ["town_hall", "post", "police", "fire_station"], subclass: ["townhall", "post_office", "police", "fire_station", "courthouse", "community_centre"] },
+];
+const POI_SHOP_CLASSES = ["shop", "clothing_store", "alcohol_shop", "department_store", "mall", "grocery"];
+
+// どのアイコンを使うか(上の POI_CATEGORIES の順に調べて、最初に当てはまったもの)
+function poiCategoryExpression(field) {
+  const expr = ["case"];
+  POI_CATEGORIES.forEach((c) => {
+    const conds = [];
+    if (c.subclass) conds.push(["in", ["get", "subclass"], ["literal", c.subclass]]);
+    if (c.class) conds.push(["in", ["get", "class"], ["literal", c.class]]);
+    let cond = conds.length > 1 ? ["any", ...conds] : conds[0];
+    // exclude: この subclass は、この種類に入れない(例: デパートは「食材・スーパー」ではなく、ふつうのお店)
+    if (c.exclude) cond = ["all", cond, ["!", ["in", ["get", "subclass"], ["literal", c.exclude]]]];
+    expr.push(cond, field === "icon" ? `app-poi-${c.key}` : c.color);
+  });
+  expr.push(["in", ["get", "class"], ["literal", POI_SHOP_CLASSES]], field === "icon" ? "app-poi-shop" : "#1558b0");
+  expr.push(field === "icon" ? "app-poi-other" : "#5f6368");
+  return expr;
+}
 function poiIconExpression() {
-  return ["match", ["get", "class"], POI_FOOD, "app-poi-food", POI_SHOP, "app-poi-shop", "app-poi-other"];
+  return poiCategoryExpression("icon");
 }
 function poiColorExpression() {
-  return ["match", ["get", "class"], POI_FOOD, "#b35400", POI_SHOP, "#1558b0", "#5f6368"];
+  return poiCategoryExpression("color");
 }
-// 周りのお店・施設のマーク(白いふちの、色つきの小さな丸)
+
+// 周りのお店・施設のマークを、地図に登録する
+//   ・アイコン付きの種類は「白い丸に、色のふち + 絵文字」。それ以外は、色つきの小さな丸
 function addPoiIcons(gl) {
-  Object.entries(POI_COLORS).forEach(([key, color]) => {
-    const name = `app-poi-${key}`;
+  const draw = (name, size, paint) => {
     if (gl.hasImage(name)) return;
     try {
-      const size = 28;
       const c = document.createElement("canvas");
       c.width = size;
       c.height = size;
       const ctx = c.getContext("2d");
+      paint(ctx, size);
+      gl.addImage(name, ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
+    } catch (e) {
+      // マークを描けなかったときは、文字だけで出す
+    }
+  };
+  POI_CATEGORIES.forEach((cat) =>
+    draw(`app-poi-${cat.key}`, 48, (ctx, size) => {
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = cat.color;
+      ctx.stroke();
+      ctx.font = `${Math.round(size * 0.55)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(cat.emoji, size / 2, size / 2 + 2);
+    })
+  );
+  [
+    ["app-poi-shop", "#1a73e8"],
+    ["app-poi-other", "#70757a"],
+  ].forEach(([name, color]) =>
+    draw(name, 28, (ctx, size) => {
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
       ctx.fillStyle = color;
@@ -100,11 +155,8 @@ function addPoiIcons(gl) {
       ctx.lineWidth = 4;
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
-      gl.addImage(name, ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
-    } catch (e) {
-      // マークを描けなかったときは、文字だけで出す
-    }
-  });
+    })
+  );
 }
 
 // 駅のマーク(色つきの丸に、白い電車の絵)を、地図に登録する
@@ -240,7 +292,7 @@ function customizeBaseMap(gl) {
   addAppStations(gl);
   // ③'' 周りのお店・施設(飲食店・コンビニ・スーパー・病院など): 大きく拡大したとき(一覧の地図のズーム16以上)だけ出す
   //    ・地図のデータの「施設」(poi_label)を使う。駅は、上の全国の駅のデータで描くので、ここでは出さない
-  //    ・種類ごとに色を分けた小さな丸のマーク(飲食はオレンジ、買い物は青、そのほかは灰色)
+  //    ・種類ごとのアイコン(🍜 ☕ 🛒 💇 🏥 🏫 📚 🏦 🏢。くわしくは POI_CATEGORIES)。それ以外は小さな丸
   addPoiIcons(gl);
   //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
   set(() =>
@@ -248,12 +300,12 @@ function customizeBaseMap(gl) {
       "all",
       ["==", "$type", "Point"],
       ["has", "name"],
-      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "toilets", "entrance", "information", "aerialway"],
+      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "bicycle_rental", "toilets", "entrance", "information", "aerialway"],
     ])
   );
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
-  set(() => gl.setLayoutProperty("poi_label", "icon-size", 0.75));
+  set(() => gl.setLayoutProperty("poi_label", "icon-size", 1));
   set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
   set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
   set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.8, 0]));
