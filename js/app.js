@@ -228,14 +228,14 @@ function addAppStations(gl) {
         id: "app-stations",
         type: "symbol",
         source: "app-stations",
-        minzoom: 11, // 一覧の地図のズーム12くらいから(この地図の数字は、Leaflet より1小さい)
+        minzoom: 12, // 一覧の地図のズーム13から(この地図の数字は、Leaflet より1小さい)。引いた地図では駅名を出さない
         layout: {
           "symbol-sort-key": ["get", "rank"],
           "icon-image": ["case", ["get", "subway"], "app-subway", "app-train"],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.65, 15, 0.9],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.7, 15, 0.9],
           "text-field": stationLabelField(),
           "text-font": ["migu1c-bold"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 11, 11, 13, 13, 15, 15],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 12, 13, 13, 15, 15],
           "text-anchor": "left",
           "text-justify": "left",
           "text-offset": [0.9, 0],

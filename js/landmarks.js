@@ -295,7 +295,7 @@ function stationRects() {
   }
   const box = gl.getCanvas().getBoundingClientRect();
   const glZoom = gl.getZoom();
-  const size = Math.min(15, Math.max(11, glZoom)); // 駅名の文字の大きさ(addAppStations の text-size と同じ)
+  const size = Math.min(15, Math.max(12, glZoom)); // 駅名の文字の大きさ(addAppStations の text-size と同じ)
   const seen = new Set();
   const rects = [];
   feats.forEach((f) => {
