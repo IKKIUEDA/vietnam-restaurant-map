@@ -2,7 +2,8 @@
 //   ・お店ではないので、クリックしても何も開きません(一覧にも出ません)
 //   ・優先順位(下の landmarkKinds の priority)の順に、地図を引いた状態から出ます。
 //       1 駅 → 2 大型ショッピングモール・空港 → 3 大学・観光地 の順。数字が小さいほど、文字も大きい
-//   ・文字が、お店のピンや、駅の名前、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
+//   ・文字が、お店のピンや、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
+//     ※ 駅名・区や市の名前とは、重なっても隠しません(駅名・名所の両方を出すことを優先)
 //   ・モール・大学・観光地・空港は、拡大して敷地が大きく見えるようになると、
 //     マークの代わりに、敷地の真ん中に大きな名前を出します(敷地の範囲は js/landmark-areas.js。範囲そのものは描きません)
 //   ・位置(緯度・経度)は、OpenStreetMap のデータ(Nominatim の検索)か、国土地理院の住所検索で調べた値です。
@@ -414,8 +415,7 @@ function declutterLandmarks() {
   visible.forEach((e) => (updateLandmarkMode(e) ? big : small).push(e));
 
   // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。
-  //    大きな名前どうし・駅の名前・区や市や町の名前とは重ならないようにする。地名・駅名を優先する)
-  const stations = glLabelRects();
+  //    大きな名前どうしは重ならないようにする。駅名・区や市の名前とは重なっても隠さない)
   const bigTaken = [];
   const bigShown = [];
   big.forEach((e) => {
@@ -423,7 +423,7 @@ function declutterLandmarks() {
     if (!el) return;
     el.style.visibility = "visible";
     const r = el.getBoundingClientRect();
-    if (bigTaken.some((t) => rectsOverlap(r, t)) || stations.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
+    if (bigTaken.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
     else {
       bigTaken.push(r);
       bigShown.push(e);
@@ -431,10 +431,10 @@ function declutterLandmarks() {
   });
   hidePoisInsideBigNames(bigShown);
 
-  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前・駅の名前・区や市や町の名前と重ならないところだけに出す
+  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前と重ならないところだけに出す(駅名・地名とは重なってもよい)
   const taken = [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")]
     .map((el) => el.getBoundingClientRect())
-    .concat(bigTaken, stations);
+    .concat(bigTaken);
   small.forEach((e) => {
     const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
     if (!el) return;
