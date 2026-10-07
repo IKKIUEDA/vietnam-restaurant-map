@@ -3,6 +3,65 @@
 //   (前は、地図の画像の設定(maxZoom: 19)から自動で決まっていたが、データから描く地図ではそれが無い)
 const map = L.map("map", { maxZoom: 19 }).setView([36.0, 137.0], 5);
 
+// スマホ(指で操作する画面): 地図を2回続けてタップすると、タップした場所を中心に1段階拡大する
+//   ・ブラウザによっては、2回タップを地図に伝えてくれないので、このアプリで自分で判定する
+//   ・お店のピン・数字の丸・ボタン・吹き出しの上の2回タップは対象外(それぞれの動きを優先する)
+//   ・ブラウザ側の2回タップの拡大と二重にならないよう、指の画面では Leaflet の「ダブルクリックで拡大」は止める
+function enableDoubleTapZoom(targetMap) {
+  const container = targetMap.getContainer();
+  const TAP_GAP_MS = 300; // 1回目と2回目のタップの間が、これより短いと「2回タップ」
+  const TAP_MOVE_PX = 30; // 1回目と2回目の位置のずれが、これより小さいと「同じ場所」
+  let lastTap = null; // { time, x, y }
+  let start = null; // いまのタッチの始まり { x, y, moved }
+  const ignore = (target) =>
+    target && target.closest && target.closest(".leaflet-marker-icon, .leaflet-popup, .leaflet-control, .shop-cluster, button, a");
+  container.addEventListener(
+    "touchstart",
+    (ev) => {
+      if (ev.touches.length !== 1) {
+        start = null;
+        lastTap = null; // 2本指(ピンチ)のときは、2回タップとして数えない
+        return;
+      }
+      start = { x: ev.touches[0].clientX, y: ev.touches[0].clientY, moved: false };
+    },
+    { passive: true }
+  );
+  container.addEventListener(
+    "touchmove",
+    (ev) => {
+      if (!start || ev.touches.length !== 1) return;
+      const t = ev.touches[0];
+      if (Math.abs(t.clientX - start.x) > 10 || Math.abs(t.clientY - start.y) > 10) start.moved = true; // 地図を動かしたときは、タップではない
+    },
+    { passive: true }
+  );
+  container.addEventListener("touchend", (ev) => {
+    if (!start || start.moved || ev.touches.length !== 0 || ignore(ev.target)) {
+      start = null;
+      lastTap = null;
+      return;
+    }
+    const now = Date.now();
+    const x = start.x;
+    const y = start.y;
+    start = null;
+    if (lastTap && now - lastTap.time < TAP_GAP_MS && Math.abs(x - lastTap.x) < TAP_MOVE_PX && Math.abs(y - lastTap.y) < TAP_MOVE_PX) {
+      lastTap = null;
+      ev.preventDefault(); // ブラウザ側の拡大(ページ全体の拡大)をさせない
+      const rect = container.getBoundingClientRect();
+      const point = L.point(x - rect.left, y - rect.top);
+      targetMap.setZoomAround(point, Math.min(targetMap.getZoom() + 1, targetMap.getMaxZoom()));
+    } else {
+      lastTap = { time: now, x, y };
+    }
+  });
+}
+if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+  map.doubleClickZoom.disable();
+  enableDoubleTapZoom(map);
+}
+
 // 2. 背景の地図
 //   ・OpenStreetMap Japan(OSMFJ)の「MapTiler Basic(日本語)」を、画像ではなく「データ(ベクトルタイル)」で受け取り、
 //     MapLibre でブラウザの中に描く。データで受け取ると、文字の種類ごとに、出す・出さない・大きさを決められる
