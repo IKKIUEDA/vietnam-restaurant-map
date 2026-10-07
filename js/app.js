@@ -1312,7 +1312,7 @@ function getIntentPatterns() {
       // 単独の「お店」「おすすめ」など(前の「の」「で」も一緒に)
       extra: new RegExp(`(?:${particles})?(?:${extra})`, "g"),
       // 「〇〇駅前」「〇〇駅近」→「〇〇駅」
-      stationFront: new RegExp(`${escapeRegExp(normalizeText("駅"))}(?:${escapeRegExp(normalizeText("前"))}|${escapeRegExp(normalizeText("近"))})`, "g"),
+      stationFront: new RegExp(`${escapeRegExp(normalizeText("駅"))}(?:${escapeRegExp(normalizeText("前"))}|${escapeRegExp(normalizeText("近"))}(?!${escapeRegExp(normalizeText("く"))}))`, "g"), // 「駅近く」は、下の「近く」で取る
     };
   }
   return intentPatterns;
