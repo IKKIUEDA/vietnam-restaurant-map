@@ -1289,9 +1289,46 @@ function splitByKeywords(term) {
 }
 
 // 検索ボックスの文字から、検索する言葉のリストを作る(スペース区切り + スペースなしの連続入力の分割)
+// 検索の言葉から、「探し方」を表すだけの言葉を取り除く(人が普段の言い方で入力しても探せるように)
+//   例: 「千葉駅 周辺」「千葉駅の近く」「千葉駅周辺のお店」「新宿でおすすめ」「Chiba station near」→ 千葉駅 / 新宿 / chiba station
+//   ・「〇〇駅前」「〇〇駅近」は「〇〇駅」として探す
+//   ※ 文字は normalizeText で整えたあと(ひらがなはカタカナ)に比べるので、ここでも同じ整え方をした言葉を使う
+const INTENT_AREA_WORDS = ["周辺", "付近", "近辺", "近く", "近所", "周り", "まわり", "あたり", "辺り", "界隈", "エリア", "nearby", "near", "around"];
+const INTENT_EXTRA_WORDS = ["お店", "店舗", "おすすめ", "お勧め", "オススメ", "人気", "shop", "shops", "restaurant", "restaurants"];
+const INTENT_PARTICLES = ["の", "で", "にある", "から"];
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+let intentPatterns = null;
+function getIntentPatterns() {
+  if (!intentPatterns) {
+    const alt = (words) => [...new Set(words.map(normalizeText))].sort((a, b) => b.length - a.length).map(escapeRegExp).join("|");
+    const particles = alt(INTENT_PARTICLES);
+    const area = alt(INTENT_AREA_WORDS);
+    const extra = alt(INTENT_EXTRA_WORDS);
+    intentPatterns = {
+      // 「(の)周辺(の/で/にある)(お店)」などを、ひとかたまりで取り除く
+      area: new RegExp(`(?:${particles})?(?:${area})(?:${particles})?(?:${extra})?`, "g"),
+      // 単独の「お店」「おすすめ」など(前の「の」「で」も一緒に)
+      extra: new RegExp(`(?:${particles})?(?:${extra})`, "g"),
+      // 「〇〇駅前」「〇〇駅近」→「〇〇駅」
+      stationFront: new RegExp(`${escapeRegExp(normalizeText("駅"))}(?:${escapeRegExp(normalizeText("前"))}|${escapeRegExp(normalizeText("近"))})`, "g"),
+    };
+  }
+  return intentPatterns;
+}
+function stripIntentWords(normalized) {
+  const p = getIntentPatterns();
+  return normalized.replace(p.stationFront, normalizeText("駅")).replace(p.area, " ").replace(p.extra, " ");
+}
+
 function buildSearchTerms(text) {
   searchPlaces = new Map();
-  let tokens = normalizeText(text).split(/\s+/).filter(Boolean);
+  // まず、そのままの言葉でお店に一致するときは、取り除かない(店名に「近く」などが入っている場合のため)
+  const normalized = normalizeText(text);
+  const rawTokens = normalized.split(/\s+/).filter(Boolean);
+  const keepAsIs = rawTokens.length > 0 && restaurants.some((shop) => rawTokens.every((t) => getSearchText(shop).includes(t)));
+  let tokens = (keepAsIs ? normalized : stripIntentWords(normalized)).split(/\s+/).filter(Boolean);
   // 「Chiba Station」「千葉 駅」のように、駅を表す言葉だけが離れているときは、前の言葉とつなげる
   tokens = tokens.reduce((list, tok) => {
     if (list.length && /^(駅|エキ|station|sta\.?)$/.test(tok)) list[list.length - 1] += tok;
