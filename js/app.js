@@ -82,6 +82,8 @@ function createBaseLayer() {
         style: "https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json",
         attribution: MAP_ATTRIBUTION,
         attributionControl: false, // 出典は、Leaflet の右下の表示に出す(上の attribution)
+        // 描く細かさ: スマホの画面はきめが細かく(3倍など)、そのまま描くと重いので、パソコンと同じ2倍までにする
+        pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       });
       layer.on("add", (event) => {
         // 出典(OpenMapTiles・OpenStreetMap)を、地図の右下に出す(このプラグインは自動では出さないため)
@@ -278,7 +280,18 @@ function loadAppStations() {
 }
 
 // 駅のマークと名前を、地図に描く
+//   ・駅のデータ(約400KB)は、駅名が出る少し手前まで拡大したときに、初めて読み込む(最初の表示を軽くするため)
+const APP_STATIONS_LOAD_GL_ZOOM = 12; // この地図のズーム12 = 一覧の地図のズーム13(駅名は、その次の段階から出る)
 function addAppStations(gl) {
+  if (gl.getZoom() < APP_STATIONS_LOAD_GL_ZOOM) {
+    const onZoom = () => {
+      if (gl.getZoom() < APP_STATIONS_LOAD_GL_ZOOM) return;
+      gl.off("zoomend", onZoom);
+      addAppStations(gl);
+    };
+    gl.on("zoomend", onZoom);
+    return;
+  }
   loadAppStations()
     .then((geojson) => {
       if (gl.getSource("app-stations")) return;

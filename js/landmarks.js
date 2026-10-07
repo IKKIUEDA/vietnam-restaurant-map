@@ -461,7 +461,13 @@ map.on("zoomend moveend", scheduleDeclutter);
 clusterGroup.on("animationend", scheduleDeclutter); // ピンのまとめ直しが終わったとき
 declutterLandmarks();
 
-// 駅名・地名は地図の絵なので、描き終わるのが少しあとになる。描かれた駅名・地名が変わったら、重なりを判定し直す
+// 駅名・地名は地図の絵なので、描き終わるのが少しあとになる。
+// 地図を動かしたあと、地図の絵が描き終わったとき(idle)に「1回だけ」重なりを判定し直す
+//   (描き終わるたびに毎回調べると、スマホで重くなるため。動かしていないときは何もしない)
+let glLabelsDirty = true; // 最初の表示のときも、描き終わったら1回判定する
+map.on("zoomend moveend", () => {
+  glLabelsDirty = true;
+});
 (function watchGlLabels() {
   const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
   if (!gl || !gl.on) {
@@ -469,24 +475,9 @@ declutterLandmarks();
     return;
   }
   gl.on("idle", () => {
-    const layers = GL_LABEL_LAYERS.filter((id) => gl.getLayer(id));
-    if (!layers.length) return;
-    let feats = [];
-    try {
-      feats = gl.queryRenderedFeatures({ layers });
-    } catch (e) {
-      return;
-    }
-    const sig = [
-      ...new Set(
-        feats
-          .filter((f) => f.geometry && f.geometry.type === "Point")
-          .map((f) => `${f.layer.id}|${(f.properties || {}).name}|${f.geometry.coordinates[1].toFixed(5)}|${f.geometry.coordinates[0].toFixed(5)}`)
-      ),
-    ]
-      .sort()
-      .join(";");
-    if (sig !== lastGlLabelSig) scheduleDeclutter();
+    if (!glLabelsDirty) return;
+    glLabelsDirty = false;
+    scheduleDeclutter();
   });
 })();
 
