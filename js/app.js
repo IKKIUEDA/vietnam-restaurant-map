@@ -319,7 +319,10 @@ function addAppStations(gl) {
           "text-halo-color": "#ffffff",
           "text-halo-width": 1.5,
         },
-      });
+      },
+      // 区・市の名前(place_label_city)より下に置く = 区・市の名前を先に場所取りさせる(区・市の名前が、駅名に押されて消えないように)。
+      // 町の名前(place_label_other)よりは上 = 駅名を、町の名前より優先する
+      gl.getLayer("place_label_city") ? "place_label_city" : undefined);
     })
     .catch(() => {
       // 駅のデータを読み込めなかったときは、地図のデータの駅を出す(引いた地図では一部だけになる)
