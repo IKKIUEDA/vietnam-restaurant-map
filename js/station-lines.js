@@ -66,11 +66,21 @@ function scheduleStationLines() {
   clearTimeout(stationLinesTimer);
   stationLinesTimer = setTimeout(updateStationLines, 400);
 }
-map.on("zoomend moveend", scheduleStationLines);
-// 背景の地図の描画が終わったときにも調べ直す(読み込みに時間がかかったとき用)
+let stationLinesDirty = true; // 地図を動かしたら true。描き終わったときに1回だけ調べ直す
+map.on("zoomend moveend", () => {
+  stationLinesDirty = true;
+  scheduleStationLines();
+});
+// 背景の地図の描画が終わったときにも調べ直す(読み込みに時間がかかったとき用)。
+// 描き終わるたびに毎回ではなく、地図を動かしたあとの1回だけ(スマホで重くならないように)
 (function watchGl() {
   const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
-  if (gl) gl.on("idle", scheduleStationLines);
+  if (gl)
+    gl.on("idle", () => {
+      if (!stationLinesDirty || map.getZoom() < STATION_LINES_MIN_ZOOM) return;
+      stationLinesDirty = false;
+      scheduleStationLines();
+    });
   else setTimeout(watchGl, 1000);
 })();
 
