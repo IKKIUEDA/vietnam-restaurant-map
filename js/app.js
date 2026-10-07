@@ -1177,9 +1177,69 @@ function getSearchText(shop) {
 }
 
 // 検索の言葉が、店名・都道府県・住所・エリア・料理名のどれかに部分一致するか(スペースで区切った言葉は、すべて満たす必要がある)
+//   ・駅の名前(「千葉駅」「千葉」など)の言葉は、文字が一致しなくても、その駅の近く(お店の位置 = 住所の場所から、
+//     SEARCH_NEAR_STATION_M 以内)のお店も一致にする
 function matchesSearch(shop) {
   const text = getSearchText(shop);
-  return searchTerms.every((term) => text.includes(term));
+  return searchTerms.every((term) => {
+    if (text.includes(term)) return true;
+    const places = searchPlaces.get(term);
+    return !!places && places.some(([lat, lng]) => distanceMeters(lat, lng, shop.lat, shop.lng) <= SEARCH_NEAR_STATION_M);
+  });
+}
+
+// 駅の名前で検索したとき、「近く」とみなす距離(メートル)
+const SEARCH_NEAR_STATION_M = 2000;
+// 検索の言葉のうち、駅の名前だったもの → その駅の位置(緯度, 経度)のリスト(同じ名前の駅が何か所かあることがある)
+let searchPlaces = new Map();
+
+// 2点の間の距離(メートル)。近い距離なので、簡単な計算で十分
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const toRad = Math.PI / 180;
+  const x = (lng2 - lng1) * toRad * Math.cos(((lat1 + lat2) / 2) * toRad);
+  const y = (lat2 - lat1) * toRad;
+  return Math.sqrt(x * x + y * y) * 6371000;
+}
+
+// 駅の名前 → 位置 の一覧(全国の駅のデータ data/stations-jp.json から作る。読み込みは、検索を使うときに1回だけ)
+let stationIndex = null; // Map(整えた駅名 → [[緯度, 経度], ...])
+let stationIndexLoading = false;
+function ensureStationIndex() {
+  if (stationIndex || stationIndexLoading) return;
+  stationIndexLoading = true;
+  loadAppStations()
+    .then((geojson) => {
+      const index = new Map();
+      const add = (name, coords) => {
+        const key = normalizeText(name).replace(/\s+/g, "");
+        if (!key) return;
+        if (!index.has(key)) index.set(key, []);
+        index.get(key).push(coords);
+      };
+      geojson.features.forEach((f) => {
+        const [lng, lat] = f.geometry.coordinates;
+        add(f.properties.name, [lat, lng]);
+        if (f.properties.en) add(f.properties.en, [lat, lng]);
+      });
+      stationIndex = index;
+      // 駅のデータが届く前に入力されていた言葉も、駅として探し直す
+      if (searchInput.value.trim()) {
+        searchTerms = buildSearchTerms(searchInput.value);
+        applyFilters(true);
+      }
+    })
+    .catch(() => {
+      stationIndexLoading = false; // 読み込めなかったときは、次の入力のときにもう一度試す
+    });
+}
+
+// 言葉が駅の名前なら、その駅の位置のリストを返す(駅ではないときは null)
+//   ・「千葉駅」「千葉えき」「Chiba Station」のように、駅を表す言葉が付いていてもよい
+function findStationPlaces(term) {
+  if (!stationIndex) return null;
+  const base = term.replace(/(駅|エキ|station|sta\.?)$/, "").trim();
+  if (!base) return null;
+  return stationIndex.get(base) || null;
 }
 
 // 「東京」「新宿」「フォー」のように、検索でよく使う言葉の一覧(都道府県・エリア・料理。長い順)
@@ -1227,10 +1287,23 @@ function splitByKeywords(term) {
 
 // 検索ボックスの文字から、検索する言葉のリストを作る(スペース区切り + スペースなしの連続入力の分割)
 function buildSearchTerms(text) {
-  return normalizeText(text)
-    .split(/\s+/)
-    .filter(Boolean)
-    .flatMap(splitByKeywords);
+  searchPlaces = new Map();
+  let tokens = normalizeText(text).split(/\s+/).filter(Boolean);
+  // 「Chiba Station」「千葉 駅」のように、駅を表す言葉だけが離れているときは、前の言葉とつなげる
+  tokens = tokens.reduce((list, tok) => {
+    if (list.length && /^(駅|エキ|station|sta\.?)$/.test(tok)) list[list.length - 1] += tok;
+    else list.push(tok);
+    return list;
+  }, []);
+  return tokens.flatMap((tok) => {
+    // 駅の名前は、分けずに1つの言葉として使う(「千葉駅」を「千葉」と「駅」に分けない)
+    const places = findStationPlaces(tok);
+    if (places) {
+      searchPlaces.set(tok, places);
+      return [tok];
+    }
+    return splitByKeywords(tok);
+  });
 }
 
 // お店が、いま選ばれている条件(検索 × お気に入り × 料理 × スキャン)を、すべて満たすか
@@ -1585,7 +1658,9 @@ function selectDish(key) {
 
 // 検索ボックス: 入力するたびに絞り込む(日本語入力の変換中も、リアルタイムで反映される)
 const searchInput = document.getElementById("search-input");
+searchInput.addEventListener("focus", ensureStationIndex); // 駅の名前で探せるよう、駅のデータを先に読み込んでおく
 searchInput.addEventListener("input", () => {
+  ensureStationIndex();
   searchTerms = buildSearchTerms(searchInput.value);
   applyFilters(true);
 });
