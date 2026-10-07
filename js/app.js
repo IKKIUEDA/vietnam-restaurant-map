@@ -459,7 +459,7 @@ const clusterGroup = L.markerClusterGroup({
   maxClusterRadius: 60, // この距離(画面上のpx)より近いピンを、1つにまとめる
   showCoverageOnHover: false, // マウスを乗せたときの、範囲の線は出さない
   spiderfyOnMaxZoom: true, // それ以上ズームできないほど重なっているピンは、放射状に広げる
-  disableClusteringAtZoom: 18, // ここまで拡大したら、まとめずに、すべてのピンを個別に出す(一度分かれたピンが、またまとまらないように)
+  disableClusteringAtZoom: 16, // ここまで拡大したら(最初の表示から6段階ほど)、まとめずに、すべてのピンを個別に出す(一度分かれたピンが、またまとまらないように)
   iconCreateFunction: (cluster) => {
     const count = cluster.getChildCount();
     const size = count >= 30 ? "large" : count >= 10 ? "medium" : "small";
