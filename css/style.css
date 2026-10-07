@@ -751,6 +751,12 @@ header h1 {
   background: #1e63d6;
 }
 
+/* 食材店の 🛒 は、青の上で見やすいよう白一色にする(絵文字の形だけを残して白くぬる) */
+.shop-marker-grocery .shop-pin-icon {
+  font-size: 16px;
+  filter: brightness(0) invert(1);
+}
+
 /* 現在地(または起点)の目印: 脈打つ青い点。お店のピン(🍽️の丸)とは、形も色も違う */
 .user-location {
   background: none;
