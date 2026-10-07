@@ -2,7 +2,7 @@
 //   ・お店ではないので、クリックしても何も開きません(一覧にも出ません)
 //   ・優先順位(下の landmarkKinds の priority)の順に、地図を引いた状態から出ます。
 //       1 駅 → 2 大型ショッピングモール・空港 → 3 大学・観光地 の順。数字が小さいほど、文字も大きい
-//   ・文字が、お店のピンや、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
+//   ・文字が、お店のピンや、駅の名前、優先順位の高い目印と重なるときは、その目印を隠します(拡大すると出てきます)
 //   ・モール・大学・観光地・空港は、拡大して敷地が大きく見えるようになると、
 //     マークの代わりに、敷地の真ん中に大きな名前を出します(敷地の範囲は js/landmark-areas.js。範囲そのものは描きません)
 //   ・位置(緯度・経度)は、OpenStreetMap のデータ(Nominatim の検索)か、国土地理院の住所検索で調べた値です。
@@ -22,22 +22,22 @@ const landmarkKinds = {
   },
   mall: {
     priority: 2,
-    minZoom: 12,
+    minZoom: 13,
     icon: "M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 4c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2zm2-6c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm4 6c0 .55-.45 1-1 1s-1-.45-1-1V8h2v2z",
   },
   airport: {
     priority: 2,
-    minZoom: 12,
+    minZoom: 13,
     icon: "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z",
   },
   university: {
     priority: 3,
-    minZoom: 13,
+    minZoom: 14,
     icon: "M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z",
   },
   sight: {
     priority: 3,
-    minZoom: 13,
+    minZoom: 14,
     icon: "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",
   },
 };
@@ -278,6 +278,50 @@ function rectsOverlap(a, b, gap = 3) {
   return a.left < b.right + gap && b.left < a.right + gap && a.top < b.bottom + gap && b.top < a.bottom + gap;
 }
 
+// 地図に出ている駅(マーク + 名前)の、画面上のおおよその範囲
+//   駅は js/app.js の addAppStations が地図の絵として描いているので、文字の長さから範囲を計算する
+let lastStationSig = "";
+function stationRects() {
+  const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
+  if (!gl || !gl.getLayer || !gl.getLayer("app-stations")) {
+    lastStationSig = "";
+    return [];
+  }
+  let feats = [];
+  try {
+    feats = gl.queryRenderedFeatures({ layers: ["app-stations"] });
+  } catch (e) {
+    return [];
+  }
+  const box = gl.getCanvas().getBoundingClientRect();
+  const glZoom = gl.getZoom();
+  const size = Math.min(15, Math.max(11, glZoom)); // 駅名の文字の大きさ(addAppStations の text-size と同じ)
+  const seen = new Set();
+  const rects = [];
+  feats.forEach((f) => {
+    const [lng, lat] = f.geometry.coordinates;
+    const key = `${f.properties.name}|${lat}|${lng}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const p = gl.project([lng, lat]);
+    const x = box.left + p.x;
+    const y = box.top + p.y;
+    const en = String(f.properties.en || f.properties.name || "");
+    const ja = String(f.properties.name || "") + "駅";
+    const textW = currentLang === "ja" ? Math.max(ja.length * size, en.length * size * 0.75 * 0.58) : en.length * size * 0.58;
+    const textH = currentLang === "ja" ? size * 2.3 : size * 1.3;
+    const iconHalf = size * 0.7;
+    rects.push({
+      left: x - iconHalf,
+      right: x + size * 0.9 + textW,
+      top: y - Math.max(iconHalf, textH / 2),
+      bottom: y + Math.max(iconHalf, textH / 2),
+    });
+  });
+  lastStationSig = [...seen].sort().join(";");
+  return rects;
+}
+
 // いまのズームで出す目印を決めて、重なるものを隠す
 function declutterLandmarks() {
   const z = map.getZoom();
@@ -303,21 +347,22 @@ function declutterLandmarks() {
   const small = [];
   visible.forEach((e) => (updateLandmarkMode(e) ? big : small).push(e));
 
-  // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。大きな名前どうしは重ならないようにする)
+  // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。大きな名前どうし・駅の名前とは重ならないようにする)
+  const stations = stationRects();
   const bigTaken = [];
   big.forEach((e) => {
     const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
     if (!el) return;
     el.style.visibility = "visible";
     const r = el.getBoundingClientRect();
-    if (bigTaken.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
+    if (bigTaken.some((t) => rectsOverlap(r, t)) || stations.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
     else bigTaken.push(r);
   });
 
-  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前と重ならないところだけに出す
+  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前・駅の名前と重ならないところだけに出す
   const taken = [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")]
     .map((el) => el.getBoundingClientRect())
-    .concat(bigTaken);
+    .concat(bigTaken, stations);
   small.forEach((e) => {
     const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
     if (!el) return;
@@ -343,6 +388,26 @@ function scheduleDeclutter() {
 map.on("zoomend moveend", scheduleDeclutter);
 clusterGroup.on("animationend", scheduleDeclutter); // ピンのまとめ直しが終わったとき
 declutterLandmarks();
+
+// 駅の名前は地図の絵なので、描き終わるのが少しあとになる。描かれた駅が変わったら、重なりを判定し直す
+(function watchStations() {
+  const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
+  if (!gl || !gl.on) {
+    setTimeout(watchStations, 1000);
+    return;
+  }
+  gl.on("idle", () => {
+    if (!gl.getLayer("app-stations")) return;
+    let feats = [];
+    try {
+      feats = gl.queryRenderedFeatures({ layers: ["app-stations"] });
+    } catch (e) {
+      return;
+    }
+    const sig = [...new Set(feats.map((f) => `${f.properties.name}|${f.geometry.coordinates[1]}|${f.geometry.coordinates[0]}`))].sort().join(";");
+    if (sig !== lastStationSig) scheduleDeclutter();
+  });
+})();
 
 // 言語を切り替えたら、目印の文字も切り替える(文字の長さが変わるので、重なりも判定し直す)
 document.getElementById("lang-select").addEventListener("change", () => {
