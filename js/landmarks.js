@@ -226,6 +226,7 @@ const landmarkEntries = landmarks
     const area = typeof landmarkAreas !== "undefined" ? landmarkAreas[lm.name.ja] : null;
     return {
       lm,
+      area, // 敷地のまわりの点(緯度, 経度)。無いときは null
       order: i,
       kind: landmarkKinds[lm.kind] || landmarkKinds.sight,
       bounds: area ? L.latLngBounds(area) : null, // 敷地の範囲(画面には描かない。大きさを測るためだけに使う)
@@ -278,48 +279,111 @@ function rectsOverlap(a, b, gap = 3) {
   return a.left < b.right + gap && b.left < a.right + gap && a.top < b.bottom + gap && b.top < a.bottom + gap;
 }
 
-// 地図に出ている駅(マーク + 名前)の、画面上のおおよその範囲
-//   駅は js/app.js の addAppStations が地図の絵として描いているので、文字の長さから範囲を計算する
-let lastStationSig = "";
-function stationRects() {
+// 地図の絵として描かれている文字(駅の名前・区や市や町の名前)の、画面上のおおよその範囲
+//   これらは地図の絵の一部なので、文字の長さから範囲を計算する
+//   目印(大学・観光地など)は、これらと重なるときは隠す(駅名・地名を優先する)
+let lastGlLabelSig = "";
+const GL_LABEL_LAYERS = ["app-stations", "place_label_city", "place_label_other"];
+
+// ズームに合わせて変わる文字の大きさ(interpolate の式 / stops / 数字)を、いまのズームで計算する
+function evalTextSize(value, zoom, fallback) {
+  if (typeof value === "number") return value;
+  let pts = null;
+  if (value && Array.isArray(value.stops)) pts = value.stops;
+  else if (Array.isArray(value) && value[0] === "interpolate") {
+    pts = [];
+    for (let i = 3; i + 1 < value.length; i += 2) pts.push([value[i], value[i + 1]]);
+  }
+  if (!pts || !pts.length || pts.some((p) => typeof p[1] !== "number")) return fallback;
+  if (zoom <= pts[0][0]) return pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    if (zoom <= pts[i][0]) {
+      const [z0, v0] = pts[i - 1];
+      const [z1, v1] = pts[i];
+      return v0 + ((v1 - v0) * (zoom - z0)) / (z1 - z0);
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+
+function glLabelRects() {
   const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
-  if (!gl || !gl.getLayer || !gl.getLayer("app-stations")) {
-    lastStationSig = "";
+  if (!gl || !gl.getLayer || !gl.getStyle || !gl.isStyleLoaded) {
+    lastGlLabelSig = "";
+    return [];
+  }
+  const layers = GL_LABEL_LAYERS.filter((id) => gl.getLayer(id));
+  if (!layers.length) {
+    lastGlLabelSig = "";
     return [];
   }
   let feats = [];
   try {
-    feats = gl.queryRenderedFeatures({ layers: ["app-stations"] });
+    feats = gl.queryRenderedFeatures({ layers });
   } catch (e) {
     return [];
   }
   const box = gl.getCanvas().getBoundingClientRect();
   const glZoom = gl.getZoom();
-  const size = Math.min(15, Math.max(13, glZoom)); // 駅名の文字の大きさ(addAppStations の text-size と同じ)
+  const sizeOf = (id, fallback) => {
+    try {
+      return evalTextSize(gl.getLayoutProperty(id, "text-size"), glZoom, fallback);
+    } catch (e) {
+      return fallback;
+    }
+  };
+  const stationSize = sizeOf("app-stations", 14);
+  const citySize = sizeOf("place_label_city", 20);
+  const otherSize = sizeOf("place_label_other", 13);
   const seen = new Set();
   const rects = [];
   feats.forEach((f) => {
+    if (!f.geometry || f.geometry.type !== "Point") return;
+    const layer = f.layer.id;
     const [lng, lat] = f.geometry.coordinates;
-    const key = `${f.properties.name}|${lat}|${lng}`;
+    const props = f.properties || {};
+    const key = `${layer}|${props.name}|${lat.toFixed(5)}|${lng.toFixed(5)}`;
     if (seen.has(key)) return;
     seen.add(key);
     const p = gl.project([lng, lat]);
     const x = box.left + p.x;
     const y = box.top + p.y;
-    const en = String(f.properties.en || f.properties.name || "");
-    const ja = String(f.properties.name || "") + "駅";
-    const textW = currentLang === "ja" ? Math.max(ja.length * size, en.length * size * 0.75 * 0.58) : en.length * size * 0.58;
-    const textH = currentLang === "ja" ? size * 2.3 : size * 1.3;
-    const iconHalf = size * 0.7;
-    rects.push({
-      left: x - iconHalf,
-      right: x + size * 0.9 + textW,
-      top: y - Math.max(iconHalf, textH / 2),
-      bottom: y + Math.max(iconHalf, textH / 2),
-    });
+    const ja = String(props.name || "");
+    const en = String(props.en || props["name:en"] || props["name:latin"] || props.name || "");
+    if (layer === "app-stations") {
+      // 駅: マークの右に名前(日本語の画面は、英語(小さく)+「〇〇駅」の2行)
+      const size = stationSize;
+      const textW = currentLang === "ja" ? Math.max((ja.length + 1) * size, en.length * size * 0.75 * 0.58) : en.length * size * 0.58;
+      const half = Math.max(size * 0.7, (currentLang === "ja" ? size * 2.3 : size * 1.3) / 2);
+      rects.push({ left: x - size * 0.7, right: x + size * 0.9 + textW, top: y - half, bottom: y + half });
+    } else {
+      // 区・市・町の名前: 点を真ん中にして、名前を出す(区・市は、日本語の画面では英語(小さく)+日本語の2行)
+      const size = layer === "place_label_city" ? citySize : otherSize;
+      const twoLines = layer === "place_label_city" && currentLang === "ja";
+      const w = currentLang === "ja" ? Math.max(ja.length * size, twoLines ? en.length * size * 0.5 * 0.62 : 0) : en.length * size * 0.6;
+      const h = twoLines ? size * 1.85 : size * 1.25;
+      rects.push({ left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 });
+    }
   });
-  lastStationSig = [...seen].sort().join(";");
+  lastGlLabelSig = [...seen].sort().join(";");
   return rects;
+}
+
+// 互換用(前の名前)
+function stationRects() {
+  return glLabelRects();
+}
+
+// 大きな名前を出している施設(ショッピングモールなど)の敷地の中では、
+// 周りのお店・施設の名前(地図の絵)を出さない(大きな名前と重ならないように)
+let lastPoiHideSig = "";
+function hidePoisInsideBigNames(entries) {
+  const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
+  if (!gl || typeof setPoiHiddenAreas !== "function") return;
+  const sig = entries.map((e) => e.lm.name.ja).sort().join("|");
+  if (sig === lastPoiHideSig) return;
+  lastPoiHideSig = sig;
+  setPoiHiddenAreas(gl, entries.map((e) => e.area));
 }
 
 // いまのズームで出す目印を決めて、重なるものを隠す
@@ -329,6 +393,7 @@ function declutterLandmarks() {
     [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")].map((el) => el.getBoundingClientRect());
   if (z < LANDMARK_MIN_ZOOM) {
     if (map.hasLayer(landmarkLayer)) map.removeLayer(landmarkLayer);
+    hidePoisInsideBigNames([]);
     if (typeof declutterPlaces === "function") declutterPlaces(pinRects()); // 区・市の名前の重なりも判定する
     return;
   }
@@ -347,19 +412,25 @@ function declutterLandmarks() {
   const small = [];
   visible.forEach((e) => (updateLandmarkMode(e) ? big : small).push(e));
 
-  // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。大きな名前どうし・駅の名前とは重ならないようにする)
-  const stations = stationRects();
+  // 2) 大きな名前を先に置く(敷地の上に出すので、お店のピンとは重なってもよい。
+  //    大きな名前どうし・駅の名前・区や市や町の名前とは重ならないようにする。地名・駅名を優先する)
+  const stations = glLabelRects();
   const bigTaken = [];
+  const bigShown = [];
   big.forEach((e) => {
     const el = e.marker.getElement() && e.marker.getElement().querySelector(".landmark-label");
     if (!el) return;
     el.style.visibility = "visible";
     const r = el.getBoundingClientRect();
     if (bigTaken.some((t) => rectsOverlap(r, t)) || stations.some((t) => rectsOverlap(r, t))) el.style.visibility = "hidden";
-    else bigTaken.push(r);
+    else {
+      bigTaken.push(r);
+      bigShown.push(e);
+    }
   });
+  hidePoisInsideBigNames(bigShown);
 
-  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前・駅の名前と重ならないところだけに出す
+  // 3) ふだんの「マーク+名前」は、お店のピン・数字の丸・大きな名前・駅の名前・区や市や町の名前と重ならないところだけに出す
   const taken = [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")]
     .map((el) => el.getBoundingClientRect())
     .concat(bigTaken, stations);
@@ -389,23 +460,32 @@ map.on("zoomend moveend", scheduleDeclutter);
 clusterGroup.on("animationend", scheduleDeclutter); // ピンのまとめ直しが終わったとき
 declutterLandmarks();
 
-// 駅の名前は地図の絵なので、描き終わるのが少しあとになる。描かれた駅が変わったら、重なりを判定し直す
-(function watchStations() {
+// 駅名・地名は地図の絵なので、描き終わるのが少しあとになる。描かれた駅名・地名が変わったら、重なりを判定し直す
+(function watchGlLabels() {
   const gl = typeof vectorMaps !== "undefined" ? vectorMaps[0] : null;
   if (!gl || !gl.on) {
-    setTimeout(watchStations, 1000);
+    setTimeout(watchGlLabels, 1000);
     return;
   }
   gl.on("idle", () => {
-    if (!gl.getLayer("app-stations")) return;
+    const layers = GL_LABEL_LAYERS.filter((id) => gl.getLayer(id));
+    if (!layers.length) return;
     let feats = [];
     try {
-      feats = gl.queryRenderedFeatures({ layers: ["app-stations"] });
+      feats = gl.queryRenderedFeatures({ layers });
     } catch (e) {
       return;
     }
-    const sig = [...new Set(feats.map((f) => `${f.properties.name}|${f.geometry.coordinates[1]}|${f.geometry.coordinates[0]}`))].sort().join(";");
-    if (sig !== lastStationSig) scheduleDeclutter();
+    const sig = [
+      ...new Set(
+        feats
+          .filter((f) => f.geometry && f.geometry.type === "Point")
+          .map((f) => `${f.layer.id}|${(f.properties || {}).name}|${f.geometry.coordinates[1].toFixed(5)}|${f.geometry.coordinates[0].toFixed(5)}`)
+      ),
+    ]
+      .sort()
+      .join(";");
+    if (sig !== lastGlLabelSig) scheduleDeclutter();
   });
 })();
 

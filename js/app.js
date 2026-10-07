@@ -260,6 +260,42 @@ function addAppStations(gl) {
     });
 }
 
+// 周りのお店・施設(poi_label)のうち、地図に出すものの条件
+//   ・バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない
+//   ・hiddenAreas: この範囲の中の施設は出さない(大きな名前を出しているショッピングモールなどの敷地。js/landmarks.js から指定)
+const POI_EXCLUDED_CLASSES = ["railway", "bus", "parking", "bicycle_parking", "bicycle_rental", "toilets", "entrance", "information", "aerialway"];
+function poiFilter(hiddenAreas) {
+  const filter = [
+    "all",
+    ["==", ["geometry-type"], "Point"],
+    ["has", "name"],
+    ["!", ["in", ["get", "class"], ["literal", POI_EXCLUDED_CLASSES]]],
+  ];
+  const polygons = (hiddenAreas || [])
+    .filter((ring) => Array.isArray(ring) && ring.length >= 3)
+    .map((ring) => {
+      const coords = ring.map(([lat, lng]) => [lng, lat]); // 地図のデータは「経度, 緯度」の順
+      const first = coords[0];
+      const last = coords[coords.length - 1];
+      if (first[0] !== last[0] || first[1] !== last[1]) coords.push(first); // 輪を閉じる
+      return [coords];
+    });
+  if (polygons.length) filter.push(["!", ["within", { type: "MultiPolygon", coordinates: polygons }]]);
+  return filter;
+}
+function setPoiHiddenAreas(gl, areas) {
+  try {
+    if (gl.getLayer("poi_label")) gl.setFilter("poi_label", poiFilter(areas));
+  } catch (e) {
+    // うまく指定できなかったときは、ふつうの条件に戻す
+    try {
+      gl.setFilter("poi_label", poiFilter([]));
+    } catch (e2) {
+      // 何もしない
+    }
+  }
+}
+
 // 背景の地図の見た目を、このアプリ向けに変える(地図のデザインが変わってレイヤーが無くなっても、壊れないようにする)
 function customizeBaseMap(gl) {
   const set = (fn) => {
@@ -291,14 +327,7 @@ function customizeBaseMap(gl) {
   //    ・種類ごとのアイコン(🍜 ☕ 🛒 💇 🏢。くわしくは POI_CATEGORIES)。それ以外は小さな丸
   addPoiIcons(gl);
   //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
-  set(() =>
-    gl.setFilter("poi_label", [
-      "all",
-      ["==", "$type", "Point"],
-      ["has", "name"],
-      ["!in", "class", "railway", "bus", "parking", "bicycle_parking", "bicycle_rental", "toilets", "entrance", "information", "aerialway"],
-    ])
-  );
+  set(() => gl.setFilter("poi_label", poiFilter([])));
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
   set(() => gl.setLayoutProperty("poi_label", "icon-size", 1));
