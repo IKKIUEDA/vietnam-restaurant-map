@@ -375,7 +375,7 @@ const ui = {
     typeGrocery: "🛒 食材店",
     filterReset: "× 条件をリセット",
     filterSummary: "🔎 絞り込み",
-    favOnly: "♥ お気に入りのみ表示",
+    favOnly: "♡ 保存した店",
     noPhoto: "写真準備中",
     favAdd: "お気に入りに追加",
     favRemove: "お気に入りから外す",
