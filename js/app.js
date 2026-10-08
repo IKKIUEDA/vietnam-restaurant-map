@@ -125,6 +125,15 @@ function cityLabelField() {
     : ["format", en, {}];
 }
 
+// 周りのお店・施設と、町の名前の書き方
+//   ・日本語の画面: 地図のデータの名前(日本語)のまま
+//   ・英語・ベトナム語の画面: 英語の名前(name:en)があれば英語、無ければローマ字(name:ja-Latn)、それも無ければ元の名前
+//     ※ name:latin は、漢字を中国語の読み(ピンイン)で書き換えたものが入っていることがあるので使わない
+function localNameField() {
+  if (currentLang === "ja") return ["get", "name"];
+  return ["coalesce", ["get", "name:en"], ["get", "name:ja-Latn"], ["get", "name"]];
+}
+
 // 駅の名前の書き方(日本語の画面: 英語(小さく)の下に「〇〇駅」 / それ以外: 英語だけ)
 function stationLabelField() {
   const en = ["case", ["!=", ["get", "en"], ""], ["get", "en"], ["get", "name"]];
@@ -382,6 +391,7 @@ function customizeBaseMap(gl) {
   };
   // ① 丁目・埋立地・島などの細かい地名を消す(町・村などの名前だけ残す)
   set(() => gl.setFilter("place_label_other", ["all", ["==", "$type", "Point"], ["in", "class", "town", "village", "suburb"]]));
+  set(() => gl.setLayoutProperty("place_label_other", "text-field", localNameField()));
   // ② 区・市の名前を、大きく・太く(拡大するほど大きい)。「東京都」の文字は出さない
   set(() => gl.setFilter("place_label_city", ["all", ["==", "$type", "Point"], ["==", "class", "city"], ["!=", "name", "東京都"]]));
   set(() => gl.setLayoutProperty("place_label_city", "text-field", cityLabelField()));
@@ -404,6 +414,7 @@ function customizeBaseMap(gl) {
   //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
   set(() => gl.setFilter("poi_label", poiFilter([])));
   set(() => gl.setLayerZoomRange("poi_label", 15, 24)); // この地図のズーム15 = 一覧の地図のズーム16
+  set(() => gl.setLayoutProperty("poi_label", "text-field", localNameField())); // 英語の画面では、英語の名前
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
   set(() => gl.setLayoutProperty("poi_label", "icon-size", 1));
   set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
@@ -427,6 +438,8 @@ document.getElementById("lang-select").addEventListener("change", () => {
     vectorMaps.forEach((gl) => {
       try {
         gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
+        gl.setLayoutProperty("place_label_other", "text-field", localNameField());
+        gl.setLayoutProperty("poi_label", "text-field", localNameField());
         if (gl.getLayer("app-stations")) gl.setLayoutProperty("app-stations", "text-field", stationLabelField());
       } catch (e) {
         // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
