@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ベトナムフーディー - 日本でベトナムに関するお店・スポットを探そう。</title>
+    <title>ベトナムフーディー - 日本のベトナムを探そう。</title>
 
     <!-- ブラウザのタブのアイコン(ロゴ) -->
     <link rel="icon" type="image/png" href="images/favicon.png" />
@@ -21,7 +21,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261008k" />
+    <link rel="stylesheet" href="css/style.css?v=20261008l" />
   </head>
   <body>
     <header>
@@ -31,7 +31,7 @@
         <img id="app-logo" class="app-logo" src="images/logo.png" width="36" height="48" alt="ベトナムフーディー" />
         <div class="header-titles">
           <h1 id="app-title">ベトナムフーディー</h1>
-          <p id="app-tagline">日本でベトナムに関するお店・スポットを探そう。</p>
+          <p id="app-tagline">日本のベトナムを探そう。</p>
         </div>
       </a>
 
@@ -161,20 +161,20 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261008k"></script>
-    <script src="js/data.js?v=20261008k"></script>
-    <script src="js/app.js?v=20261008k"></script>
+    <script src="js/i18n.js?v=20261008l"></script>
+    <script src="js/data.js?v=20261008l"></script>
+    <script src="js/app.js?v=20261008l"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261008k"></script>
-    <script src="js/landmark-areas.js?v=20261008k"></script>
-    <script src="js/landmarks.js?v=20261008k"></script>
+    <script src="js/station-lines.js?v=20261008l"></script>
+    <script src="js/landmark-areas.js?v=20261008l"></script>
+    <script src="js/landmarks.js?v=20261008l"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261008k"></script>
+    <script src="js/auth.js?v=20261008l"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261008k"></script>
+    <script src="js/auth-modal.js?v=20261008l"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
-    <script src="js/detail.js?v=20261008k"></script>
+    <script src="js/detail.js?v=20261008l"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
