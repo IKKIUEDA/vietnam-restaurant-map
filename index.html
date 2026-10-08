@@ -21,13 +21,13 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261008m" />
+    <link rel="stylesheet" href="css/style.css?v=20261008n" />
 
     <!-- アクセス解析(Google アナリティクス 4): 何人が来て、どれくらいの人がまた来ているかを見るため
          ・GA_MEASUREMENT_ID に、Google アナリティクスの「測定 ID」(G- で始まる文字)を入れると動きます。空なら何もしません
          ・パソコンに保存したファイルを開いたとき(file://)や、localhost では送りません(テストの分が数字に混ざらないように) -->
     <script>
-      window.GA_MEASUREMENT_ID = "";
+      window.GA_MEASUREMENT_ID = "G-H2SJHWT8CM";
       (function () {
         var id = window.GA_MEASUREMENT_ID;
         var host = location.hostname;
@@ -183,20 +183,20 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261008m"></script>
-    <script src="js/data.js?v=20261008m"></script>
-    <script src="js/app.js?v=20261008m"></script>
+    <script src="js/i18n.js?v=20261008n"></script>
+    <script src="js/data.js?v=20261008n"></script>
+    <script src="js/app.js?v=20261008n"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261008m"></script>
-    <script src="js/landmark-areas.js?v=20261008m"></script>
-    <script src="js/landmarks.js?v=20261008m"></script>
+    <script src="js/station-lines.js?v=20261008n"></script>
+    <script src="js/landmark-areas.js?v=20261008n"></script>
+    <script src="js/landmarks.js?v=20261008n"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261008m"></script>
+    <script src="js/auth.js?v=20261008n"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261008m"></script>
+    <script src="js/auth-modal.js?v=20261008n"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
-    <script src="js/detail.js?v=20261008m"></script>
+    <script src="js/detail.js?v=20261008n"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -267,6 +267,7 @@
         storageBucket: "vietnam-foodie.firebasestorage.app",
         messagingSenderId: "431106385765",
         appId: "1:431106385765:web:eb143afac73c11ea58238c",
+        measurementId: "G-H2SJHWT8CM",
       };
 
       // 通信が返ってこないときに、いつまでも待たないようにする
