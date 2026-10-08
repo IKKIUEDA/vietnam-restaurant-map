@@ -24,8 +24,8 @@
 //   price   : 価格帯(省略してもOK。※ 今は、画面には表示していません。データだけ残しています)
 //   hours   : 営業時間(省略してもOK。※ 今は、画面には表示していません。データだけ残しています)
 //             どちらも、まだ調べていないお店は { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" } としています。
-//   type    : お店の種類。"restaurant"(料理店) か "grocery"(食材店)。省略すると "restaurant" として扱います。
-//             食材店は dishes(取り扱い料理)を書かなくてOKです。
+//   type    : お店の種類。"restaurant"(料理店) / "grocery"(食材店) / "cafe"(カフェ)。省略すると "restaurant" として扱います。
+//             食材店・カフェは dishes(取り扱い料理)を書かなくてOKです。
 //   category : カテゴリー(例: "ベトナム料理・居酒屋")。省略してもOK。詳細ページに出ます。英語・ベトナム語は categoryLabels に書きます。
 //   closed  : 定休日(例: "水曜日")。{ ja, en, vi } でもOK。省略してもOK。※ 今は、画面には表示していません(データだけ残しています)。
 //   feature : お店の特徴(省略してもOK。書いたお店だけ画面に表示されます)
@@ -88,6 +88,8 @@ const categoryLabels = {
   "バインミー・フォー": { en: "Banh mi / Pho", vi: "Bánh mì / Phở" },
   "惣菜・テイクアウト": { en: "Deli / Takeout", vi: "Món ăn sẵn / Mang đi" },
   "ベトナム食材店": { en: "Vietnamese grocery", vi: "Tạp hóa Việt" },
+  "ベトナムカフェ": { en: "Vietnamese cafe", vi: "Quán cà phê Việt" },
+  "ベトナムカフェ・軽食": { en: "Vietnamese cafe / Light meals", vi: "Quán cà phê Việt / Đồ ăn nhẹ" },
 };
 
 const restaurants = [
@@ -639,21 +641,6 @@ const restaurants = [
     area: { ja: "千葉・弁天", en: "Chiba / Benten", vi: "Chiba / Benten" },
     dishes: ["ベトナム料理"],
     category: "バインミー",
-  },
-  {
-    id: "min-min-milk-tea-food",
-    name: "Min-Min Milk Tea & Food",
-    address: {
-      ja: "千葉県千葉市中央区登戸1-1-17",
-      en: "1-1-17 Nobuto, Chuo-ku, Chiba, Chiba",
-      vi: "1-1-17 Nobuto, Quận Chuo, Chiba, Chiba",
-    },
-    lat: 35.6098560,
-    lng: 140.1105960,
-    prefecture: "千葉県",
-    area: { ja: "千葉・登戸", en: "Chiba / Nobuto", vi: "Chiba / Nobuto" },
-    dishes: ["ベトナム料理"],
-    category: "ベトナム料理・軽食",
   },
   {
     id: "vietnam-kitchen-sogo-chiba",
@@ -2668,5 +2655,53 @@ const restaurants = [
     prefecture: "埼玉県",
     area: { ja: "川越", en: "Kawagoe", vi: "Kawagoe" },
     category: "ベトナム食材店",
+  },
+
+  // ---- ここから ベトナムカフェ(type: "cafe")----
+  // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(南花園のお店は「番」までの精度)。
+  {
+    id: "min-min-milk-tea-food", // ※ 以前は料理店として登録していたお店。URL が変わらないよう、ID はそのまま
+    type: "cafe",
+    name: { ja: "Min Min Milk Tea Food(ミンミン ミルクティー フード)", en: "Min Min Milk Tea Food", vi: "Min Min Milk Tea Food" },
+    address: {
+      ja: "千葉県千葉市中央区登戸1-1-17 2F",
+      en: "2F, 1-1-17 Nobuto, Chuo-ku, Chiba, Chiba",
+      vi: "2F, 1-1-17 Nobuto, Quận Chuo, Chiba, Chiba",
+    },
+    lat: 35.6098560,
+    lng: 140.1105960,
+    prefecture: "千葉県",
+    area: { ja: "千葉・登戸", en: "Chiba / Nobuto", vi: "Chiba / Nobuto" },
+    category: "ベトナムカフェ・軽食",
+  },
+  {
+    id: "tiem-tra-bo-chan-funabashi",
+    type: "cafe",
+    name: { ja: "TIỆM TRÀ BƠ CHAN(ボーちゃんカフェ)", en: "Tiệm Trà Bơ Chan (Bo-chan Cafe)", vi: "Tiệm Trà Bơ Chan" },
+    address: {
+      ja: "千葉県船橋市湊町2-1-18 1F",
+      en: "1F, 2-1-18 Minatocho, Funabashi, Chiba",
+      vi: "1F, 2-1-18 Minatocho, Funabashi, Chiba",
+    },
+    lat: 35.6953930,
+    lng: 139.9839170,
+    prefecture: "千葉県",
+    area: { ja: "船橋・湊町", en: "Funabashi / Minatocho", vi: "Funabashi / Minatocho" },
+    category: "ベトナムカフェ",
+  },
+  {
+    id: "vietnam-coffee-b52-chiba",
+    type: "cafe",
+    name: { ja: "ベトナムコーヒー B52 CHIBA", en: "Vietnam Coffee B52 CHIBA", vi: "Cà phê Việt B52 CHIBA" },
+    address: {
+      ja: "千葉県千葉市花見川区南花園1-44-11 玉ビル3F",
+      en: "Tama Bldg. 3F, 1-44-11 Minamihanazono, Hanamigawa-ku, Chiba, Chiba",
+      vi: "Tama Bldg. 3F, 1-44-11 Minamihanazono, Quận Hanamigawa, Chiba, Chiba",
+    },
+    lat: 35.6513290,
+    lng: 140.0746770,
+    prefecture: "千葉県",
+    area: { ja: "新検見川", en: "Shin-Kemigawa", vi: "Shin-Kemigawa" },
+    category: "ベトナムカフェ",
   },
 ];
