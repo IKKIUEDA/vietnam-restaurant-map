@@ -975,7 +975,7 @@ scanButton.addEventListener("click", runScan);
 //     閉じるときは、#content の元の場所(#shop-list の次)へ戻す
 //   ・写真(投稿された写真の1枚目)・Tips件数・レビュー件数は、カードを出したあとに読み込んで、あとから差し込む
 //     (地図のポップアップの「💡 Tips」「⭐ レビュー」と、同じ考え方)
-//   ・スキャンだけでなく、スマホ(幅の狭い画面)での検索・お気に入り・料理の絞り込み、「お店一覧を見る」ボタンでも、
+//   ・スキャンだけでなく、スマホ(幅の狭い画面)での検索・お気に入り・料理の絞り込み、「リストで見る」ボタンでも、
 //     この同じオーバーレイを開く(syncMobileListOverlay を参照)。見出しの文字だけ、開いた理由(scanOverlayReason)で変える
 const contentEl = document.getElementById("content");
 const mapWrapEl = document.getElementById("map-wrap");
@@ -988,13 +988,13 @@ const scanOverlayMapSlot = document.getElementById("scan-overlay-map-slot");
 const listOverlayPanel = document.getElementById("list-overlay-panel");
 const listOverlayButton = document.getElementById("list-overlay-button");
 let scanOverlayOpen = false;
-let scanOverlayReason = "scan"; // "scan"(🔍スキャンする) / "list"(検索・絞り込み・「お店一覧を見る」ボタン)
+let scanOverlayReason = "scan"; // "scan"(🔍スキャンする) / "list"(検索・絞り込み・「リストで見る」ボタン)
 
 function renderScanOverlayTexts() {
   const t = ui[currentLang];
   scanOverlayBackBtn.textContent = t.scanOverlayBack;
-  scanOverlayTitleEl.textContent = scanOverlayReason === "scan" ? t.scanOverlayTitle : t.listTitle;
-  listOverlayButton.textContent = t.listOverlayButton;
+  scanOverlayTitleEl.textContent = scanOverlayReason === "scan" ? t.scanOverlayTitle : resultHeadingText();
+  listOverlayButton.textContent = t.listOverlayButton(entries.filter((entry) => entry.visible).length);
 }
 
 // カードの画像を設定する: 投稿された写真の1枚目(entry.scanPhotoUrl)があれば、それ。無ければ、一覧のカードと同じ、いつもの画像
@@ -1081,13 +1081,13 @@ function renderScanOverlay() {
 }
 
 // オーバーレイを開く(まだ開いていなければ、本物の地図をこの中に移動する。すでに開いていれば、中身だけ作り直す)
-//   reason: "scan"(🔍スキャンする) / "list"(検索・絞り込み・「お店一覧を見る」ボタン)。見出しの文字を切り替えるだけで、中身の作り方は同じ
+//   reason: "scan"(🔍スキャンする) / "list"(検索・絞り込み・「リストで見る」ボタン)。見出しの文字を切り替えるだけで、中身の作り方は同じ
 function openScanOverlay(reason) {
   scanOverlayReason = reason || "scan";
   if (!scanOverlayOpen) {
     scanOverlayOpen = true;
     scanOverlay.hidden = false;
-    listOverlayButton.hidden = true; // オーバーレイが開いている間は、「お店一覧を見る」ボタンは要らない
+    listOverlayButton.hidden = true; // オーバーレイが開いている間は、「リストで見る」ボタンは要らない
     scanOverlayMapSlot.appendChild(mapWrapEl); // 一覧の下に、本物の地図(#map-wrap)を、そのまま移動する
     scanOverlayScrollEl.scrollTop = 0;
     requestAnimationFrame(() => map.invalidateSize()); // 大きさが変わったので、地図に測り直させる
@@ -1100,18 +1100,18 @@ function closeScanOverlay() {
   if (!scanOverlayOpen) return;
   scanOverlayOpen = false;
   scanOverlay.hidden = true;
-  listOverlayButton.hidden = false; // 閉じたら、また「お店一覧を見る」ボタンを出す(スマホでは、CSSで見えるようになる)
+  listOverlayButton.hidden = false; // 閉じたら、また「リストで見る」ボタンを出す(スマホでは、CSSで見えるようになる)
   contentEl.appendChild(mapWrapEl); // 元の場所へ戻す(#shop-list の次 = #content の最後の子)
   requestAnimationFrame(() => map.invalidateSize());
 }
 
 scanOverlayBackBtn.addEventListener("click", closeScanOverlay);
 
-// 「お店一覧を見る」ボタン(スマホだけ): 絞り込み条件に関わらず、いまの一覧をオーバーレイで見せる
+// 「リストで見る」ボタン(スマホだけ): 絞り込み条件に関わらず、いまの一覧をオーバーレイで見せる
 listOverlayButton.addEventListener("click", () => openScanOverlay("list"));
 
 // スマホ(幅の狭い画面)では、検索・お気に入り・料理の絞り込みが1つでも効いていれば、一覧オーバーレイを自動的に開く
-//   (無ければ閉じて、「お店一覧を見る」ボタンだけの状態に戻す)。PC では、これまで通り #shop-list にその場で表示するので、何もしない
+//   (無ければ閉じて、「リストで見る」ボタンだけの状態に戻す)。PC では、これまで通り #shop-list にその場で表示するので、何もしない
 //   ・スキャンは、これとは別に runScan が openScanOverlay("scan") を直接呼ぶ(PC・スマホ、どちらでも、これまで通り開く)
 function syncMobileListOverlay() {
   if (!narrowScreen.matches) return;
@@ -1410,6 +1410,68 @@ function makeChip(label, isActive, onClick) {
 }
 
 // 絞り込みボタンと件数を、いまの状態・言語に合わせて作り直す
+// 一覧の見出し: 「何が、どこに、何件あるのか」を一目で分かるように出す
+//   例: 関東のベトナム料理・食材店 163件 / 新宿のベトナム料理 24件 / 千葉駅周辺のベトナム料理・食材店 6件
+//   ・何が : 種類の絞り込み(すべて / 料理店 / 食材店)と、「♡ 保存した店」
+//   ・どこに: 検索した言葉(「周辺」「お店」などの言葉は取り除く) / 🔍スキャンした範囲 / 何も無ければ「関東」
+function cleanSearchDisplay(raw) {
+  const alt = (words) =>
+    [...new Set(words.flatMap((w) => [w, normalizeText(w)]))]
+      .sort((a, b) => b.length - a.length)
+      .map(escapeRegExp)
+      .join("|");
+  const particles = alt(INTENT_PARTICLES);
+  const area = alt(INTENT_AREA_WORDS);
+  const extra = alt(INTENT_EXTRA_WORDS);
+  const re = new RegExp(`(?:${particles})?(?:${area})(?:${particles})?(?:${extra})?|(?:${particles})?(?:${extra})`, "gi");
+  const cleaned = String(raw)
+    .replace(/駅前|駅近(?!く)/g, "駅")
+    .replace(re, " ")
+    .replace(/[\s\u3000]+/g, " ")
+    .trim();
+  return cleaned || String(raw).trim();
+}
+let areaWordSet = null; // 都道府県・エリアの名前(整えたもの)。検索の言葉が「場所」かどうかを見分ける
+function isAreaWord(term) {
+  if (!areaWordSet) {
+    const words = [];
+    prefectures.forEach((p) => words.push(p.key, ...allTexts(p.label)));
+    restaurants.forEach((shop) => words.push(...allTexts(shop.area)));
+    areaWordSet = new Set(words.map(normalizeText).filter(Boolean));
+  }
+  return areaWordSet.has(term);
+}
+function resultHeadingParts() {
+  const t = ui[currentLang];
+  const what = t.resultWhat(selectedType === ALL ? null : selectedType, favoritesOnly);
+  let where;
+  if (searchTerms.length > 0) {
+    const place = cleanSearchDisplay(searchInput.value);
+    const one = searchTerms.length === 1 ? searchTerms[0] : null;
+    if (one && isAreaWord(one)) where = t.resultWhere("place", place); // 都道府県・エリア → 「東京の」(駅の名前と同じでも、こちらを優先)
+    else if (one && searchPlaces.has(one)) where = t.resultWhere("near", place); // 駅の名前 → 「千葉駅周辺の」
+    else where = t.resultWhere("search", place); // それ以外(店名・料理名など)
+  } else if (scanBounds !== null) {
+    where = t.resultWhere("scan");
+  } else {
+    where = t.resultWhere("default");
+  }
+  const n = entries.filter((entry) => entry.visible).length;
+  return { label: t.resultHeading(where, what), count: t.resultCount(n), n };
+}
+function resultHeadingText() {
+  const { label, count } = resultHeadingParts();
+  return `${label} ${count}`;
+}
+function renderResultHeading() {
+  const { label, count, n } = resultHeadingParts();
+  const el = document.getElementById("list-title");
+  el.innerHTML = `<span class="result-label">${esc(label)}</span> <span class="result-count">${esc(count)}</span>`;
+  // スマホの「リストで見る」ボタンと、開いているリストの見出しも、同じ件数にする
+  listOverlayButton.textContent = ui[currentLang].listOverlayButton(n);
+  if (scanOverlayOpen && scanOverlayReason !== "scan") scanOverlayTitleEl.textContent = `${label} ${count}`;
+}
+
 function renderFilters() {
   const t = ui[currentLang];
   document.getElementById("dish-label").textContent = t.filterDish;
@@ -1435,12 +1497,10 @@ function renderFilters() {
 
   const shown = entries.filter((entry) => entry.visible).length;
   const noFavorites = favoritesOnly && favorites.size === 0;
-  filterCount.textContent =
-    shown > 0
-      ? t.filterCount(shown)
-      : noFavorites
-        ? t.filterEmptyFav
-        : t.filterEmpty;
+  // 件数は、上の見出し(「東京のベトナム料理 128件」)に出すので、ここは0件のときの案内だけ
+  filterCount.textContent = shown > 0 ? "" : noFavorites ? t.filterEmptyFav : t.filterEmpty;
+  filterCount.hidden = shown > 0;
+  renderResultHeading();
 
   // 「× 条件をリセット」は、絞り込みが1つでも選ばれているときだけ表示する
   filterReset.textContent = t.filterReset;
@@ -1597,7 +1657,7 @@ function renderHierarchicalList() {
 
     const prefSummary = document.createElement("summary");
     prefSummary.className = "pref-header";
-    prefSummary.innerHTML = `${esc(prefectureLabel(prefKey))} <span class="group-count">(${count})</span>`;
+    prefSummary.innerHTML = `${esc(prefectureLabel(prefKey))} <span class="group-count">${esc(ui[currentLang].resultCount(count))}</span>`;
 
     const areaUl = document.createElement("ul");
     areaUl.className = "area-list";
@@ -1619,7 +1679,7 @@ function renderHierarchicalList() {
       // 幅が足りないときに縮めて「…」で省略する(狭い画面でも、見出しの行がはみ出さないように)
       areaSummary.innerHTML =
         `<span class="area-name">${esc(pick(areaLabel))}</span>` +
-        `<span class="group-count">(${areaEntries.length})</span>` +
+        `<span class="group-count">${esc(t.resultCount(areaEntries.length))}</span>` +
         `<span class="area-preview">- ${esc(areaPreviewText(t, areaEntries))}</span>`;
 
       const shopUl = document.createElement("ul");
@@ -1753,7 +1813,7 @@ function showTexts() {
   document.getElementById("app-title").textContent = ui[currentLang].title;
   document.getElementById("app-logo").alt = ui[currentLang].title; // ロゴの代替テキスト
   document.getElementById("app-tagline").textContent = ui[currentLang].tagline;
-  document.getElementById("list-title").textContent = ui[currentLang].listTitle;
+  renderResultHeading(); // 一覧の見出し(どこの・何が・何件)
   renderScanTexts();
   if (scanOverlayOpen) renderScanOverlay(); // 開いていれば、見出し・戻るボタン・カードの文字も、選ばれた言語で作り直す
   else renderScanOverlayTexts(); // 閉じていても、見出し・戻るボタンの文字だけは、次に開いたときのために整えておく
