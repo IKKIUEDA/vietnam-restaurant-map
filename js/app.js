@@ -1448,8 +1448,8 @@ function resultHeadingParts() {
   if (searchTerms.length > 0) {
     const place = cleanSearchDisplay(searchInput.value);
     const one = searchTerms.length === 1 ? searchTerms[0] : null;
-    if (one && searchPlaces.has(one)) where = t.resultWhere("near", place); // 駅の名前 → 「〇〇駅周辺」
-    else if (one && isAreaWord(one)) where = t.resultWhere("place", place); // 都道府県・エリア → 「新宿の」
+    if (one && isAreaWord(one)) where = t.resultWhere("place", place); // 都道府県・エリア → 「東京の」(駅の名前と同じでも、こちらを優先)
+    else if (one && searchPlaces.has(one)) where = t.resultWhere("near", place); // 駅の名前 → 「千葉駅周辺の」
     else where = t.resultWhere("search", place); // それ以外(店名・料理名など)
   } else if (scanBounds !== null) {
     where = t.resultWhere("scan");
