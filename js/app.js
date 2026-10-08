@@ -355,6 +355,16 @@ function poiFilter(hiddenAreas) {
     ["has", "name"],
     ["!", ["in", ["get", "class"], ["literal", POI_EXCLUDED_CLASSES]]],
   ];
+  // 英語・ベトナム語の画面では、英語(またはローマ字)の名前が分からない施設は出さない
+  //   (英語の名前がある / ローマ字の読みがある / 名前がもともとアルファベット(name と name:latin が同じ)のどれか)
+  if (currentLang !== "ja") {
+    filter.push([
+      "any",
+      ["has", "name:en"],
+      ["has", "name:ja-Latn"],
+      ["==", ["get", "name"], ["coalesce", ["get", "name:latin"], ""]],
+    ]);
+  }
   const polygons = (hiddenAreas || [])
     .filter((ring) => Array.isArray(ring) && ring.length >= 3)
     .map((ring) => {
@@ -367,7 +377,9 @@ function poiFilter(hiddenAreas) {
   if (polygons.length) filter.push(["!", ["within", { type: "MultiPolygon", coordinates: polygons }]]);
   return filter;
 }
+let poiHiddenAreas = []; // いま、施設の名前を出さないようにしている敷地(言語を切り替えたときに使う)
 function setPoiHiddenAreas(gl, areas) {
+  poiHiddenAreas = areas || [];
   try {
     if (gl.getLayer("poi_label")) gl.setFilter("poi_label", poiFilter(areas));
   } catch (e) {
@@ -440,6 +452,7 @@ document.getElementById("lang-select").addEventListener("change", () => {
         gl.setLayoutProperty("place_label_city", "text-field", cityLabelField());
         gl.setLayoutProperty("place_label_other", "text-field", localNameField());
         gl.setLayoutProperty("poi_label", "text-field", localNameField());
+        if (gl.getLayer("poi_label")) gl.setFilter("poi_label", poiFilter(poiHiddenAreas)); // 英語名の無い施設を出す・出さない
         if (gl.getLayer("app-stations")) gl.setLayoutProperty("app-stations", "text-field", stationLabelField());
       } catch (e) {
         // 地図の準備ができていないときは、何もしない(準備ができたときに customizeBaseMap が反映する)
