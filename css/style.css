@@ -763,13 +763,12 @@ header h1 {
   background: #1e63d6;
 }
 
-/* カフェのピンは茶色(☕ は、食材店の 🛒 と同じように白一色) */
+/* カフェのピンは茶色に、白いコーヒーカップの絵 */
 .shop-marker-cafe .shop-pin {
   background: #795548;
 }
-.shop-marker-cafe .shop-pin-icon {
-  font-size: 16px;
-  filter: brightness(0) invert(1);
+.shop-marker-cafe .shop-pin-icon svg {
+  display: block;
 }
 
 /* 食材店の 🛒 は、青の上で見やすいよう白一色にする(絵文字の形だけを残して白くぬる) */
