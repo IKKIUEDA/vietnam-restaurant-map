@@ -238,12 +238,17 @@ const ui = {
         body: "本サービスは、ログイン状態の保持など、サービスを正しく動作させるために、Cookieや、それに類する技術を利用する場合があります。ブラウザの設定により、Cookieの利用を制限できますが、その場合、一部の機能が正しく動作しないことがあります。",
       },
       {
-        title: "7. お問い合わせ窓口",
+        title: "7. アクセス解析ツールについて",
+        body: "本サービスは、サービスの利用状況(訪問者数・再訪問の割合・よく見られているお店や検索された言葉など)を把握し、改善に役立てるため、Google社のアクセス解析ツール「Google アナリティクス」を利用しています。Google アナリティクスは、Cookieを使って、個人を特定しない形で利用状況の情報を収集し、Google社に送信します。収集・処理の方法は、Google社のポリシーに基づきます。ブラウザのアドオン(Google アナリティクス オプトアウト アドオン)を使うと、情報の収集を止めることができます。",
+        list: ["Google のプライバシーポリシー: https://policies.google.com/privacy", "Google アナリティクス オプトアウト アドオン: https://tools.google.com/dlpage/gaoptout"],
+      },
+      {
+        title: "8. お問い合わせ窓口",
         body: "本ページの内容、または取得した情報の取り扱いについて、ご質問・ご要望がある場合は、以下までお問い合わせください。",
         list: ["sales@compass-story.com"],
       },
       {
-        title: "8. プライバシーポリシーの変更について",
+        title: "9. プライバシーポリシーの変更について",
         body: "本ページの内容は、必要に応じて変更することがあります。変更後の内容は、本ページに掲載した時点から効力を持ちます。",
       },
     ],
@@ -630,12 +635,17 @@ const ui = {
         body: "The Service may use cookies or similar technologies, for example to keep you signed in, so that the Service works correctly. You can restrict cookies through your browser settings, but some features may not work correctly if you do.",
       },
       {
-        title: "7. Contact",
+        title: "7. Analytics",
+        body: "To understand how the Service is used (such as the number of visitors, how many come back, which shops are viewed and which words are searched) and to improve it, the Service uses Google Analytics, an analytics tool provided by Google. Google Analytics uses cookies to collect usage information in a form that does not identify individuals, and sends it to Google. It is collected and processed in accordance with Google's policies. You can stop this collection with a browser add-on (Google Analytics Opt-out Browser Add-on).",
+        list: ["Google Privacy Policy: https://policies.google.com/privacy", "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"],
+      },
+      {
+        title: "8. Contact",
         body: "If you have any questions about this page, or about how your information is handled, please contact us at the address below.",
         list: ["sales@compass-story.com"],
       },
       {
-        title: "8. Changes to this Privacy Policy",
+        title: "9. Changes to this Privacy Policy",
         body: "This page may be changed as needed. Any changes take effect once posted on this page.",
       },
     ],
@@ -1021,12 +1031,17 @@ const ui = {
         body: "Dịch vụ có thể sử dụng cookie hoặc công nghệ tương tự, ví dụ để duy trì trạng thái đăng nhập, nhằm giúp Dịch vụ hoạt động đúng. Bạn có thể hạn chế cookie qua cài đặt trình duyệt, nhưng khi đó một số tính năng có thể không hoạt động đúng.",
       },
       {
-        title: "7. Liên hệ",
+        title: "7. Công cụ phân tích truy cập",
+        body: "Để nắm tình hình sử dụng Dịch vụ (số người truy cập, tỷ lệ quay lại, các quán được xem và từ khóa được tìm kiếm, v.v.) và cải thiện Dịch vụ, chúng tôi sử dụng Google Analytics, công cụ phân tích truy cập của Google. Google Analytics dùng cookie để thu thập thông tin sử dụng dưới dạng không xác định cá nhân và gửi đến Google. Việc thu thập và xử lý tuân theo chính sách của Google. Bạn có thể ngừng việc thu thập bằng tiện ích trình duyệt (Google Analytics Opt-out Browser Add-on).",
+        list: ["Chính sách quyền riêng tư của Google: https://policies.google.com/privacy", "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"],
+      },
+      {
+        title: "8. Liên hệ",
         body: "Nếu bạn có câu hỏi về nội dung trang này, hoặc về cách xử lý thông tin đã thu thập, vui lòng liên hệ theo địa chỉ dưới đây.",
         list: ["sales@compass-story.com"],
       },
       {
-        title: "8. Thay đổi Chính sách quyền riêng tư",
+        title: "9. Thay đổi Chính sách quyền riêng tư",
         body: "Nội dung trang này có thể được thay đổi khi cần thiết. Nội dung sau khi thay đổi sẽ có hiệu lực kể từ khi được đăng trên trang này.",
       },
     ],
