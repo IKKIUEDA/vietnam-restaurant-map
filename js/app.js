@@ -578,8 +578,19 @@ map.addLayer(clusterGroup);
 let selectedEntry = null;
 //   toTop が true(ピンを選んだとき)は、そのお店のカードが一覧の一番上に来るまでスクロールする。
 //   false(詳細ページから戻ったときなど)は、画面外にあるときだけ、見える位置までスクロールする
+// アクセス解析(index.html の Google アナリティクス)に、出来事を送る。アクセス解析が無いときは、何もしない
+function trackEvent(name, params) {
+  try {
+    if (typeof window.gtag === "function") window.gtag("event", name, params || {});
+  } catch (e) {
+    // アクセス解析の失敗で、サイトの動きを止めない
+  }
+}
+
 function setSelected(entry, toTop = false) {
   if (selectedEntry === entry) return;
+  // どのお店がよく見られているか(地図のピン・一覧から選ばれたとき)
+  if (entry) trackEvent("select_shop", { shop_id: entry.shop.id, shop_name: pick(entry.shop.name), shop_type: shopType(entry.shop) });
   if (selectedEntry) selectedEntry.item.classList.remove("selected"); // 前の選択を解除
   selectedEntry = entry;
   if (entry) {
@@ -1784,9 +1795,19 @@ function selectDish(key) {
 
 // 検索ボックス: 入力するたびに絞り込む(日本語入力の変換中も、リアルタイムで反映される)
 const searchInput = document.getElementById("search-input");
+// どんな言葉で検索されているか(入力が1.5秒止まったときに1回だけ送る。打っている途中の文字は送らない)
+let searchTrackTimer = null;
+function scheduleSearchTracking() {
+  clearTimeout(searchTrackTimer);
+  searchTrackTimer = setTimeout(() => {
+    const term = searchInput.value.trim();
+    if (term) trackEvent("search", { search_term: term.slice(0, 100), results: entries.filter((e) => e.visible).length });
+  }, 1500);
+}
 searchInput.addEventListener("focus", ensureStationIndex); // 駅の名前で探せるよう、駅のデータを先に読み込んでおく
 searchInput.addEventListener("input", () => {
   ensureStationIndex();
+  scheduleSearchTracking();
   searchTerms = buildSearchTerms(searchInput.value);
   applyFilters(true);
 });
