@@ -17,7 +17,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ベトナムフーディー - 日本のベトナムを探そう。</title>
     <!-- Google の検索結果に出る説明文 -->
-    <meta name="description" content="日本のベトナムを探そう。東京・神奈川・千葉・埼玉のベトナム料理店・ベトナム食材店を、地図や駅名から探せるサービスです。" />
+    <meta name="description" content="日本のベトナムを探そう。東京・神奈川・千葉・埼玉のベトナム料理店・ベトナム食材店・ベトナムカフェを、地図や駅名から探せるサービスです。" />
+    <!-- LINE・X・Facebook などでリンクを送ったときに出る、タイトル・説明・画像のカード(OGP) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ベトナムフーディー" />
+    <meta property="og:title" content="ベトナムフーディー｜日本のベトナムを探そう。" />
+    <meta property="og:description" content="東京・神奈川・千葉・埼玉のベトナム料理店・ベトナム食材店・ベトナムカフェを、地図や駅名から探せるサービスです。" />
+    <meta property="og:url" content="https://vietnamfoodie.compass-story.net/" />
+    <meta property="og:image" content="https://vietnamfoodie.compass-story.net/images/ogp.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ベトナムフーディー 日本のベトナムを探そう。ベトナム料理店・食材店・カフェを地図や駅名から探せる" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <!-- ブラウザのタブのアイコン(ロゴ) -->
     <link rel="icon" type="image/png" href="images/favicon.png" />
@@ -35,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261008o" />
+    <link rel="stylesheet" href="css/style.css?v=20261009a" />
   </head>
   <body>
     <header>
@@ -81,7 +93,7 @@
     <div id="content">
       <!-- お店の一覧(app.js が中身を作ります) -->
       <aside id="shop-list">
-        <h2 id="list-title">関東のベトナム料理・食材店</h2>
+        <h2 id="list-title">関東のベトナム料理・食材店・カフェ</h2>
 
         <!-- 絞り込みボタン(app.js が、data.js の内容からボタンを作ります) -->
         <div id="filter-panel">
@@ -175,20 +187,20 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261008o"></script>
-    <script src="js/data.js?v=20261008o"></script>
-    <script src="js/app.js?v=20261008o"></script>
+    <script src="js/i18n.js?v=20261009a"></script>
+    <script src="js/data.js?v=20261009a"></script>
+    <script src="js/app.js?v=20261009a"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261008o"></script>
-    <script src="js/landmark-areas.js?v=20261008o"></script>
-    <script src="js/landmarks.js?v=20261008o"></script>
+    <script src="js/station-lines.js?v=20261009a"></script>
+    <script src="js/landmark-areas.js?v=20261009a"></script>
+    <script src="js/landmarks.js?v=20261009a"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261008o"></script>
+    <script src="js/auth.js?v=20261009a"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261008o"></script>
+    <script src="js/auth-modal.js?v=20261009a"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
-    <script src="js/detail.js?v=20261008o"></script>
+    <script src="js/detail.js?v=20261009a"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。

@@ -463,18 +463,22 @@ document.getElementById("lang-select").addEventListener("change", () => {
 
 createBaseLayer().addTo(map);
 
-// お店のピン(料理店は「🍽️」の白地に緑の丸、食材店(type: "grocery")は「🛒」の白地にオレンジの丸)。
+// お店のピン(しずく形。料理店 = 赤に 🍽️、食材店(type: "grocery")= 青に白い 🛒、カフェ(type: "cafe")= 茶色に白い ☕)。
 // 一覧の地図と、詳細ページの地図で、同じものを使う
 //   ・まとめ表示(クラスター)の丸い数字アイコンは、これとは別(.shop-cluster)で、変更していない
-//   ・現在地・起点の目印(.user-location の青い点)とも、別の見た目(形・色)にして、見分けられるようにしている
-// ※ 地図の周りの施設(🍜 などの白い丸)と見分けやすいよう、このアプリのお店は「しずく形のピン」(料理店=赤、食材店=青)にしている
+//   ・現在地・起点の目印(.user-location の青い点)とも、別の見た目(形)にして、見分けられるようにしている
+// ※ 地図の周りの施設(🍜 ☕ などの白い丸)と見分けやすいよう、このアプリのお店は「しずく形のピン」にしている
 //   ・ピンの先が、お店の場所(緯度・経度)を指す
-//   ・中の白い丸に、料理店は 🍽️、食材店は 🛒
+const SHOP_PIN_STYLES = {
+  restaurant: { className: "shop-marker", icon: "🍽️" },
+  grocery: { className: "shop-marker shop-marker-grocery", icon: "🛒" },
+  cafe: { className: "shop-marker shop-marker-cafe", icon: "☕" },
+};
 function createShopIcon(shop) {
-  const isGrocery = shop && shop.type === "grocery";
+  const style = SHOP_PIN_STYLES[shopType(shop || {})] || SHOP_PIN_STYLES.restaurant;
   return L.divIcon({
-    className: isGrocery ? "shop-marker shop-marker-grocery" : "shop-marker",
-    html: `<span class="shop-pin"><span class="shop-pin-icon">${isGrocery ? "🛒" : "🍽️"}</span></span>`,
+    className: style.className,
+    html: `<span class="shop-pin"><span class="shop-pin-icon">${style.icon}</span></span>`,
     iconSize: [36, 44],
     iconAnchor: [18, 38], // ピンの先が、実際の場所に来るようにする
     popupAnchor: [0, -36], // ポップアップは、ピンの上に開く
@@ -1160,11 +1164,11 @@ const filterReset = document.getElementById("filter-reset");
 
 const ALL = "all"; // 「すべて」が選ばれている状態
 let selectedDish = ALL; // 選択中の料理(dishTypes の key)
-let selectedType = ALL; // 選択中のお店の種類("restaurant" か "grocery")
+let selectedType = ALL; // 選択中のお店の種類("restaurant" / "grocery" / "cafe")
 
-// お店の種類。data.js で type を書いていないお店は、料理店("restaurant")として扱う
+// お店の種類("restaurant" 料理店 / "grocery" 食材店 / "cafe" カフェ)。data.js で type を書いていないお店は、料理店として扱う
 function shopType(shop) {
-  return shop.type === "grocery" ? "grocery" : "restaurant";
+  return shop.type === "grocery" || shop.type === "cafe" ? shop.type : "restaurant";
 }
 let searchTerms = []; // 検索ボックスに入力された言葉(スペース区切り。整えたもの)
 let lastFitKey = entries.map((_, i) => i).join(","); // 前回、地図を合わせたときの「表示中のお店」
@@ -1488,14 +1492,18 @@ function renderFilters() {
   document.getElementById("dish-label").textContent = t.filterDish;
   document.getElementById("type-label").textContent = t.filterType;
 
-  // 種類のボタン(すべて/料理店/食材店)
-  typeChips.replaceChildren(
+  // 種類のボタン(すべて/料理店/食材店/カフェ)。カフェのボタンは、カフェが1件でも登録されているときだけ出す
+  const typeButtons = [
     makeChip(t.filterAll, selectedType === ALL, () => selectType(ALL)),
     makeChip(t.typeRestaurant, selectedType === "restaurant", () => selectType("restaurant")),
-    makeChip(t.typeGrocery, selectedType === "grocery", () => selectType("grocery"))
-  );
-  // 食材店を選んでいるときは、料理の絞り込みは関係ないので隠す
-  const hideDish = selectedType === "grocery";
+    makeChip(t.typeGrocery, selectedType === "grocery", () => selectType("grocery")),
+  ];
+  if (restaurants.some((shop) => shopType(shop) === "cafe")) {
+    typeButtons.push(makeChip(t.typeCafe, selectedType === "cafe", () => selectType("cafe")));
+  }
+  typeChips.replaceChildren(...typeButtons);
+  // 食材店・カフェを選んでいるときは、料理の絞り込みは関係ないので隠す
+  const hideDish = selectedType === "grocery" || selectedType === "cafe";
   document.getElementById("dish-label").hidden = hideDish;
   dishChips.hidden = hideDish;
 
@@ -1781,10 +1789,10 @@ function applyFilters(onlyIfChanged = false, skipFit = false) {
   syncMobileListOverlay(); // スマホでは、絞り込み条件に合わせて、一覧オーバーレイを自動で開閉する(PC では何もしない)
 }
 
-// 種類を選ぶ(食材店を選んだときは、料理の絞り込みを「すべて」に戻す。食材店には料理の情報がないため)
+// 種類を選ぶ(食材店・カフェを選んだときは、料理の絞り込みを「すべて」に戻す。料理の情報がないため)
 function selectType(key) {
   selectedType = key;
-  if (key === "grocery") selectedDish = ALL;
+  if (key === "grocery" || key === "cafe") selectedDish = ALL;
   applyFilters();
 }
 

@@ -5,7 +5,7 @@ const ui = {
   ja: {
     title: "ベトナムフーディー",
     tagline: "日本のベトナムを探そう。",
-    listTitle: "ベトナム料理・食材店", // (見出しは、下の result〜 で「どこの・何が・何件」を作ります)
+    listTitle: "ベトナム料理・食材店・カフェ", // (見出しは、下の result〜 で「どこの・何が・何件」を作ります)
     mapLink: "Googleマップで見る",
     scanButton: "🔍スキャンする",
     scanStatus: "周辺のお店を検索中",
@@ -15,14 +15,14 @@ const ui = {
     listOverlayButton: (n) => `📋 ${n}件をリストで見る`,
     // 一覧の見出し: 「何が、どこに、何件あるのか」(例: 東京のベトナム料理 128件 / 新宿のベトナム料理・食材店 24件)
     resultWhat: (type, saved) =>
-      (saved ? "保存した" : "") + ({ restaurant: "ベトナム料理", grocery: "ベトナム食材店" }[type] || "ベトナム料理・食材店"),
+      (saved ? "保存した" : "") + ({ restaurant: "ベトナム料理", grocery: "ベトナム食材店", cafe: "ベトナムカフェ" }[type] || "ベトナム料理・食材店・カフェ"),
     resultWhere: (kind, place) =>
       ({ default: "関東", scan: "この周辺", near: `${place}周辺`, search: place }[kind] || place),
     resultHeading: (where, what) => `${where}の${what}`,
     resultCount: (n) => `${n}件`,
     areaPreviewSeparator: "、",
     areaPreviewMore: "ほか",
-    nearbyNote: "現在地から近いベトナム料理店・食材店を表示するために位置情報を使用します。位置情報は保存されません。",
+    nearbyNote: "現在地から近いベトナム料理店・食材店・カフェを表示するために位置情報を使用します。位置情報は保存されません。",
     detailLink: "詳細を見る",
     mapBtn: "地図で見る",
     detailBack: "← 一覧に戻る",
@@ -385,6 +385,7 @@ const ui = {
     filterType: "種類",
     typeRestaurant: "🍜 料理店",
     typeGrocery: "🛒 食材店",
+    typeCafe: "☕ カフェ",
     filterReset: "× 条件をリセット",
     filterSummary: "🔎 絞り込み",
     favOnly: "♡ 保存した店",
@@ -401,7 +402,7 @@ const ui = {
   en: {
     title: "Vietnam Foodie",
     tagline: "Discover Vietnam-related shops and spots in Japan.",
-    listTitle: "Vietnamese restaurants & grocery stores",
+    listTitle: "Vietnamese restaurants, grocery stores & cafes",
     mapLink: "View on Google Maps",
     scanButton: "🔍 Scan",
     scanStatus: "Searching nearby shops…",
@@ -411,7 +412,8 @@ const ui = {
     listOverlayButton: (n) => `📋 View ${n} in a list`,
     resultWhat: (type, saved) =>
       (saved ? "Saved " : "") +
-      ({ restaurant: "Vietnamese restaurants", grocery: "Vietnamese grocery stores" }[type] || "Vietnamese restaurants & grocery stores"),
+      ({ restaurant: "Vietnamese restaurants", grocery: "Vietnamese grocery stores", cafe: "Vietnamese cafes" }[type] ||
+        "Vietnamese restaurants, grocery stores & cafes"),
     resultWhere: (kind, place) =>
       ({ default: "in the Kanto area", scan: "in this area", near: `near ${place}`, search: `for “${place}”`, place: `in ${place}` }[kind] || place),
     resultHeading: (where, what) => `${what} ${where}`,
@@ -782,6 +784,7 @@ const ui = {
     filterType: "Type",
     typeRestaurant: "🍜 Restaurants",
     typeGrocery: "🛒 Grocery stores",
+    typeCafe: "☕ Cafes",
     filterReset: "× Reset filters",
     filterSummary: "🔎 Filters",
     favOnly: "♥ Favorites only",
@@ -798,7 +801,7 @@ const ui = {
   vi: {
     title: "Foodie Việt Nam",
     tagline: "Khám phá các quán và địa điểm liên quan đến Việt Nam tại Nhật Bản.",
-    listTitle: "Quán ăn & tạp hóa Việt",
+    listTitle: "Quán ăn, tạp hóa & cà phê Việt",
     mapLink: "Xem trên Google Maps",
     scanButton: "🔍 Quét",
     scanStatus: "Đang tìm quán gần đây…",
@@ -807,7 +810,8 @@ const ui = {
     scanOverlayEmpty: "Không có quán nào trong khu vực này",
     listOverlayButton: (n) => `📋 Xem ${n} quán dạng danh sách`,
     resultWhat: (type, saved) =>
-      ({ restaurant: "Quán ăn Việt", grocery: "Tiệm tạp hóa Việt" }[type] || "Quán ăn & tạp hóa Việt") + (saved ? " đã lưu" : ""),
+      ({ restaurant: "Quán ăn Việt", grocery: "Tiệm tạp hóa Việt", cafe: "Quán cà phê Việt" }[type] || "Quán ăn, tạp hóa & cà phê Việt") +
+      (saved ? " đã lưu" : ""),
     resultWhere: (kind, place) =>
       ({ default: "ở vùng Kanto", scan: "ở khu vực này", near: `gần ${place}`, search: `cho “${place}”`, place: `ở ${place}` }[kind] || place),
     resultHeading: (where, what) => `${what} ${where}`,
@@ -1178,6 +1182,7 @@ const ui = {
     filterType: "Loại",
     typeRestaurant: "🍜 Nhà hàng",
     typeGrocery: "🛒 Tạp hóa",
+    typeCafe: "☕ Cà phê",
     filterReset: "× Đặt lại bộ lọc",
     filterSummary: "🔎 Bộ lọc",
     favOnly: "♥ Chỉ hiện quán yêu thích",
