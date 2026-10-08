@@ -5,14 +5,21 @@ const ui = {
   ja: {
     title: "ベトナムフーディー",
     tagline: "日本でベトナムに関するお店・スポットを探そう。",
-    listTitle: "お店一覧",
+    listTitle: "ベトナム料理・食材店", // (見出しは、下の result〜 で「どこの・何が・何件」を作ります)
     mapLink: "Googleマップで見る",
     scanButton: "🔍スキャンする",
     scanStatus: "周辺のお店を検索中",
     scanOverlayBack: "← 戻る",
     scanOverlayTitle: "周辺のお店",
     scanOverlayEmpty: "この範囲には、お店がありませんでした",
-    listOverlayButton: "📋 お店一覧を見る",
+    listOverlayButton: (n) => `📋 ${n}件をリストで見る`,
+    // 一覧の見出し: 「何が、どこに、何件あるのか」(例: 東京のベトナム料理 128件 / 新宿のベトナム料理・食材店 24件)
+    resultWhat: (type, saved) =>
+      (saved ? "保存した" : "") + ({ restaurant: "ベトナム料理", grocery: "ベトナム食材店" }[type] || "ベトナム料理・食材店"),
+    resultWhere: (kind, place) =>
+      ({ default: "関東", scan: "この周辺", near: `${place}周辺`, search: place }[kind] || place),
+    resultHeading: (where, what) => `${where}の${what}`,
+    resultCount: (n) => `${n}件`,
     areaPreviewSeparator: "、",
     areaPreviewMore: "ほか",
     nearbyNote: "現在地から近いベトナム料理店・食材店を表示するために位置情報を使用します。位置情報は保存されません。",
@@ -389,14 +396,21 @@ const ui = {
   en: {
     title: "Vietnam Foodie",
     tagline: "Discover Vietnam-related shops and spots in Japan.",
-    listTitle: "Shops",
+    listTitle: "Vietnamese restaurants & grocery stores",
     mapLink: "View on Google Maps",
     scanButton: "🔍 Scan",
     scanStatus: "Searching nearby shops…",
     scanOverlayBack: "← Back",
     scanOverlayTitle: "Nearby",
     scanOverlayEmpty: "No shops found in this area",
-    listOverlayButton: "📋 View shop list",
+    listOverlayButton: (n) => `📋 View ${n} in a list`,
+    resultWhat: (type, saved) =>
+      (saved ? "Saved " : "") +
+      ({ restaurant: "Vietnamese restaurants", grocery: "Vietnamese grocery stores" }[type] || "Vietnamese restaurants & grocery stores"),
+    resultWhere: (kind, place) =>
+      ({ default: "in the Kanto area", scan: "in this area", near: `near ${place}`, search: `for “${place}”`, place: `in ${place}` }[kind] || place),
+    resultHeading: (where, what) => `${what} ${where}`,
+    resultCount: (n) => String(n),
     areaPreviewSeparator: ", ",
     areaPreviewMore: ", and more",
     nearbyNote: "Your location is used to show Vietnamese restaurants and shops near you. Your location is not stored.",
@@ -774,14 +788,20 @@ const ui = {
   vi: {
     title: "Foodie Việt Nam",
     tagline: "Khám phá các quán và địa điểm liên quan đến Việt Nam tại Nhật Bản.",
-    listTitle: "Danh sách quán",
+    listTitle: "Quán ăn & tạp hóa Việt",
     mapLink: "Xem trên Google Maps",
     scanButton: "🔍 Quét",
     scanStatus: "Đang tìm quán gần đây…",
     scanOverlayBack: "← Quay lại",
     scanOverlayTitle: "Quán gần đây",
     scanOverlayEmpty: "Không có quán nào trong khu vực này",
-    listOverlayButton: "📋 Xem danh sách quán",
+    listOverlayButton: (n) => `📋 Xem ${n} quán dạng danh sách`,
+    resultWhat: (type, saved) =>
+      ({ restaurant: "Quán ăn Việt", grocery: "Tiệm tạp hóa Việt" }[type] || "Quán ăn & tạp hóa Việt") + (saved ? " đã lưu" : ""),
+    resultWhere: (kind, place) =>
+      ({ default: "ở vùng Kanto", scan: "ở khu vực này", near: `gần ${place}`, search: `cho “${place}”`, place: `ở ${place}` }[kind] || place),
+    resultHeading: (where, what) => `${what} ${where}`,
+    resultCount: (n) => `${n} quán`,
     areaPreviewSeparator: ", ",
     areaPreviewMore: " và các quán khác",
     nearbyNote: "Vị trí của bạn được dùng để hiển thị các quán Việt gần bạn. Vị trí không được lưu lại.",

@@ -21,7 +21,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261008i" />
+    <link rel="stylesheet" href="css/style.css?v=20261008j" />
   </head>
   <body>
     <header>
@@ -67,7 +67,7 @@
     <div id="content">
       <!-- お店の一覧(app.js が中身を作ります) -->
       <aside id="shop-list">
-        <h2 id="list-title">お店一覧</h2>
+        <h2 id="list-title">関東のベトナム料理・食材店</h2>
 
         <!-- 絞り込みボタン(app.js が、data.js の内容からボタンを作ります) -->
         <div id="filter-panel">
@@ -105,7 +105,7 @@
           <button id="scan-button" type="button">🔍スキャンする</button>
           <p id="scan-status" role="status" hidden></p>
         </div>
-        <!-- 「お店一覧を見る」ボタン(スマホの、幅の狭い画面だけで表示。CSSで制御)
+        <!-- 「〇件をリストで見る」ボタン(スマホの、幅の狭い画面だけで表示。CSSで制御)
              ・スマホでは、地図を大きく使うため、#shop-list はふだん隠しています。このボタンで、一覧オーバーレイ(#scan-overlay)を開きます
              ・検索・お気に入り・料理の絞り込みが効いているときは、js/app.js が自動でオーバーレイを開くので、このボタンは隠れます -->
         <div id="list-overlay-panel">
@@ -161,20 +161,20 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261008i"></script>
-    <script src="js/data.js?v=20261008i"></script>
-    <script src="js/app.js?v=20261008i"></script>
+    <script src="js/i18n.js?v=20261008j"></script>
+    <script src="js/data.js?v=20261008j"></script>
+    <script src="js/app.js?v=20261008j"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261008i"></script>
-    <script src="js/landmark-areas.js?v=20261008i"></script>
-    <script src="js/landmarks.js?v=20261008i"></script>
+    <script src="js/station-lines.js?v=20261008j"></script>
+    <script src="js/landmark-areas.js?v=20261008j"></script>
+    <script src="js/landmarks.js?v=20261008j"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261008i"></script>
+    <script src="js/auth.js?v=20261008j"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261008i"></script>
+    <script src="js/auth-modal.js?v=20261008j"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
-    <script src="js/detail.js?v=20261008i"></script>
+    <script src="js/detail.js?v=20261008j"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。

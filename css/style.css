@@ -402,6 +402,18 @@ header h1 {
   border-bottom: 1px solid #ddd;
 }
 
+/* 一覧の見出し「関東のベトナム料理・食材店 163件」: 件数を大きく・色つきで目立たせる */
+#shop-list h2 .result-label {
+  font-weight: 700;
+}
+#shop-list h2 .result-count {
+  margin-left: 4px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #2e7d32;
+  white-space: nowrap;
+}
+
 /* 絞り込み(都道府県・エリア)まわり */
 #filter-panel {
   padding: 10px 16px 6px;
