@@ -639,11 +639,35 @@ function popupAutoPanOptions() {
   const panelHeight = scanPanelEl.getBoundingClientRect().height || 40; // 測れなければ、念のため既定値を使う
   const topPadding = Math.ceil(panelHeight) + 10 /* #scan-panel の top */ + 40; // 「検索中」表示が出る分の余裕
   return {
+    // ピンを選んだときは、centerOnSelectedShop で「ピン + ポップアップ」を地図の真ん中に動かすので、
+    // Leaflet の自動の移動(autoPan)は使わない(2回動いて、ガタつかないように)
+    autoPan: false,
     autoPanPaddingTopLeft: L.point(24, topPadding),
     autoPanPaddingBottomRight: L.point(24, 24),
   };
 }
 const POPUP_OPTIONS = popupAutoPanOptions();
+
+// ピン(お店)を選んだら、地図を動かして、そのお店を画面の真ん中に持ってくる(PC・スマホ共通)
+//   ・ピンとポップアップをひとまとまりにして、地図の見えている部分(上の「🔍スキャンする」ボタンの下)の真ん中に置く
+//   ・ポップアップが大きくて入りきらないときは、ポップアップの上が切れないように、上をそろえる
+function centerOnSelectedShop(marker, popup) {
+  const box = popup && popup.getElement();
+  if (!box) return;
+  const size = map.getSize();
+  const topSpace = POPUP_OPTIONS.autoPanPaddingTopLeft.y; // 上のボタンの分
+  const markerPt = map.latLngToContainerPoint(marker.getLatLng());
+  const pinHeight = 40;
+  const popupHeight = box.offsetHeight;
+  const groupTop = markerPt.y - pinHeight - popupHeight; // ポップアップの上
+  const groupCenter = markerPt.y - (pinHeight + popupHeight) / 2;
+  const viewCenter = topSpace + (size.y - topSpace) / 2; // 見えている部分の真ん中
+  let dy = groupCenter - viewCenter;
+  if (groupTop - dy < topSpace + 8) dy = groupTop - (topSpace + 8); // 入りきらないときは、上をそろえる
+  const dx = markerPt.x - size.x / 2;
+  if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return; // すでに真ん中
+  map.panBy([dx, dy], { animate: true, duration: 0.4 });
+}
 
 // 緯度・経度がまったく同じお店(同じビルに2軒ある、など)は、ピンが完全に重なって、どれだけ拡大しても分かれない。
 // そこで、2軒目以降のピンだけ、地図の上で少し(十数メートル)ずらして立てる。
@@ -687,6 +711,8 @@ const entries = restaurants.map((shop) => {
   // ポップアップが開いたお店(ピンをクリックした場合も含む)を「選択中」にする。閉じたら解除する
   //   ポップアップが開いている間だけ、一覧に has-selection を付けて、選択中でないカードを薄くする(CSS)
   marker.on("popupopen", (event) => {
+    // 選んだお店を、地図の真ん中に動かす(ポップアップの大きさが決まってから)
+    requestAnimationFrame(() => centerOnSelectedShop(marker, event.popup));
     listElement.classList.add("has-selection"); // 先に付ける(末尾に余白が入り、最後のお店も一番上まで動かせる)
     setSelected(entry, true);
     renderFavorites(); // 開いたポップアップの ♡ / ♥ を、いまの登録状態に合わせる
