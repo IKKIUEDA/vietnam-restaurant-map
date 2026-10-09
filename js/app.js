@@ -777,13 +777,25 @@ clusterGroup.addLayers(entries.map((entry) => entry.marker));
 //   ・data.js の image に書かれた画像を使う。空・省略・使えない書き方のときは、デフォルト画像(イラスト)を使う
 //   ・画像は、自分のフォルダ(images/...)か、https:// で始まるURLだけを使う(javascript: などは使わない)
 //   ・外部のサイトから、画像を自動で集める処理は、このアプリにはありません
+//   ・デフォルト画像は、お店の種類ごとに違う絵(料理店 = どんぶり、食材店 = 買い物かご、カフェ = ベトナムコーヒー)
 const DEFAULT_IMAGE = "images/default-shop.svg"; // 一覧のカード用(正方形)
 const DEFAULT_HERO_IMAGE = "images/default-hero.svg"; // 詳細ページ用(横長)
+const DEFAULT_IMAGES_BY_TYPE = {
+  restaurant: { card: DEFAULT_IMAGE, hero: DEFAULT_HERO_IMAGE },
+  grocery: { card: "images/default-grocery.svg", hero: "images/default-hero-grocery.svg" },
+  cafe: { card: "images/default-cafe.svg", hero: "images/default-hero-cafe.svg" },
+};
+function defaultImageFor(shop) {
+  return (DEFAULT_IMAGES_BY_TYPE[shopType(shop || {})] || DEFAULT_IMAGES_BY_TYPE.restaurant).card;
+}
+function defaultHeroImageFor(shop) {
+  return (DEFAULT_IMAGES_BY_TYPE[shopType(shop || {})] || DEFAULT_IMAGES_BY_TYPE.restaurant).hero;
+}
 
 function getShopImage(shop) {
   const value = typeof shop.image === "string" ? shop.image.trim() : "";
   const safe = /^https?:\/\//i.test(value) || (value !== "" && !value.includes(":") && !value.startsWith("//"));
-  return safe ? { src: value, isDefault: false } : { src: DEFAULT_IMAGE, isDefault: true };
+  return safe ? { src: value, isDefault: false } : { src: defaultImageFor(shop), isDefault: true };
 }
 
 // 画像が読み込めなかったとき(ファイル名の間違いなど)は、デフォルト画像に切り替える(1回だけ)
@@ -794,7 +806,7 @@ listElement.addEventListener(
     const img = event.target;
     if (!img.classList || !img.classList.contains("shop-thumb") || img.dataset.fallback === "1") return;
     img.dataset.fallback = "1";
-    img.src = DEFAULT_IMAGE;
+    img.src = img.dataset.defaultSrc || DEFAULT_IMAGE; // そのお店の種類の、デフォルト画像
     img.alt = ui[currentLang].noPhoto;
     const credit = img.parentElement.querySelector(".thumb-credit");
     if (credit) credit.remove(); // 表示できていない画像のクレジットは、出さない
@@ -1027,6 +1039,7 @@ function setScanOverlayImage(img, entry) {
     return;
   }
   const image = getShopImage(entry.shop);
+  img.dataset.defaultSrc = defaultImageFor(entry.shop);
   img.src = image.src;
   img.alt = image.isDefault ? ui[currentLang].noPhoto : name;
 }
@@ -1154,7 +1167,7 @@ scanOverlayList.addEventListener(
     const img = event.target;
     if (!img.classList || !img.classList.contains("scan-overlay-thumb") || img.dataset.fallback === "1") return;
     img.dataset.fallback = "1";
-    img.src = DEFAULT_IMAGE;
+    img.src = img.dataset.defaultSrc || DEFAULT_IMAGE; // そのお店の種類の、デフォルト画像
     img.alt = ui[currentLang].noPhoto;
   },
   true
@@ -1897,6 +1910,7 @@ function showTexts() {
 
     // 画像は、文字として埋め込まず、あとから設定する(画像の名前などに、変わった文字が入っても安全にするため)
     const img = item.querySelector(".shop-thumb");
+    img.dataset.defaultSrc = defaultImageFor(shop);
     img.src = image.src;
     img.alt = image.isDefault ? ui[currentLang].noPhoto : name;
     if (!image.isDefault && credit) {

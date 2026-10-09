@@ -332,7 +332,7 @@ function renderDetail() {
   const hero = detailPage.querySelector(".detail-hero-img");
   const credit = typeof shop.imageCredit === "string" ? shop.imageCredit.trim() : "";
   const showDefault = () => {
-    hero.src = DEFAULT_HERO_IMAGE; // 詳細ページ用の、横長のデフォルト画像
+    hero.src = defaultHeroImageFor(shop); // 詳細ページ用の、横長のデフォルト画像(お店の種類ごとの絵)
     hero.alt = t.noPhoto;
     hero.classList.add("is-default");
     detailPage.querySelector(".detail-credit").hidden = true;

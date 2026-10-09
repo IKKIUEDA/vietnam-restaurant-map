@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="ベトナムフーディーのイメージイラスト(カフェ)">
+  <!-- 写真がないときに、詳細ページで使う、横長のイラスト(実際の店舗の写真ではありません。正方形の default-cafe.svg と同じ絵) -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3ede9" />
+      <stop offset="1" stop-color="#dccdc5" />
+    </linearGradient>
+    <linearGradient id="coffee" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6d4c41" />
+      <stop offset="0.62" stop-color="#4e342e" />
+      <stop offset="0.62" stop-color="#fff3e0" />
+      <stop offset="1" stop-color="#ffe0b2" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#bg)" />
+  <g transform="translate(120 15)">
+  <circle cx="120" cy="132" r="92" fill="#ffffff" opacity="0.55" />
+
+  <!-- 黄色い星(ベトナム国旗をイメージ) -->
+  <polygon points="200,34 204.7,48.3 219.7,48.3 207.5,57.1 212.2,71.4 200,62.6 187.8,71.4 192.5,57.1 180.3,48.3 195.3,48.3" fill="#ffca28" />
+
+  <!-- 湯気 -->
+  <g fill="none" stroke="#a1887f" stroke-width="5" stroke-linecap="round" opacity="0.8">
+    <path d="M100 58 q-8 -10 0 -20 q8 -10 0 -20" />
+    <path d="M140 58 q-8 -10 0 -20 q8 -10 0 -20" />
+  </g>
+
+  <!-- フィン(ベトナムコーヒーの、金属のドリッパー) -->
+  <rect x="96" y="66" width="48" height="10" rx="3" fill="#b0bec5" />
+  <path d="M88 82 h64 l-6 26 h-52 z" fill="#cfd8dc" />
+  <rect x="80" y="104" width="80" height="8" rx="4" fill="#90a4ae" />
+
+  <!-- グラス(上はコーヒー、下は練乳) -->
+  <path d="M84 116 h72 l-8 82 a8 8 0 0 1 -8 7 h-40 a8 8 0 0 1 -8 -7 z" fill="url(#coffee)" />
+  <path d="M84 116 h72 l-8 82 a8 8 0 0 1 -8 7 h-40 a8 8 0 0 1 -8 -7 z" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.9" />
+  <path d="M96 126 l5 62" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.45" />
+
+  <!-- 受け皿 -->
+  <ellipse cx="120" cy="208" rx="52" ry="8" fill="#8d6e63" />
+  </g>
+</svg>
