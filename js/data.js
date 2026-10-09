@@ -90,6 +90,7 @@ const categoryLabels = {
   "ベトナム食材店": { en: "Vietnamese grocery", vi: "Tạp hóa Việt" },
   "ベトナムカフェ": { en: "Vietnamese cafe", vi: "Quán cà phê Việt" },
   "ベトナムカフェ・軽食": { en: "Vietnamese cafe / Light meals", vi: "Quán cà phê Việt / Đồ ăn nhẹ" },
+  "ベトナムカフェ・バインミー": { en: "Vietnamese cafe / Banh mi", vi: "Quán cà phê Việt / Bánh mì" },
 };
 
 const restaurants = [
@@ -1587,6 +1588,7 @@ const restaurants = [
   },
   {
     id: "sminhemi-cafe",
+    type: "cafe", // ※ 以前は料理店として登録していたお店。カフェに変更(URL が変わらないよう、ID はそのまま)
     name: "Sminhemi cafe",
     address: {
       ja: "神奈川県茅ヶ崎市行谷1033-1",
@@ -1597,8 +1599,7 @@ const restaurants = [
     lng: 139.4189760,
     prefecture: "神奈川県",
     area: { ja: "茅ヶ崎", en: "Chigasaki", vi: "Chigasaki" },
-    dishes: ["ベトナム料理"],
-    category: "ベトナム料理・カフェ",
+    category: "ベトナムカフェ・軽食",
     price: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
     hours: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
   },
@@ -2764,6 +2765,68 @@ const restaurants = [
     lng: 139.7768860,
     prefecture: "東京都",
     area: { ja: "日暮里", en: "Nippori", vi: "Nippori" },
+    category: "ベトナムカフェ",
+  },
+
+  // 神奈川のカフェ(緯度・経度は、国土地理院の住所検索で調べた値。山下町・不老町・上和田のお店は「番地」までの精度)
+  {
+    id: "cafe-giang-yokohama",
+    type: "cafe",
+    name: { ja: "CAFE GIANG(カフェ ジャン)", en: "CAFE GIANG", vi: "CAFE GIANG" },
+    address: {
+      ja: "神奈川県横浜市中区山下町78-3",
+      en: "78-3 Yamashitacho, Naka-ku, Yokohama, Kanagawa",
+      vi: "78-3 Yamashitacho, Naka-ku, Yokohama, Kanagawa",
+    },
+    lat: 35.4440650,
+    lng: 139.6475520,
+    prefecture: "神奈川県",
+    area: { ja: "元町・中華街", en: "Motomachi-Chukagai", vi: "Motomachi-Chukagai" },
+    category: "ベトナムカフェ",
+  },
+  {
+    id: "saigon-baguette-chigasaki",
+    type: "cafe",
+    name: { ja: "サイゴンバケット コーヒー＆紅茶", en: "Saigon Baguette Coffee & Tea", vi: "Saigon Baguette Coffee & Tea" },
+    address: {
+      ja: "神奈川県茅ヶ崎市浜竹1-13-4",
+      en: "1-13-4 Hamatake, Chigasaki, Kanagawa",
+      vi: "1-13-4 Hamatake, Chigasaki, Kanagawa",
+    },
+    lat: 35.3359680,
+    lng: 139.4360960,
+    prefecture: "神奈川県",
+    area: { ja: "茅ヶ崎", en: "Chigasaki", vi: "Chigasaki" },
+    category: "ベトナムカフェ",
+  },
+  {
+    id: "chao-banh-mi-yokohama",
+    type: "cafe",
+    name: { ja: "チャオバインミーヨコハマ(Chào Bánh Mì)", en: "Chào Bánh Mì Yokohama", vi: "Chào Bánh Mì Yokohama" },
+    address: {
+      ja: "神奈川県横浜市中区不老町1-4-6 まゆだまキャビン内",
+      en: "Inside Mayudama Cabin, 1-4-6 Furocho, Naka-ku, Yokohama, Kanagawa",
+      vi: "Inside Mayudama Cabin, 1-4-6 Furocho, Naka-ku, Yokohama, Kanagawa",
+    },
+    lat: 35.4423140,
+    lng: 139.6364900,
+    prefecture: "神奈川県",
+    area: { ja: "関内", en: "Kannai", vi: "Kannai" },
+    category: "ベトナムカフェ・バインミー",
+  },
+  {
+    id: "steady-coffee-yamato",
+    type: "cafe",
+    name: { ja: "Steady Coffee(ステディーコーヒー)", en: "Steady Coffee", vi: "Steady Coffee" },
+    address: {
+      ja: "神奈川県大和市上和田957-2",
+      en: "957-2 Kamiwada, Yamato, Kanagawa",
+      vi: "957-2 Kamiwada, Yamato, Kanagawa",
+    },
+    lat: 35.4513470,
+    lng: 139.4672390,
+    prefecture: "神奈川県",
+    area: { ja: "桜ヶ丘", en: "Sakuragaoka", vi: "Sakuragaoka" },
     category: "ベトナムカフェ",
   },
 ];
