@@ -2829,4 +2829,22 @@ const restaurants = [
     area: { ja: "桜ヶ丘", en: "Sakuragaoka", vi: "Sakuragaoka" },
     category: "ベトナムカフェ",
   },
+
+  // 埼玉のカフェ(緯度・経度は、国土地理院の住所検索で調べた値。「番地」までの精度)
+  {
+    id: "lily-coffee-shop-tokorozawa",
+    type: "cafe",
+    name: "LILY COFFEE SHOP",
+    address: {
+      ja: "埼玉県所沢市東狭山ケ丘4-2655-4",
+      en: "4-2655-4 Higashisayamagaoka, Tokorozawa, Saitama",
+      vi: "4-2655-4 Higashisayamagaoka, Tokorozawa, Saitama",
+    },
+    lat: 35.8091010,
+    lng: 139.4281620,
+    prefecture: "埼玉県",
+    area: { ja: "狭山ヶ丘", en: "Sayamagaoka", vi: "Sayamagaoka" },
+    category: "ベトナムカフェ",
+    feature: { ja: "ドッグラン併設のカフェ", en: "Cafe with a dog run", vi: "Quán cà phê có khu chơi cho chó" },
+  },
 ];
