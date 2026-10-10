@@ -4019,3 +4019,98 @@ a.todo-card .todo-card-foot {
   height: 44px;
   border-radius: 22px;
 }
+
+/* ---- PC(横幅 900px 以上): ホーム・マイリストを横に広げる ----
+   スマホの見た目はそのまま。PC では、中身を最大 1120px まで広げ、カードを2〜3列に並べる */
+@media (min-width: 900px) {
+  .home-page {
+    max-width: 1120px;
+    padding: 0 32px 40px;
+    box-sizing: border-box;
+  }
+
+  .home-top {
+    margin-top: 20px;
+    padding: 64px 0 48px;
+    border-radius: 28px;
+    background-position: 50% 78%;
+  }
+
+  .home-top .home-hero {
+    padding: 0 56px;
+  }
+
+  .home-top .home-catch {
+    font-size: 3rem;
+  }
+
+  .home-top .home-lead {
+    font-size: 1rem;
+  }
+
+  .home-top .home-search {
+    max-width: 680px;
+    padding: 120px 56px 0;
+  }
+
+  .home-entries {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 24px 0 0;
+  }
+
+  .home-divider {
+    display: none;
+  }
+
+  .home-section {
+    padding: 44px 0 0;
+  }
+
+  .home-h2 {
+    font-size: 1.5rem;
+  }
+
+  /* マイリストのエリア・おすすめ・お店のカードは、横に並べる */
+  .mylist-areas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+  }
+
+  .home-rec-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .home-features {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 16px 0 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .home-feature {
+    height: 220px;
+  }
+
+  .todo-shops {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  /* マイリストの画面の、上の緑の帯は角を丸める */
+  .todo-band {
+    border-radius: 20px;
+    margin-top: 16px;
+  }
+
+  /* PC は、画面の下に同じリンク(利用規約など)が常に出ているので、ホームの中のリンクは出さない */
+  .home-footer {
+    display: none;
+  }
+}
