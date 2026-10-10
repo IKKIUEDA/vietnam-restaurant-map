@@ -1814,10 +1814,15 @@ function applyFilters(onlyIfChanged = false, skipFit = false) {
   const changed = fitKey !== lastFitKey;
   lastFitKey = fitKey;
   if (shown.length > 0 && !skipFit && (changed || !onlyIfChanged)) {
-    map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), {
-      padding: [40, 40],
-      maxZoom: 15,
-    });
+    if (map.getContainer().offsetWidth > 0) {
+      map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), {
+        padding: [40, 40],
+        maxZoom: 15,
+      });
+    } else if (typeof listMapNeedsFit !== "undefined") {
+      // 地図が隠れているとき(ホームなど)は、いま合わせず、地図を開いたときに合わせる(detail.js)
+      listMapNeedsFit = true;
+    }
   }
   syncMobileListOverlay(); // スマホでは、絞り込み条件に合わせて、一覧オーバーレイを自動で開閉する(PC では何もしない)
 }
@@ -1960,6 +1965,10 @@ document.getElementById("lang-select").addEventListener("change", (event) => {
 showTexts();
 
 // 7. 全部のお店のピンが見える範囲に、地図の表示を合わせる
-map.fitBounds(restaurants.map((shop) => [shop.lat, shop.lng]), {
-  padding: [40, 40],
-});
+//   ※ ホームから始まったとき(地図が隠れているとき)は、ここでは合わせない。隠れた地図で動き(アニメーション)を始めると、
+//     終わらないまま止まってしまい、あとで地図を開いても位置を合わせられなくなるため(地図を開いたときに合わせる。detail.js)
+if (map.getContainer().offsetWidth > 0) {
+  map.fitBounds(restaurants.map((shop) => [shop.lat, shop.lng]), {
+    padding: [40, 40],
+  });
+}

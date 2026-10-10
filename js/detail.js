@@ -142,7 +142,7 @@ function showContentPage(page) {
 function fitVisibleShops() {
   const shown = entries.filter((entry) => entry.visible);
   if (shown.length > 0) {
-    map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), { padding: [40, 40], maxZoom: 15 });
+    map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), { padding: [40, 40], maxZoom: 15, animate: false });
   }
 }
 
