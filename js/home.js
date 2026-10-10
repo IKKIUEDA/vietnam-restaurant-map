@@ -20,6 +20,7 @@ const HOME_TEXT = {
     grocery: "食材店",
     cafe: "カフェ",
     map: "地図",
+    fnb: "食品・飲料",
     nearLoading: "現在地を調べています…",
     nearFailed: "現在地を取得できませんでした。地図から探してください",
     recTitle: "あなたへのおすすめ",
@@ -52,6 +53,7 @@ const HOME_TEXT = {
     grocery: "Groceries",
     cafe: "Cafes",
     map: "Map",
+    fnb: "Food & Beverage",
     nearLoading: "Finding your location…",
     nearFailed: "Couldn't get your location. Please use the map instead",
     recTitle: "Picked for you",
@@ -84,6 +86,7 @@ const HOME_TEXT = {
     grocery: "Tạp hóa",
     cafe: "Cà phê",
     map: "Bản đồ",
+    fnb: "Ăn uống",
     nearLoading: "Đang tìm vị trí của bạn…",
     nearFailed: "Không lấy được vị trí. Vui lòng tìm trên bản đồ",
     recTitle: "Gợi ý cho bạn",
@@ -169,6 +172,7 @@ function homeRecommendations() {
 // 絵(アイコン)。種類ごとの色は、地図のピンと同じ(料理店 = 赤、食材店 = 青、カフェ = 茶)
 // ---------------------------------------------------------------------
 const HOME_ICONS = {
+  fnb: '<path d="M7 3v7a2 2 0 0 0 2 2v9"></path><path d="M5 3v5M9 3v5"></path><path d="M14 9h6v5a3 3 0 0 1-3 3h0a3 3 0 0 1-3-3z"></path><path d="M17 17v4M15 21h4"></path><path d="M15 5c-.6 1 .6 1.6 0 2.6M18 5c-.6 1 .6 1.6 0 2.6"></path>',
   near: '<circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8"></circle><path d="M12 1v3M12 20v3M1 12h3M20 12h3"></path>',
   restaurant: '<path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M9 4c-1 1.5 1 2.5 0 4M13 4c-1 1.5 1 2.5 0 4"></path><path d="M15 2l5 6"></path>',
   grocery: '<path d="M3 4h2l2.4 11h11l2-8H6.3"></path><circle cx="9" cy="20" r="1.5"></circle><circle cx="17" cy="20" r="1.5"></circle>',
@@ -230,11 +234,9 @@ function renderHome() {
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
     `<nav class="home-entries" aria-label="${esc(h.entriesLabel)}">` +
+    // 入口は、いまは「近く」と「食品・飲料」の2つ(料理店・食材店・カフェは、食品・飲料の中の絞り込みで選ぶ)
     entryButton("near", h.near) +
-    entryButton("restaurant", h.restaurant) +
-    entryButton("grocery", h.grocery) +
-    (hasCafe ? entryButton("cafe", h.cafe) : "") +
-    entryButton("map", h.map) +
+    entryButton("fnb", h.fnb) +
     `</nav>` +
     `<p class="home-status" role="status" hidden></p>` +
     `<div class="home-divider"></div>` +
@@ -333,6 +335,11 @@ homePage.addEventListener("click", (event) => {
   if (key === "near") openNearby();
   else if (key === "map") {
     navigate(mapUrl());
+  } else if (key === "fnb") {
+    // 食品・飲料: いま登録しているお店(料理店・食材店・カフェ)すべてを出す。スマホは一覧を開く
+    navigate(mapUrl());
+    resetFilters();
+    if (window.matchMedia("(max-width: 600px)").matches) openScanOverlay("list");
   } else openMapWithType(key);
 });
 
