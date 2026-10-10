@@ -24,16 +24,7 @@ const HOME_TEXT = {
     nearLoading: "現在地を調べています…",
     nearFailed: "現在地を取得できませんでした。地図から探してください",
     recTitle: "あなたへのおすすめ",
-    recBasis: "あなたがこのサイトで見たお店・検索・保存をもとに選んでいます",
-    whyViewed: (area) => `見たお店(${area})の近く`,
-    whySaved: (area) => `保存したお店(${area})の近く`,
-    whySearch: (q) => `「${q}」で検索したから`,
-    whyType: (type) => `よく見る種類: ${type}`,
-    recEmpty: "お店を見たり、検索したり、♡で保存したりすると、あなたに合わせたおすすめがここに出ます。",
-    recNoMatch: "いまの記録に合うお店が見つかりませんでした。ほかのお店も見てみてください。",
-    recEmptyNear: "近くのお店から探す",
     clearHistory: "履歴を消す",
-    historyNote: "見たお店・検索・選んだ種類は、この端末の中だけに保存しています",
     featureTitle: "特集",
     featureCafeTag: "カフェ",
     featureCafeTitle: "ベトナムコーヒーで\nひと休み",
@@ -63,16 +54,7 @@ const HOME_TEXT = {
     nearLoading: "Finding your location…",
     nearFailed: "Couldn't get your location. Please use the map instead",
     recTitle: "Picked for you",
-    recBasis: "Chosen from the shops you viewed, searched for and saved on this site",
-    whyViewed: (area) => `Near a shop you viewed (${area})`,
-    whySaved: (area) => `Near a shop you saved (${area})`,
-    whySearch: (q) => `Because you searched “${q}”`,
-    whyType: (type) => `You often look at: ${type}`,
-    recEmpty: "View, search for or ♡ save shops, and recommendations picked for you will appear here.",
-    recNoMatch: "No shops match your activity yet. Try looking at some other shops.",
-    recEmptyNear: "Find shops near you",
     clearHistory: "Clear history",
-    historyNote: "Viewed shops, searches and chosen categories are saved only on this device",
     featureTitle: "Features",
     featureCafeTag: "Cafes",
     featureCafeTitle: "Take a break with\nVietnamese coffee",
@@ -102,16 +84,7 @@ const HOME_TEXT = {
     nearLoading: "Đang tìm vị trí của bạn…",
     nearFailed: "Không lấy được vị trí. Vui lòng tìm trên bản đồ",
     recTitle: "Gợi ý cho bạn",
-    recBasis: "Chọn dựa trên các quán bạn đã xem, tìm kiếm và lưu trên trang này",
-    whyViewed: (area) => `Gần quán bạn đã xem (${area})`,
-    whySaved: (area) => `Gần quán bạn đã lưu (${area})`,
-    whySearch: (q) => `Vì bạn đã tìm “${q}”`,
-    whyType: (type) => `Bạn hay xem: ${type}`,
-    recEmpty: "Hãy xem, tìm kiếm hoặc nhấn ♡ để lưu quán, gợi ý dành riêng cho bạn sẽ hiện ở đây.",
-    recNoMatch: "Chưa có quán phù hợp với hoạt động của bạn. Hãy xem thêm các quán khác.",
-    recEmptyNear: "Tìm quán gần bạn",
     clearHistory: "Xóa lịch sử",
-    historyNote: "Quán đã xem, từ khóa tìm kiếm và loại đã chọn chỉ được lưu trên thiết bị này",
     featureTitle: "Chủ đề",
     featureCafeTag: "Cà phê",
     featureCafeTitle: "Nghỉ chân với\ncà phê Việt",
@@ -306,30 +279,19 @@ function renderHome() {
     `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span>${esc(label)}</span></button>`;
 
   const rec = homeRecommendations();
-  const whyText = (why) => {
-    if (!why) return "";
-    if (why.kind === "viewed") return h.whyViewed(why.area);
-    if (why.kind === "saved") return h.whySaved(why.area);
-    if (why.kind === "search") return h.whySearch(why.q);
-    if (why.kind === "type") return h.whyType(h.typeLabel[why.type]);
-    return "";
-  };
   const recItems = rec.items
-    .map(({ entry, km, why }) => {
+    .map(({ entry }) => {
       const type = shopType(entry.shop);
       return (
         `<li><a class="home-rec" href="${esc(shopUrl(entry.shop.id))}" data-shop-id="${esc(entry.shop.id)}">` +
         `<span class="home-rec-icon home-type-${type}">${homeIcon(type, 28)}</span>` +
         `<span class="home-rec-body"><span class="home-rec-name">${esc(pick(entry.shop.name))}</span>` +
         `<span class="home-rec-meta">${esc(h.typeLabel[type])} ・ ${esc(pick(entry.shop.area))}</span>` +
-        `<span class="home-rec-why">${esc(whyText(why))}</span></span>` +
-        (km === null || km === undefined ? "" : `<span class="home-rec-km">${formatDistance(km)}</span>`) +
+        `</span>` +
         `</a></li>`
       );
     })
     .join("");
-  // 記録がまだ無い人(または、合うお店が無い人)への案内。みんなに同じお店は出さない
-  const recEmpty = rec.hasSignal ? h.recNoMatch : h.recEmpty;
 
   const feature = (key, tag, title, sub) =>
     `<button type="button" class="home-feature home-feature-${key}" data-home-action="${key}">` +
@@ -358,17 +320,15 @@ function renderHome() {
     `<div class="home-divider"></div>` +
     // To Do List(js/todo.js)
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
-    `<section class="home-section">` +
-    `<h2 class="home-h2">${esc(h.recTitle)}</h2>` +
+    // あなたへのおすすめ: おすすめのお店があるときだけ出す(しくみの説明や距離は、画面には出さない)
     (rec.items.length
-      ? `<p class="home-reason">${esc(h.recBasis)}</p><ul class="home-rec-list">${recItems}</ul>`
-      : `<div class="home-rec-empty"><p>${esc(recEmpty)}</p>` +
-        `<button type="button" class="home-rec-empty-btn" data-home-action="near">${homeIcon("near", 18)}<span>${esc(h.recEmptyNear)}</span></button></div>`) +
-    // 記録を使っているときは、どこに保存しているかと、消す方法を、すぐそばに出す
-    (rec.hasSignal
-      ? `<p class="home-history-note">${esc(h.historyNote)} <button type="button" class="home-clear-history" data-home-action="clear-history">${esc(h.clearHistory)}</button></p>`
+      ? `<section class="home-section">` +
+        `<h2 class="home-h2">${esc(h.recTitle)}</h2>` +
+        `<ul class="home-rec-list">${recItems}</ul>` +
+        // 記録を消すボタンだけは、残しておく(この端末に保存している記録を、利用者がいつでも消せるように)
+        `<div class="home-clear-row"><button type="button" class="home-clear-history" data-home-action="clear-history">${esc(h.clearHistory)}</button></div>` +
+        `</section>`
       : "") +
-    `</section>` +
     `<section class="home-section">` +
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
     `<div class="home-features">` +

@@ -3753,3 +3753,9 @@ a.todo-card .todo-card-foot {
   justify-content: center;
   margin-top: 20px;
 }
+
+.home-clear-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
