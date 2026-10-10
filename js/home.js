@@ -24,10 +24,16 @@ const HOME_TEXT = {
     nearLoading: "現在地を調べています…",
     nearFailed: "現在地を取得できませんでした。地図から探してください",
     recTitle: "あなたへのおすすめ",
-    recBecause: (area) => `最近見た「${area}」のお店の近く`,
-    recNew: "新しく登録されたお店",
+    recBasis: "あなたがこのサイトで見たお店・検索・保存をもとに選んでいます",
+    whyViewed: (area) => `見たお店(${area})の近く`,
+    whySaved: (area) => `保存したお店(${area})の近く`,
+    whySearch: (q) => `「${q}」で検索したから`,
+    whyType: (type) => `よく見る種類: ${type}`,
+    recEmpty: "お店を見たり、検索したり、♡で保存したりすると、あなたに合わせたおすすめがここに出ます。",
+    recNoMatch: "いまの記録に合うお店が見つかりませんでした。ほかのお店も見てみてください。",
+    recEmptyNear: "近くのお店から探す",
     clearHistory: "履歴を消す",
-    historyNote: "最近見たお店は、この端末の中だけに保存しています",
+    historyNote: "見たお店・検索・選んだ種類は、この端末の中だけに保存しています",
     featureTitle: "特集",
     featureCafeTag: "カフェ",
     featureCafeTitle: "ベトナムコーヒーで\nひと休み",
@@ -57,10 +63,16 @@ const HOME_TEXT = {
     nearLoading: "Finding your location…",
     nearFailed: "Couldn't get your location. Please use the map instead",
     recTitle: "Picked for you",
-    recBecause: (area) => `Near the shops you viewed in ${area}`,
-    recNew: "Newly added",
+    recBasis: "Chosen from the shops you viewed, searched for and saved on this site",
+    whyViewed: (area) => `Near a shop you viewed (${area})`,
+    whySaved: (area) => `Near a shop you saved (${area})`,
+    whySearch: (q) => `Because you searched “${q}”`,
+    whyType: (type) => `You often look at: ${type}`,
+    recEmpty: "View, search for or ♡ save shops, and recommendations picked for you will appear here.",
+    recNoMatch: "No shops match your activity yet. Try looking at some other shops.",
+    recEmptyNear: "Find shops near you",
     clearHistory: "Clear history",
-    historyNote: "Recently viewed shops are saved only on this device",
+    historyNote: "Viewed shops, searches and chosen categories are saved only on this device",
     featureTitle: "Features",
     featureCafeTag: "Cafes",
     featureCafeTitle: "Take a break with\nVietnamese coffee",
@@ -90,10 +102,16 @@ const HOME_TEXT = {
     nearLoading: "Đang tìm vị trí của bạn…",
     nearFailed: "Không lấy được vị trí. Vui lòng tìm trên bản đồ",
     recTitle: "Gợi ý cho bạn",
-    recBecause: (area) => `Gần các quán bạn đã xem ở ${area}`,
-    recNew: "Quán mới thêm",
+    recBasis: "Chọn dựa trên các quán bạn đã xem, tìm kiếm và lưu trên trang này",
+    whyViewed: (area) => `Gần quán bạn đã xem (${area})`,
+    whySaved: (area) => `Gần quán bạn đã lưu (${area})`,
+    whySearch: (q) => `Vì bạn đã tìm “${q}”`,
+    whyType: (type) => `Bạn hay xem: ${type}`,
+    recEmpty: "Hãy xem, tìm kiếm hoặc nhấn ♡ để lưu quán, gợi ý dành riêng cho bạn sẽ hiện ở đây.",
+    recNoMatch: "Chưa có quán phù hợp với hoạt động của bạn. Hãy xem thêm các quán khác.",
+    recEmptyNear: "Tìm quán gần bạn",
     clearHistory: "Xóa lịch sử",
-    historyNote: "Các quán đã xem chỉ được lưu trên thiết bị này",
+    historyNote: "Quán đã xem, từ khóa tìm kiếm và loại đã chọn chỉ được lưu trên thiết bị này",
     featureTitle: "Chủ đề",
     featureCafeTag: "Cà phê",
     featureCafeTitle: "Nghỉ chân với\ncà phê Việt",
@@ -128,44 +146,125 @@ function mapUrl() {
 }
 
 // ---------------------------------------------------------------------
-// 最近見たお店(このブラウザの中だけに保存。新しい順に、最大20件)
+// このサイトの中での、その人の行動の記録(おすすめを、人ごとに変えるため)
+//   ・すべて、このブラウザの中(localStorage)だけに保存。サーバーや第三者には送らない
+//   ・記録するもの: 見たお店 / 検索した言葉(と、それが駅のときはその位置)/ 選んだ種類(料理店・食材店・カフェ)
+//   ・「履歴を消す」で、まとめて消せる
 // ---------------------------------------------------------------------
-const RECENT_KEY = "vf_recent_shops";
-function loadRecentShops() {
+const RECENT_KEY = "vf_recent_shops"; // 見たお店の id(新しい順、最大20件)
+const SEARCH_KEY = "vf_recent_searches"; // 検索 [{ q, terms, places }](新しい順、最大10件)
+const TYPE_KEY = "vf_type_picks"; // 種類を選んだ回数 { restaurant: 2, cafe: 5, ... }
+function readJson(key, fallback) {
   try {
-    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-    return Array.isArray(list) ? list.filter((id) => typeof id === "string") : [];
+    const v = JSON.parse(localStorage.getItem(key) || "null");
+    return v === null ? fallback : v;
   } catch (e) {
-    return [];
+    return fallback;
   }
 }
-function recordRecentShop(id) {
-  if (!id) return;
+function writeJson(key, value) {
   try {
-    const list = loadRecentShops().filter((x) => x !== id);
-    list.unshift(id);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 20)));
+    localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
     // 保存できない(プライベートブラウズなど)ときは、何もしない
   }
 }
+function loadRecentShops() {
+  const list = readJson(RECENT_KEY, []);
+  return Array.isArray(list) ? list.filter((id) => typeof id === "string") : [];
+}
+function recordRecentShop(id) {
+  if (!id) return;
+  const list = loadRecentShops().filter((x) => x !== id);
+  list.unshift(id);
+  writeJson(RECENT_KEY, list.slice(0, 20));
+}
+function loadRecentSearches() {
+  const list = readJson(SEARCH_KEY, []);
+  return Array.isArray(list) ? list.filter((x) => x && typeof x.q === "string" && Array.isArray(x.terms)) : [];
+}
+// 検索した言葉を記録する(js/app.js が、入力が止まって、結果が1件以上あったときに呼ぶ)
+function recordSearch(q, terms, places) {
+  const text = String(q || "").trim().slice(0, 60);
+  if (!text || !Array.isArray(terms) || !terms.length) return;
+  const list = loadRecentSearches().filter((x) => x.q !== text);
+  list.unshift({ q: text, terms: terms.slice(0, 6), places: (places || []).slice(0, 6) });
+  writeJson(SEARCH_KEY, list.slice(0, 10));
+}
+function loadTypePicks() {
+  const v = readJson(TYPE_KEY, {});
+  return v && typeof v === "object" ? v : {};
+}
+// 種類(料理店・食材店・カフェ)を選んだことを記録する(js/app.js の selectType が呼ぶ)
+function recordTypePick(type) {
+  if (!["restaurant", "grocery", "cafe"].includes(type)) return;
+  const v = loadTypePicks();
+  v[type] = Math.min(50, (Number(v[type]) || 0) + 1);
+  writeJson(TYPE_KEY, v);
+}
+function clearActivity() {
+  [RECENT_KEY, SEARCH_KEY, TYPE_KEY].forEach((k) => {
+    try {
+      localStorage.removeItem(k);
+    } catch (e) {
+      // 何もしない
+    }
+  });
+}
 
-// おすすめ: いちばん最近見たお店の近くで、まだ見ていないお店を、近い順に3件
+// おすすめ: その人の記録だけを使って、まだ見ていないお店に点数を付け、高い順に3件
+//   ・見たお店の近く(最近見たものほど重く)/ 保存したお店(♡)の近く /
+//     検索した言葉に合う・検索した駅の近く / よく見る・よく選ぶ種類
+//   ・記録が何もない人には、おすすめのお店は出さない(みんなに同じものは出さない)
 function homeRecommendations() {
   const recent = loadRecentShops();
+  const searches = loadRecentSearches();
+  const picks = loadTypePicks();
   const byId = new Map(entries.map((e) => [e.shop.id, e]));
-  const base = recent.map((id) => byId.get(id)).find(Boolean);
-  if (base) {
-    const seen = new Set(recent);
-    const items = entries
-      .filter((e) => !seen.has(e.shop.id))
-      .map((e) => ({ entry: e, km: distanceKm(base.shop.lat, base.shop.lng, e.shop.lat, e.shop.lng) }))
-      .sort((a, b) => a.km - b.km)
-      .slice(0, 3);
-    return { reason: homeText().recBecause(pick(base.shop.area)), items, fromHistory: true };
-  }
-  // まだ何も見ていないとき: 新しく登録されたお店(data.js のいちばん後ろの3件)
-  return { reason: homeText().recNew, items: entries.slice(-3).reverse().map((e) => ({ entry: e, km: null })), fromHistory: false };
+  const viewed = recent.map((id) => byId.get(id)).filter(Boolean);
+  const saved = entries.filter((e) => isFavorite(e.shop));
+  const hasSignal = viewed.length > 0 || saved.length > 0 || searches.length > 0 || Object.keys(picks).length > 0;
+  if (!hasSignal) return { items: [], hasSignal: false };
+
+  // 種類の好み(見たお店の種類 + 選んだ種類)
+  const typeCount = { restaurant: 0, grocery: 0, cafe: 0 };
+  viewed.forEach((e, i) => (typeCount[shopType(e.shop)] += Math.pow(0.85, i)));
+  Object.keys(typeCount).forEach((k) => (typeCount[k] += Number(picks[k]) || 0));
+  const typeTotal = Object.values(typeCount).reduce((a, b) => a + b, 0);
+
+  const exclude = new Set([...recent, ...saved.map((e) => e.shop.id)]); // もう見た・保存したお店は出さない
+  const near = (km) => Math.exp(-km / 1.5); // 近いほど 1 に近い(1.5km で約 0.37)
+  const scored = entries
+    .filter((e) => !exclude.has(e.shop.id))
+    .map((e) => {
+      const { lat, lng } = e.shop;
+      const parts = []; // [点数, 理由, 距離]
+      viewed.forEach((v, i) => {
+        const km = distanceKm(v.shop.lat, v.shop.lng, lat, lng);
+        parts.push([Math.pow(0.8, i) * near(km), { kind: "viewed", area: pick(v.shop.area) }, km]);
+      });
+      saved.forEach((f) => {
+        const km = distanceKm(f.shop.lat, f.shop.lng, lat, lng);
+        parts.push([0.8 * near(km), { kind: "saved", area: pick(f.shop.area) }, km]);
+      });
+      const text = getSearchText(e.shop);
+      searches.forEach((sr, i) => {
+        const w = Math.pow(0.8, i);
+        const placeHit = (sr.places || []).some((p) => Array.isArray(p) && distanceMeters(p[0], p[1], lat, lng) <= SEARCH_NEAR_STATION_M);
+        if (placeHit || sr.terms.every((t) => text.includes(t))) parts.push([1.1 * w, { kind: "search", q: sr.q }, null]);
+      });
+      if (typeTotal > 0) {
+        const share = typeCount[shopType(e.shop)] / typeTotal;
+        if (share > 0) parts.push([0.6 * share, { kind: "type", type: shopType(e.shop) }, null]);
+      }
+      const score = parts.reduce((sum, p) => sum + p[0], 0);
+      const best = parts.sort((x, y) => y[0] - x[0])[0];
+      return { entry: e, score, why: best ? best[1] : null, km: best ? best[2] : null };
+    })
+    .filter((x) => x.score > 0.15)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+  return { items: scored, hasSignal: true };
 }
 
 // ---------------------------------------------------------------------
@@ -201,19 +300,30 @@ function renderHome() {
     `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span>${esc(label)}</span></button>`;
 
   const rec = homeRecommendations();
+  const whyText = (why) => {
+    if (!why) return "";
+    if (why.kind === "viewed") return h.whyViewed(why.area);
+    if (why.kind === "saved") return h.whySaved(why.area);
+    if (why.kind === "search") return h.whySearch(why.q);
+    if (why.kind === "type") return h.whyType(h.typeLabel[why.type]);
+    return "";
+  };
   const recItems = rec.items
-    .map(({ entry, km }) => {
+    .map(({ entry, km, why }) => {
       const type = shopType(entry.shop);
       return (
         `<li><a class="home-rec" href="${esc(shopUrl(entry.shop.id))}" data-shop-id="${esc(entry.shop.id)}">` +
         `<span class="home-rec-icon home-type-${type}">${homeIcon(type, 28)}</span>` +
         `<span class="home-rec-body"><span class="home-rec-name">${esc(pick(entry.shop.name))}</span>` +
-        `<span class="home-rec-meta">${esc(h.typeLabel[type])} ・ ${esc(pick(entry.shop.area))}</span></span>` +
-        (km === null ? "" : `<span class="home-rec-km">${formatDistance(km)}</span>`) +
+        `<span class="home-rec-meta">${esc(h.typeLabel[type])} ・ ${esc(pick(entry.shop.area))}</span>` +
+        `<span class="home-rec-why">${esc(whyText(why))}</span></span>` +
+        (km === null || km === undefined ? "" : `<span class="home-rec-km">${formatDistance(km)}</span>`) +
         `</a></li>`
       );
     })
     .join("");
+  // 記録がまだ無い人(または、合うお店が無い人)への案内。みんなに同じお店は出さない
+  const recEmpty = rec.hasSignal ? h.recNoMatch : h.recEmpty;
 
   const feature = (key, tag, title, sub) =>
     `<button type="button" class="home-feature home-feature-${key}" data-home-action="${key}">` +
@@ -242,10 +352,12 @@ function renderHome() {
     `<div class="home-divider"></div>` +
     `<section class="home-section">` +
     `<h2 class="home-h2">${esc(h.recTitle)}</h2>` +
-    `<p class="home-reason">${esc(rec.reason)}</p>` +
-    `<ul class="home-rec-list">${recItems}</ul>` +
-    // 履歴を使っているときは、どこに保存しているかと、消す方法を、すぐそばに出す
-    (rec.fromHistory
+    (rec.items.length
+      ? `<p class="home-reason">${esc(h.recBasis)}</p><ul class="home-rec-list">${recItems}</ul>`
+      : `<div class="home-rec-empty"><p>${esc(recEmpty)}</p>` +
+        `<button type="button" class="home-rec-empty-btn" data-home-action="near">${homeIcon("near", 18)}<span>${esc(h.recEmptyNear)}</span></button></div>`) +
+    // 記録を使っているときは、どこに保存しているかと、消す方法を、すぐそばに出す
+    (rec.hasSignal
       ? `<p class="home-history-note">${esc(h.historyNote)} <button type="button" class="home-clear-history" data-home-action="clear-history">${esc(h.clearHistory)}</button></p>`
       : "") +
     `</section>` +
@@ -324,11 +436,7 @@ homePage.addEventListener("click", (event) => {
   if (!action) return;
   const key = action.dataset.homeAction;
   if (key === "clear-history") {
-    try {
-      localStorage.removeItem(RECENT_KEY);
-    } catch (e) {
-      // 何もしない
-    }
+    clearActivity();
     renderHome();
     return;
   }
