@@ -713,6 +713,7 @@ const entries = restaurants.map((shop) => {
   marker.on("popupopen", (event) => {
     // 選んだお店を、地図の真ん中に動かす(ポップアップの大きさが決まってから)
     requestAnimationFrame(() => centerOnSelectedShop(marker, event.popup));
+    if (typeof recordRecentShop === "function") recordRecentShop(shop.id); // ホームの「あなたへのおすすめ」のため(このブラウザの中だけ)
     listElement.classList.add("has-selection"); // 先に付ける(末尾に余白が入り、最後のお店も一番上まで動かせる)
     setSelected(entry, true);
     renderFavorites(); // 開いたポップアップの ♡ / ♥ を、いまの登録状態に合わせる
@@ -1519,6 +1520,7 @@ function renderResultHeading() {
 }
 
 function renderFilters() {
+  if (typeof renderTabs === "function") renderTabs(); // 画面の下のタブ(スマホ)の「保存」の印も、いまの状態に合わせる
   const t = ui[currentLang];
   document.getElementById("dish-label").textContent = t.filterDish;
   document.getElementById("type-label").textContent = t.filterType;
