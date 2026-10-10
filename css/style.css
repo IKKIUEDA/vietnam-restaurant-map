@@ -4320,3 +4320,220 @@ header h1 {
     height: 40px;
   }
 }
+
+/* =====================================================================
+   地図の画面・お店のページを、ホームと同じ見た目にそろえる
+   (上の「デザインの土台」の値 --c-〜 / --radius-〜 / --shadow-〜 を使う)
+   ===================================================================== */
+
+/* ---- 地図の画面: 上の検索バー ---- */
+#search-bar {
+  padding: 10px 16px;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+}
+
+#search-input {
+  padding: 11px 16px;
+  font-size: 16px; /* 16px 未満だと、iPhone で入力時に画面が拡大されてしまう */
+  background: #f4f5f1;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-pill);
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+#search-input:focus {
+  outline: none;
+  background: var(--c-surface);
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.18);
+}
+
+.search-placeholder {
+  left: 17px;
+}
+
+/* ---- 地図の画面: 絞り込みのボタン ---- */
+.chips {
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--c-text);
+  border-color: #d9ddd5;
+  border-radius: var(--radius-pill);
+}
+
+.chip:hover {
+  background: var(--c-primary-soft);
+}
+
+.chip.active {
+  color: #ffffff;
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+}
+
+.filter-label {
+  color: var(--c-text-sub);
+}
+
+#shop-list,
+#filter-panel,
+#shop-list h2 {
+  border-color: var(--c-border);
+}
+
+/* ---- 地図の画面: お店の一覧 ---- */
+#shop-list-items .pref-header {
+  padding: 13px 16px;
+  font-weight: 800;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+}
+
+#shop-list-items .pref-header:hover {
+  background: #f3f7f2;
+}
+
+#shop-list-items .area-header {
+  color: var(--c-primary-dark);
+  background: #fafbf8;
+  border-bottom: 1px solid var(--c-border);
+}
+
+#shop-list-items .area-header:hover {
+  background: #f0f6ef;
+}
+
+#shop-list-items .group-count {
+  color: var(--c-text-sub);
+}
+
+#shop-list-items .shop-item {
+  border-bottom-color: var(--c-border);
+}
+
+#shop-list-items .shop-item:hover {
+  background: #f3f8f2;
+}
+
+#shop-list-items .shop-thumb-wrap {
+  border-radius: 12px;
+}
+
+#scan-button {
+  padding: 9px 18px;
+  box-shadow: 0 4px 16px rgba(20, 40, 25, 0.22);
+}
+
+/* ---- ボタン(お店のページ・各画面で共通): 角を丸く ---- */
+.btn {
+  border-width: 1.5px;
+  border-radius: var(--radius-pill);
+  transition: background-color 0.15s, transform 0.12s;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  border-color: var(--c-primary);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.24);
+}
+
+/* ---- お店のページ ---- */
+#detail-view,
+#content-page-view {
+  background: var(--c-bg);
+}
+
+/* 「← 一覧に戻る」は、目立ちすぎない、淡い緑の丸いボタンに */
+.detail-back {
+  min-height: 40px;
+  padding: 6px 16px 6px 12px;
+  border-color: transparent;
+  background: var(--c-primary-soft);
+  font-size: 0.9rem;
+}
+
+.detail-back:hover:not(:disabled) {
+  background: #dcecdc;
+}
+
+.detail-hero {
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.detail-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.detail-sub {
+  color: var(--c-text-sub);
+}
+
+.detail-stat {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  box-shadow: 0 1px 2px rgba(20, 40, 25, 0.05);
+}
+
+/* 各セクションを、白いカードにする */
+.detail-section {
+  margin-top: 16px;
+  padding: 18px 18px 20px;
+  background: var(--c-surface);
+  border-top: none;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* セクションの見出し: 黒い太字 + 左に緑の線 */
+.detail-section h3 {
+  margin: 0 0 14px;
+  padding-left: 10px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--c-text);
+  border-left: 4px solid var(--c-primary);
+  line-height: 1.3;
+}
+
+/* 基本情報: 1行ごとに薄い線で区切る */
+.detail-info {
+  gap: 0 12px;
+}
+
+.detail-info dt,
+.detail-info dd {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.detail-info dt:last-of-type,
+.detail-info dd:last-of-type {
+  border-bottom: none;
+}
+
+.detail-info dt {
+  color: var(--c-text-sub);
+}
+
+#detail-map {
+  border-radius: 16px;
+}
+
+.detail-note,
+.detail-placeholder,
+.detail-empty-review {
+  color: var(--c-text-sub);
+}
