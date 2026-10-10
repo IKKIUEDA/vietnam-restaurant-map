@@ -62,7 +62,7 @@ function routeFromLocation() {
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
-  // To Do List(js/todo.js): 「?view=todo」= 作る画面 / 「?view=todo&list=ID」= そのリストの一覧
+  // マイリスト(js/todo.js): 「?view=todo」= 作る画面 / 「?view=todo&list=ID」= そのリストの一覧
   if (view === "todo" && typeof showHome === "function") return { name: "home", mode: params.get("list") ? "todo-list" : "todo", list: params.get("list") };
   if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
   return { name: "list" };

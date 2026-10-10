@@ -318,7 +318,7 @@ function renderHome() {
     `</nav>` +
     `<p class="home-status" role="status" hidden></p>` +
     `<div class="home-divider"></div>` +
-    // To Do List(js/todo.js)
+    // マイリスト(js/todo.js)
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     // あなたへのおすすめ: おすすめのお店があるときだけ出す(しくみの説明や距離は、画面には出さない)
     (rec.items.length
@@ -421,7 +421,7 @@ homePage.addEventListener("click", (event) => {
 
 // 検索: 地図の画面の検索ボックスに同じ言葉を入れて、地図の画面に移る(スマホでは、結果の一覧が自動で開く)
 homePage.addEventListener("submit", (event) => {
-  if (!event.target.matches(".home-search")) return; // ほかのフォーム(To Do List の駅名など)は、それぞれで受け取る
+  if (!event.target.matches(".home-search")) return; // ほかのフォーム(マイリストの駅名など)は、それぞれで受け取る
   event.preventDefault();
   const input = homePage.querySelector("#home-search-input");
   const q = input.value.trim();
@@ -436,7 +436,7 @@ homePage.addEventListener("submit", (event) => {
 // ---------------------------------------------------------------------
 // 画面の切り替え(js/detail.js の renderRoute から呼ばれる)
 // ---------------------------------------------------------------------
-//   mode: "todo" のときは、ホームの場所に「To Do List を作る」の画面を出す(URL「?view=todo」。js/todo.js)
+//   mode: "todo" のときは、ホームの場所に「マイリストを作る」の画面を出す(URL「?view=todo」。js/todo.js)
 let homeMode = "home";
 //   mode: "todo-list" のときは、そのリストの一覧(URL「?view=todo&list=ID」)
 let homeListId = null;
@@ -450,7 +450,7 @@ function showHome(mode, listId) {
   homeView.scrollTop = 0;
   renderTabs();
 }
-// いまの画面(ホーム / To Do List を作る / To Do List の一覧)を描き直す
+// いまの画面(ホーム / マイリストを作る / マイリストの一覧)を描き直す
 function renderHomeMode() {
   if (homeMode === "todo") renderTodoCreate();
   else if (homeMode === "todo-list") renderTodoListPage(homeListId);
