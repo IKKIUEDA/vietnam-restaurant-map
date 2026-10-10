@@ -4114,3 +4114,209 @@ a.todo-card .todo-card-foot {
     display: none;
   }
 }
+
+/* =====================================================================
+   デザインの土台(色・文字・角の丸み・影をそろえる)
+   ・ここで決めた値(:root の --〜)を、カードやボタンで共通に使う
+   ・あとから色や丸みを変えたいときは、ここの値を書き換えるだけでよい
+   ===================================================================== */
+:root {
+  --c-primary: #2e7d32;
+  --c-primary-dark: #1f5e23;
+  --c-primary-soft: #e8f3e8;
+  --c-bg: #faf8f3;
+  --c-surface: #ffffff;
+  --c-border: #e9ebe5;
+  --c-text: #1d2a22;
+  --c-text-sub: #5d6b61;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(20, 40, 25, 0.04), 0 6px 20px rgba(20, 40, 25, 0.06);
+  --shadow-card-hover: 0 2px 4px rgba(20, 40, 25, 0.06), 0 12px 28px rgba(20, 40, 25, 0.1);
+  --font-base: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+    "Yu Gothic UI", "Meiryo", "Segoe UI", Roboto, sans-serif;
+}
+
+/* 文字: 端末にある、読みやすい日本語の文字(iPhone・Mac はヒラギノ、Windows は游ゴシック UI・メイリオ) */
+html,
+body {
+  font-family: var(--font-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color: var(--c-text);
+}
+
+/* キーボードで操作したときの、選択中の印(見やすい緑の枠) */
+:focus-visible {
+  outline: 3px solid rgba(46, 125, 50, 0.45);
+  outline-offset: 2px;
+}
+
+/* ---- 上のヘッダー ---- */
+header {
+  padding: 8px 16px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+header h1 {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.auth-btn {
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+}
+
+/* 言語の切り替え: ふつうの選択ボックスを、丸いボタン風に */
+#lang-select {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 36px;
+  padding: 0 32px 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#lang-select:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+#lang-select option {
+  color: var(--c-text); /* 開いたときの一覧は、白地に黒い文字 */
+}
+
+/* ---- ホーム・マイリストのカード: 線を薄くして、やわらかい影でくぎる ---- */
+.home-entry,
+.home-rec,
+.mylist-area,
+.todo-shop,
+.home-feature {
+  border-color: var(--c-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.mylist-area {
+  border-left-color: var(--c-primary);
+}
+
+.mylist-area.is-muted {
+  border-left-color: #b9c4bb;
+}
+
+.todo-new {
+  border-radius: var(--radius-card);
+}
+
+/* マウスで乗せたとき(PC だけ)、カードを少し浮かせる */
+@media (hover: hover) {
+  .home-entry:hover,
+  .home-rec:hover,
+  .mylist-area:hover,
+  .todo-shop:hover,
+  .home-feature:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+}
+
+/* 見出し: 少しだけ細く、字間をそろえる */
+.home-h2 {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.todo-create-title {
+  font-weight: 800;
+}
+
+/* 小さな説明文の色をそろえる */
+.home-reason-plain,
+.home-history-note,
+.todo-rank-note,
+.mylist-summary {
+  color: var(--c-text-sub);
+}
+
+/* 主なボタン(保存・作るなど): 角を丸く、押したときに少し沈む */
+.todo-primary,
+.home-search-btn,
+.mylist-save-round {
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.28);
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.todo-primary:active,
+.home-search-btn:active,
+.mylist-save-round:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .todo-primary:hover,
+  .home-search-btn:hover,
+  .mylist-save-round:hover {
+    background-color: var(--c-primary-dark);
+  }
+}
+
+/* 動きを減らす設定の人には、浮かせる・沈む動きをしない */
+@media (prefers-reduced-motion: reduce) {
+  .home-entry,
+  .home-rec,
+  .mylist-area,
+  .todo-shop,
+  .home-feature,
+  .todo-primary,
+  .home-search-btn,
+  .mylist-save-round {
+    transition: none;
+  }
+}
+
+/* スマホ: ヘッダーのボタンを小さめにして、サイト名が省略されないようにする */
+@media (max-width: 480px) {
+  header {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .auth-btn {
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  #lang-select {
+    min-height: 32px;
+    max-width: 80px;
+    padding: 0 20px 0 9px;
+    background-position: right 8px center;
+    font-size: 0.78rem;
+  }
+
+  header h1 {
+    font-size: 0.95rem;
+  }
+
+  .app-logo {
+    height: 40px;
+  }
+}
