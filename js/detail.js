@@ -59,6 +59,10 @@ function routeFromLocation() {
   if (id) return { name: "shop", id };
   const page = params.get(PAGE_PARAM);
   if (page && CONTENT_PAGES[page]) return { name: "content", page };
+  // ホーム(js/home.js): 「?view=home」のとき。URL に何も付いていないときも、スマホならホーム
+  const view = params.get("view");
+  if (view === "map") return { name: "list" };
+  if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
   return { name: "list" };
 }
 
@@ -92,9 +96,12 @@ function goToList() {
 
 function renderRoute() {
   const route = routeFromLocation();
+  if (route.name !== "home" && typeof hideHome === "function") hideHome();
   if (route.name === "shop") showDetail(route.id);
   else if (route.name === "content") showContentPage(route.page);
+  else if (route.name === "home") showHome();
   else showList();
+  if (typeof renderTabs === "function") renderTabs(); // 画面の下のタブ(スマホ)の、いまの画面の印
 }
 
 function showDetail(id) {
@@ -103,6 +110,7 @@ function showDetail(id) {
   }
   currentShopId = id;
   lastViewedShopId = id;
+  if (typeof recordRecentShop === "function") recordRecentShop(id); // ホームの「あなたへのおすすめ」のため(このブラウザの中だけ)
   document.body.classList.remove("view-content-page");
   contentPageView.hidden = true;
   document.body.classList.add("view-detail"); // 一覧・検索ボックスを隠す(CSS)
@@ -138,7 +146,8 @@ function fitVisibleShops() {
   }
 }
 
-function showList() {
+//   forHome: ホームを出す前の片付けとして呼ぶとき(地図は隠れたままなので、地図の大きさの測り直しなどはしない)
+function showList(forHome = false) {
   const wasDetail = document.body.classList.contains("view-detail");
   const wasAltView = wasDetail || document.body.classList.contains("view-content-page");
   destroyDetailMap();
@@ -154,6 +163,7 @@ function showList() {
   detailView.hidden = true;
   contentPageView.hidden = true;
   applyDocumentTitle();
+  if (forHome) return;
   map.invalidateSize(); // 隠れていた間に、地図の大きさが分からなくなっているので、測り直す
   if (listMapNeedsFit) {
     listMapNeedsFit = false;
@@ -2998,9 +3008,12 @@ function renderDetailStats() {
 // ---------------------------------------------------------------------
 
 // ヘッダーのロゴ・タイトルを押すと、一覧に戻る
+//   (スマホは、ホームに戻る)
 document.getElementById("brand-link").addEventListener("click", (event) => {
   event.preventDefault();
-  if (currentShopId !== null || currentContentPage !== null) goToList();
+  if (typeof isHomeDefault === "function" && isHomeDefault()) {
+    if (!document.body.classList.contains("view-home")) navigate(homeUrl());
+  } else if (currentShopId !== null || currentContentPage !== null) goToList();
 });
 
 // フッターの3つのリンク(利用規約・プライバシーポリシー・運営者情報)。新しいタブで開く操作は、そのまま
@@ -3019,5 +3032,6 @@ bindFooterLink("footer-link-about", aboutUrl());
 window.addEventListener("popstate", renderRoute);
 
 // 詳細ページのURLで、直接開かれたとき: 一覧の地図は隠れた状態で作られているので、一覧を最初に見せるときに合わせ直す
-listMapNeedsFit = routeFromLocation().name === "shop";
+//   (ホームから始まったときも、地図は隠れた状態で作られているので、同じように合わせ直す)
+listMapNeedsFit = ["shop", "home"].includes(routeFromLocation().name);
 renderRoute();

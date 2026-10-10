@@ -216,7 +216,8 @@ const ui = {
         list: [
           "ログイン情報(メールアドレス、Googleアカウントの表示名): アカウントの管理、投稿者名の表示のために利用します。",
           "投稿情報(Tips・Check-in・レビュー・写真、それぞれの内容と投稿日時): サービス内でのお店情報の共有・表示のために利用します。",
-          "位置情報: 地図の「🔍スキャンする」機能を使ったときに、その場で、地図の表示範囲にある店舗を検索するために利用します。取得した位置情報を保存することはありません。",
+          "位置情報: ホームの「近く」を押したとき、または店舗ページで現在地からの距離を表示するときに、その場で、近くの店舗を探す・距離を計算するために利用します。位置情報は、ブラウザで許可した場合だけ取得し、保存することはありません。",
+          "閲覧履歴(最近見たお店): ホームの「あなたへのおすすめ」で、最近見たお店の近くの店舗を表示するために利用します。お使いの端末(ブラウザ)の中だけに保存し、本サービスのサーバーや第三者に送ることはありません。ホームの「履歴を消す」から、いつでも削除できます。",
           "Cookie・アクセスログ: サービスの利用状況の把握、不正利用の防止のために利用する場合があります(Firebase等のインフラが標準的に記録するものを含みます)。",
           "お問い合わせ情報: いただいたお問い合わせへの回答のために利用します。",
         ],
@@ -615,7 +616,8 @@ const ui = {
         list: [
           "Login information (email address, Google account display name): used to manage your account and to show your name on your posts.",
           "Submission information (the content and post date/time of each Tips, check-in, review, and photo): used to share and display shop information within the Service.",
-          "Location: used on the spot, when you use the map's ‘🔍 Scan’ feature, to find shops within the currently displayed map area. We do not store the location we obtain.",
+          "Location: used on the spot, when you tap ‘Nearby’ on the home screen or when a shop page shows the distance from where you are, to find nearby shops and calculate distances. It is obtained only if you allow it in your browser, and we do not store it.",
+          "Viewing history (recently viewed shops): used to show shops near the ones you recently viewed in ‘Picked for you’ on the home screen. It is stored only on your device (in your browser) and is never sent to our servers or to third parties. You can delete it at any time with ‘Clear history’ on the home screen.",
           "Cookies and access logs: may be used to understand how the Service is used and to prevent misuse (this includes what infrastructure such as Firebase records by default).",
           "Contact information: used to respond to inquiries you send us.",
         ],
@@ -1013,7 +1015,8 @@ const ui = {
         list: [
           "Thông tin đăng nhập (địa chỉ email, tên hiển thị tài khoản Google): dùng để quản lý tài khoản và hiển thị tên người đăng.",
           "Thông tin đăng tải (nội dung và thời gian đăng của từng Tips, check-in, đánh giá, ảnh): dùng để chia sẻ và hiển thị thông tin quán trong Dịch vụ.",
-          "Vị trí: dùng ngay tại thời điểm sử dụng tính năng ‘🔍 Quét’ trên bản đồ, để tìm quán trong phạm vi bản đồ đang hiển thị. Chúng tôi không lưu trữ vị trí đã lấy.",
+          "Vị trí: dùng ngay tại thời điểm bạn nhấn ‘Gần đây’ ở trang chủ, hoặc khi trang quán hiển thị khoảng cách từ vị trí của bạn, để tìm quán gần và tính khoảng cách. Chỉ lấy khi bạn cho phép trên trình duyệt và không được lưu lại.",
+          "Lịch sử xem (các quán đã xem gần đây): dùng để hiển thị các quán gần những quán bạn đã xem trong mục ‘Gợi ý cho bạn’ ở trang chủ. Chỉ được lưu trên thiết bị (trình duyệt) của bạn, không gửi đến máy chủ của chúng tôi hay bên thứ ba. Bạn có thể xóa bất cứ lúc nào bằng ‘Xóa lịch sử’ ở trang chủ.",
           "Cookie và nhật ký truy cập: có thể được dùng để nắm tình hình sử dụng Dịch vụ và ngăn chặn hành vi lạm dụng (bao gồm cả những gì hạ tầng như Firebase ghi nhận theo mặc định).",
           "Thông tin liên hệ: dùng để phản hồi các câu hỏi bạn gửi đến chúng tôi.",
         ],
