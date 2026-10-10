@@ -4037,22 +4037,25 @@ a.todo-card .todo-card-foot {
 }
 
 @media (min-width: 900px) {
+  /* PC も横1列。カードを少し大きくして、「‹ ›」ボタンで横に送る */
   .home-areas {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 14px;
     margin: 16px 0 0;
-    padding: 0;
-    overflow: visible;
+    padding: 0 0 6px;
+    scroll-padding: 0;
+  }
+
+  .home-areas li {
+    flex-basis: 210px;
   }
 
   .home-area {
-    height: 120px;
+    height: 140px;
     padding: 16px;
   }
 
   .home-area-name {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
   }
 }
 
@@ -4060,6 +4063,62 @@ a.todo-card .todo-card-foot {
   .home-area {
     transition: none;
   }
+}
+
+/* エリアの見出しと「‹ ›」ボタン(ボタンは、マウスで操作する PC だけ) */
+.home-area-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.home-area-arrows {
+  display: none;
+  gap: 8px;
+}
+
+@media (hover: hover) and (min-width: 900px) {
+  .home-area-arrows {
+    display: flex;
+  }
+}
+
+.home-area-arrow {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--c-border, #e9ebe5);
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1d2a22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 40, 25, 0.06);
+}
+
+.home-area-arrow:hover {
+  background: #f0f6ef;
+}
+
+/* 写真のカード: 下を暗くして、白い文字を読みやすく */
+.home-area.has-image {
+  background-color: #2b3a30;
+}
+
+.home-area-credit {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  max-width: 70%;
+  overflow: hidden;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 0.6rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* ---- ホームの上の写真(ヒーロー) ----
