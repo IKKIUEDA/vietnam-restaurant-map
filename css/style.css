@@ -3084,7 +3084,7 @@ body.view-home #content {
 }
 
 /* =====================================================================
-   To Do List(js/todo.js)
+   マイリスト(js/todo.js)
    ===================================================================== */
 .home-reason-plain {
   color: #4b5a50;
@@ -3253,7 +3253,7 @@ a.todo-name:hover {
   color: #2f6b33;
 }
 
-/* 「To Do List を作る」の画面 */
+/* 「マイリストを作る」の画面 */
 .todo-create-head {
   display: flex;
   align-items: center;
@@ -3505,7 +3505,7 @@ a.todo-name:hover {
   flex: 1 1 200px;
 }
 
-/* ---- To Do List(リストごとのカード・リストの一覧) ---- */
+/* ---- マイリスト(リストごとのカード・リストの一覧) ---- */
 a.todo-card {
   display: block;
   color: #1d2a22;
@@ -3716,29 +3716,11 @@ a.todo-card .todo-card-foot {
   color: #3f4d44;
 }
 
-.todo-shop.is-done .todo-shop-name {
-  color: #8a948d;
-  text-decoration: line-through;
-}
-
-.todo-visited {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 14px 6px;
-  font-size: 0.85rem;
+.todo-shop-more {
+  margin-top: 4px;
+  font-size: 0.82rem;
   font-weight: bold;
   color: #2e7d32;
-  cursor: pointer;
-}
-
-.todo-visited input {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: #2e7d32;
 }
 
 .todo-shop .todo-step-remove {
