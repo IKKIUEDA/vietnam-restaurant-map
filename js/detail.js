@@ -59,7 +59,7 @@ function routeFromLocation() {
   if (id) return { name: "shop", id };
   const page = params.get(PAGE_PARAM);
   if (page && CONTENT_PAGES[page]) return { name: "content", page };
-  // ホーム(js/home.js): 「?view=home」のとき。URL に何も付いていないときも、スマホならホーム
+  // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
   if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
@@ -142,7 +142,7 @@ function showContentPage(page) {
 function fitVisibleShops() {
   const shown = entries.filter((entry) => entry.visible);
   if (shown.length > 0) {
-    map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), { padding: [40, 40], maxZoom: 15 });
+    map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), { padding: [40, 40], maxZoom: 15, animate: false });
   }
 }
 
@@ -3008,7 +3008,7 @@ function renderDetailStats() {
 // ---------------------------------------------------------------------
 
 // ヘッダーのロゴ・タイトルを押すと、一覧に戻る
-//   (スマホは、ホームに戻る)
+//   (ホームに戻る)
 document.getElementById("brand-link").addEventListener("click", (event) => {
   event.preventDefault();
   if (typeof isHomeDefault === "function" && isHomeDefault()) {

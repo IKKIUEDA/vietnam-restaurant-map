@@ -1,6 +1,6 @@
 // トップページ(ホーム)
-//   ・スマホで「https://vietnamfoodie.compass-story.net/」を開いたときに、最初に出る画面です(地図は「地図」から開く)
-//     ※ パソコンは、これまでどおり地図と一覧の画面から始まります(「?view=home」で、ホームも開けます)
+//   ・「https://vietnamfoodie.compass-story.net/」を開いたときに、最初に出る画面です(パソコン・スマホとも)
+//     地図と一覧の画面は「?view=map」(ホームの「地図」や、スマホの下のタブから開く)
 //   ・中身: キャッチコピーと件数 / 検索 / 探し方の入口(近く・料理店・食材店・カフェ・地図)/
 //           あなたへのおすすめ(最近見たお店の近く)/ 特集
 //   ・「最近見たお店」は、このブラウザの中(localStorage)だけに保存します。サーバーには送りません
@@ -112,14 +112,13 @@ function homeText() {
 const homeView = document.getElementById("home-view");
 const homePage = document.getElementById("home-page");
 const appTabs = document.getElementById("app-tabs");
-const narrowForHome = window.matchMedia("(max-width: 600px)");
 
-// URL に何も付いていないとき、ホームから始めるか(スマホだけ)
+// URL に何も付いていないとき、ホームから始めるか(パソコン・スマホとも、ホームから始める)
 function isHomeDefault() {
-  return narrowForHome.matches;
+  return true;
 }
 function homeUrl() {
-  return location.pathname + (isHomeDefault() ? "" : "?view=home");
+  return location.pathname;
 }
 function mapUrl() {
   return location.pathname + "?view=map";
