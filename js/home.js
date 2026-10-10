@@ -25,6 +25,8 @@ const HOME_TEXT = {
     recTitle: "あなたへのおすすめ",
     clearHistory: "履歴を消す",
     areaTitle: "エリアから探す",
+    areaPrev: "前のエリア",
+    areaNext: "次のエリア",
     areaCount: (n) => `${n}件`,
     featureTitle: "特集",
     featureCafeTag: "カフェ",
@@ -56,6 +58,8 @@ const HOME_TEXT = {
     recTitle: "Picked for you",
     clearHistory: "Clear history",
     areaTitle: "Browse by area",
+    areaPrev: "Previous areas",
+    areaNext: "More areas",
     areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
     featureTitle: "Features",
     featureCafeTag: "Cafes",
@@ -87,6 +91,8 @@ const HOME_TEXT = {
     recTitle: "Gợi ý cho bạn",
     clearHistory: "Xóa lịch sử",
     areaTitle: "Tìm theo khu vực",
+    areaPrev: "Khu vực trước",
+    areaNext: "Khu vực tiếp",
     areaCount: (n) => `${n} quán`,
     featureTitle: "Chủ đề",
     featureCafeTag: "Cà phê",
@@ -272,7 +278,8 @@ function homeIcon(name, size = 24) {
 //   ・カードを押すと、地図の画面で「○○駅」と検索したのと同じ結果を出す
 //   ・lat/lng は、地図の検索と同じ駅のデータ(data/stations-jp.json)の位置
 //   ・件数は、地図の検索と同じ決まり(駅から 2km 以内、または住所などに「○○駅」の文字がある)で数える
-//   ・image: エリアの写真(あとで用意したら "images/area-shinjuku.jpg" のように書く)。無いときは色のカード
+//   ・image: エリアの写真(用意したら "images/area-shinjuku.jpg" のように書く)。無いときは色のカード
+//   ・credit: 写真のクレジット(例: "撮影: ○○" / "Photo: ○○ / CC BY 4.0")。書くと、写真の右下に小さく出す
 //   ・color: 写真が無いときのカードの色(エリアごとに少しずつ変える)
 // ---------------------------------------------------------------------
 const HOME_AREAS = [
@@ -305,6 +312,7 @@ function renderHomeAreas() {
         `<span class="home-area-pin" aria-hidden="true">${homeIcon("near", 18)}</span>` +
         `<span class="home-area-name">${esc(pick(a.name))}</span>` +
         `<span class="home-area-count">${esc(homeText().areaCount(n))}</span>` +
+        (a.image && a.credit ? `<span class="home-area-credit">${esc(a.credit)}</span>` : "") +
         `</button></li>`
       );
     })
@@ -312,7 +320,12 @@ function renderHomeAreas() {
   if (!cards) return "";
   return (
     `<section class="home-section home-area-section">` +
-    `<h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
+    `<div class="home-area-head"><h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
+    // PC 用の「‹ ›」ボタン(マウスでも横に送れるように。スマホは指で横にスクロール)
+    `<span class="home-area-arrows">` +
+    `<button type="button" class="home-area-arrow" data-area-scroll="-1" aria-label="${esc(homeText().areaPrev)}">${homeIcon("back", 20)}</button>` +
+    `<button type="button" class="home-area-arrow" data-area-scroll="1" aria-label="${esc(homeText().areaNext)}">${homeIcon("forward", 20)}</button>` +
+    `</span></div>` +
     `<ul class="home-areas">${cards}</ul>` +
     `</section>`
   );
@@ -457,6 +470,12 @@ homePage.addEventListener("click", (event) => {
     event.preventDefault();
     const entry = entries.find((e) => e.shop.id === shopLink.dataset.shopId);
     if (entry) openShop(entry);
+    return;
+  }
+  const arrow = event.target.closest("[data-area-scroll]");
+  if (arrow) {
+    const list = homePage.querySelector(".home-areas");
+    if (list) list.scrollBy({ left: Number(arrow.dataset.areaScroll) * list.clientWidth * 0.8, behavior: "smooth" });
     return;
   }
   const areaBtn = event.target.closest("[data-home-area]");
