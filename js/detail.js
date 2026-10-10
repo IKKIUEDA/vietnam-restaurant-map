@@ -62,6 +62,7 @@ function routeFromLocation() {
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
+  if (view === "todo" && typeof showHome === "function") return { name: "home", mode: "todo" }; // To Do List を作る(js/todo.js)
   if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
   return { name: "list" };
 }
@@ -99,7 +100,7 @@ function renderRoute() {
   if (route.name !== "home" && typeof hideHome === "function") hideHome();
   if (route.name === "shop") showDetail(route.id);
   else if (route.name === "content") showContentPage(route.page);
-  else if (route.name === "home") showHome();
+  else if (route.name === "home") showHome(route.mode);
   else showList();
   if (typeof renderTabs === "function") renderTabs(); // 画面の下のタブ(スマホ)の、いまの画面の印
 }
