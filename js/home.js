@@ -25,6 +25,7 @@ const HOME_TEXT = {
     recTitle: "あなたへのおすすめ",
     clearHistory: "履歴を消す",
     areaTitle: "エリアから探す",
+    areaCount: (n) => `${n}件`,
     featureTitle: "特集",
     featureCafeTag: "カフェ",
     featureCafeTitle: "ベトナムコーヒーで\nひと休み",
@@ -55,6 +56,7 @@ const HOME_TEXT = {
     recTitle: "Picked for you",
     clearHistory: "Clear history",
     areaTitle: "Browse by area",
+    areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
     featureTitle: "Features",
     featureCafeTag: "Cafes",
     featureCafeTitle: "Take a break with\nVietnamese coffee",
@@ -85,6 +87,7 @@ const HOME_TEXT = {
     recTitle: "Gợi ý cho bạn",
     clearHistory: "Xóa lịch sử",
     areaTitle: "Tìm theo khu vực",
+    areaCount: (n) => `${n} quán`,
     featureTitle: "Chủ đề",
     featureCafeTag: "Cà phê",
     featureCafeTitle: "Nghỉ chân với\ncà phê Việt",
@@ -291,7 +294,6 @@ function homeAreaCount(area) {
   ).length;
 }
 function renderHomeAreas() {
-  const t = ui[currentLang];
   const cards = HOME_AREAS.map((a) => ({ a, n: homeAreaCount(a) }))
     .filter((x) => x.n > 0)
     .map(({ a, n }) => {
@@ -302,7 +304,7 @@ function renderHomeAreas() {
         `<li><button type="button" class="home-area${a.image ? " has-image" : ""}" style="${bg}" data-home-area="${esc(a.station)}">` +
         `<span class="home-area-pin" aria-hidden="true">${homeIcon("near", 18)}</span>` +
         `<span class="home-area-name">${esc(pick(a.name))}</span>` +
-        `<span class="home-area-count">${esc(t.resultCount(n))}</span>` +
+        `<span class="home-area-count">${esc(homeText().areaCount(n))}</span>` +
         `</button></li>`
       );
     })
