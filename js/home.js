@@ -271,6 +271,11 @@ function homeRecommendations() {
 // 絵(アイコン)。種類ごとの色は、地図のピンと同じ(料理店 = 赤、食材店 = 青、カフェ = 茶)
 // ---------------------------------------------------------------------
 const HOME_ICONS = {
+  plus: '<path d="M12 5v14M5 12h14"></path>',
+  close: '<path d="M6 6l12 12M18 6L6 18"></path>',
+  check: '<path d="M5 12l4 4 10-10"></path>',
+  back: '<path d="M15 5l-7 7 7 7"></path>',
+  sparkle: '<path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"></path><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"></path>',
   fnb: '<path d="M7 3v7a2 2 0 0 0 2 2v9"></path><path d="M5 3v5M9 3v5"></path><path d="M14 9h6v5a3 3 0 0 1-3 3h0a3 3 0 0 1-3-3z"></path><path d="M17 17v4M15 21h4"></path><path d="M15 5c-.6 1 .6 1.6 0 2.6M18 5c-.6 1 .6 1.6 0 2.6"></path>',
   near: '<circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8"></circle><path d="M12 1v3M12 20v3M1 12h3M20 12h3"></path>',
   restaurant: '<path d="M3 11h18a9 9 0 0 1-18 0z"></path><path d="M9 4c-1 1.5 1 2.5 0 4M13 4c-1 1.5 1 2.5 0 4"></path><path d="M15 2l5 6"></path>',
@@ -350,6 +355,8 @@ function renderHome() {
     `</nav>` +
     `<p class="home-status" role="status" hidden></p>` +
     `<div class="home-divider"></div>` +
+    // To Do List(js/todo.js)
+    (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     `<section class="home-section">` +
     `<h2 class="home-h2">${esc(h.recTitle)}</h2>` +
     (rec.items.length
@@ -453,6 +460,7 @@ homePage.addEventListener("click", (event) => {
 
 // 検索: 地図の画面の検索ボックスに同じ言葉を入れて、地図の画面に移る(スマホでは、結果の一覧が自動で開く)
 homePage.addEventListener("submit", (event) => {
+  if (!event.target.matches(".home-search")) return; // ほかのフォーム(To Do List の駅名など)は、それぞれで受け取る
   event.preventDefault();
   const input = homePage.querySelector("#home-search-input");
   const q = input.value.trim();
@@ -467,11 +475,15 @@ homePage.addEventListener("submit", (event) => {
 // ---------------------------------------------------------------------
 // 画面の切り替え(js/detail.js の renderRoute から呼ばれる)
 // ---------------------------------------------------------------------
-function showHome() {
+//   mode: "todo" のときは、ホームの場所に「To Do List を作る」の画面を出す(URL「?view=todo」。js/todo.js)
+let homeMode = "home";
+function showHome(mode) {
   showList(true); // 詳細ページなどの状態を片付ける(一覧・地図の状態は、そのまま残る)
   document.body.classList.add("view-home");
   homeView.hidden = false;
-  renderHome();
+  homeMode = mode === "todo" && typeof renderTodoCreate === "function" ? "todo" : "home";
+  if (homeMode === "todo") renderTodoCreate();
+  else renderHome();
   homeView.scrollTop = 0;
   renderTabs();
 }
@@ -514,7 +526,10 @@ appTabs.addEventListener("click", (event) => {
 // 言語を切り替えたら、ホームとタブの文字も切り替える(currentLang が変わったあとに)
 document.getElementById("lang-select").addEventListener("change", () => {
   setTimeout(() => {
-    if (document.body.classList.contains("view-home")) renderHome();
+    if (document.body.classList.contains("view-home")) {
+      if (homeMode === "todo") renderTodoCreate();
+      else renderHome();
+    }
     renderTabs();
   }, 0);
 });
