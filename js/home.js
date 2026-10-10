@@ -421,7 +421,7 @@ homePage.addEventListener("click", (event) => {
 
 // 検索: 地図の画面の検索ボックスに同じ言葉を入れて、地図の画面に移る(スマホでは、結果の一覧が自動で開く)
 homePage.addEventListener("submit", (event) => {
-  if (!event.target.matches(".home-search")) return; // ほかのフォーム(マイリストの駅名など)は、それぞれで受け取る
+  if (!event.target.matches(".home-search")) return; // ほかのフォーム(ほかの画面のフォーム)は、それぞれで受け取る
   event.preventDefault();
   const input = homePage.querySelector("#home-search-input");
   const q = input.value.trim();
@@ -444,16 +444,17 @@ function showHome(mode, listId) {
   showList(true); // 詳細ページなどの状態を片付ける(一覧・地図の状態は、そのまま残る)
   document.body.classList.add("view-home");
   homeView.hidden = false;
-  homeMode = typeof renderTodoCreate === "function" && (mode === "todo" || mode === "todo-list") ? mode : "home";
+  homeMode = typeof renderMyList === "function" && ["todo", "todo-edit", "todo-area"].includes(mode) ? mode : "home";
   homeListId = listId || null;
   renderHomeMode();
   homeView.scrollTop = 0;
   renderTabs();
 }
-// いまの画面(ホーム / マイリストを作る / マイリストの一覧)を描き直す
+// いまの画面(ホーム / マイリスト / マイリストの設定 / エリアのお店の一覧)を描き直す
 function renderHomeMode() {
-  if (homeMode === "todo") renderTodoCreate();
-  else if (homeMode === "todo-list") renderTodoListPage(homeListId);
+  if (homeMode === "todo") renderMyList();
+  else if (homeMode === "todo-edit") renderMyListSettings();
+  else if (homeMode === "todo-area") renderMyListArea(homeListId);
   else renderHome();
 }
 function hideHome() {

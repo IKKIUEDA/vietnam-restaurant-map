@@ -62,8 +62,11 @@ function routeFromLocation() {
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
-  // マイリスト(js/todo.js): 「?view=todo」= 作る画面 / 「?view=todo&list=ID」= そのリストの一覧
-  if (view === "todo" && typeof showHome === "function") return { name: "home", mode: params.get("list") ? "todo-list" : "todo", list: params.get("list") };
+  // マイリスト(js/todo.js): 「?view=todo」= マイリスト / 「&edit=1」= 設定 / 「&area=東京都」= そのエリアのお店の一覧
+  if (view === "todo" && typeof showHome === "function") {
+    if (params.get("area")) return { name: "home", mode: "todo-area", list: params.get("area") };
+    return { name: "home", mode: params.get("edit") ? "todo-edit" : "todo" };
+  }
   if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
   return { name: "list" };
 }

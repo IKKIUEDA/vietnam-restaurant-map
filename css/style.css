@@ -3741,3 +3741,209 @@ a.todo-card .todo-card-foot {
   justify-content: flex-end;
   margin-top: 10px;
 }
+
+/* ---- マイリスト(エリアのカード・設定の画面) ---- */
+.mylist-head,
+.mylist-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mylist-page-head .todo-create-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.mylist-gear {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  color: #1d2a22;
+}
+
+.mylist-gear:hover,
+.mylist-gear:focus-visible {
+  background: #eef3ec;
+}
+
+.mylist-areas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mylist-area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 16px;
+  border: 1px solid #e3e6df;
+  border-left: 6px solid #2e7d32;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #1d2a22;
+  text-decoration: none;
+}
+
+.mylist-area:hover {
+  background: #f7faf6;
+}
+
+.mylist-area.is-muted {
+  border-left-color: #b9c4bb;
+  background: #f8f9f6;
+}
+
+.mylist-area-icon {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #e8f3e8;
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mylist-area.is-muted .mylist-area-icon {
+  background: #eceeea;
+  color: #5d6b61;
+}
+
+.mylist-area-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mylist-area-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.mylist-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.78rem;
+  color: #4b5a50;
+}
+
+.mylist-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mylist-kind-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.mylist-area-count {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #1f5e23;
+}
+
+.mylist-summary {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #4b5a50;
+}
+
+.mylist-also-title {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: #5d6b61;
+}
+
+.mylist-toast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 6px auto 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #2e7d32;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: bold;
+  animation: mylist-toast 2.6s ease forwards;
+}
+
+@keyframes mylist-toast {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.mylist-save-round {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 22px;
+  background: #2e7d32;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mylist-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mylist-pick {
+  min-height: 52px;
+  padding: 0 14px;
+  border: 2px solid #e3e6df;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1d2a22;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mylist-pick.is-on {
+  border-color: #2e7d32;
+  background: #e8f3e8;
+  color: #1f5e23;
+}
+
+.todo-want {
+  position: relative;
+}
+
+.mylist-want-check {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  line-height: 0;
+}
