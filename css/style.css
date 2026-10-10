@@ -3949,6 +3949,119 @@ a.todo-card .todo-card-foot {
 }
 
 
+/* ---- ホーム: エリアから探す(スマホは横にスクロール、PC は5列) ---- */
+.home-area-section {
+  padding-top: 24px;
+}
+
+.home-areas {
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  margin: 14px -20px 0;
+  padding: 0 20px 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 20px; /* 横にスクロールしても、1枚目が画面の端にくっつかないように */
+  scrollbar-width: none;
+}
+
+.home-areas::-webkit-scrollbar {
+  display: none;
+}
+
+.home-areas li {
+  flex: 0 0 132px;
+  scroll-snap-align: start;
+}
+
+.home-area {
+  position: relative;
+  width: 100%;
+  height: 96px;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(20, 40, 25, 0.12);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* 写真が無いときの、うっすらした模様(色のカードが単調にならないように) */
+.home-area:not(.has-image)::before {
+  content: "";
+  position: absolute;
+  right: -18px;
+  top: -18px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.home-area-pin {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  opacity: 0.9;
+}
+
+.home-area-name {
+  position: relative;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+
+.home-area-count {
+  position: relative;
+  font-size: 0.78rem;
+  font-weight: bold;
+  opacity: 0.92;
+}
+
+@media (hover: hover) {
+  .home-area:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(20, 40, 25, 0.18);
+  }
+}
+
+@media (min-width: 900px) {
+  .home-areas {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin: 16px 0 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .home-area {
+    height: 120px;
+    padding: 16px;
+  }
+
+  .home-area-name {
+    font-size: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-area {
+    transition: none;
+  }
+}
+
 /* ---- ホームの上の写真(ヒーロー) ----
    写真: 運営者が撮影したホーチミンの夜景(images/hero-saigon-night.jpg / スマホ用は -900)。
    文字が読めるように、上と下を暗くするグラデーションを重ねる */
