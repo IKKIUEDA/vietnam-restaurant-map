@@ -267,21 +267,22 @@ function homeIcon(name, size = 24) {
 // ---------------------------------------------------------------------
 // エリアから探す: 駅を中心に、その近く(地図の検索と同じ 2km 以内)のお店
 //   ・カードを押すと、地図の画面で「○○駅」と検索したのと同じ結果を出す
+//   ・lat/lng は、地図の検索と同じ駅のデータ(data/stations-jp.json)の位置
 //   ・件数は、地図の検索と同じ決まり(駅から 2km 以内、または住所などに「○○駅」の文字がある)で数える
 //   ・image: エリアの写真(あとで用意したら "images/area-shinjuku.jpg" のように書く)。無いときは色のカード
 //   ・color: 写真が無いときのカードの色(エリアごとに少しずつ変える)
 // ---------------------------------------------------------------------
 const HOME_AREAS = [
-  { station: "新宿", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6896, lng: 139.7006, color: "#2e7d32", image: "" },
-  { station: "池袋", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7295, lng: 139.7109, color: "#00796b", image: "" },
-  { station: "上野", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7138, lng: 139.7773, color: "#c0392b", image: "" },
-  { station: "渋谷", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.658, lng: 139.7016, color: "#6a4c93", image: "" },
-  { station: "横浜", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4657, lng: 139.6223, color: "#1e63d6", image: "" },
-  { station: "川崎", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5313, lng: 139.697, color: "#0277bd", image: "" },
-  { station: "千葉", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6131, lng: 140.1134, color: "#e67e22", image: "" },
-  { station: "船橋", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7018, lng: 139.9853, color: "#795548", image: "" },
-  { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8256, lng: 139.9213, color: "#558b2f", image: "" },
-  { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6237, color: "#ad1457", image: "" },
+  { station: "新宿", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6922, lng: 139.7006, color: "#2e7d32", image: "" },
+  { station: "池袋", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7281, lng: 139.711, color: "#00796b", image: "" },
+  { station: "上野", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7134, lng: 139.7765, color: "#c0392b", image: "" },
+  { station: "渋谷", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.6581, lng: 139.7018, color: "#6a4c93", image: "" },
+  { station: "横浜", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4662, lng: 139.6232, color: "#1e63d6", image: "" },
+  { station: "川崎", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5314, lng: 139.6969, color: "#0277bd", image: "" },
+  { station: "千葉", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6137, lng: 140.1125, color: "#e67e22", image: "" },
+  { station: "船橋", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7017, lng: 139.9852, color: "#795548", image: "" },
+  { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "" },
+  { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "" },
 ];
 function homeAreaCount(area) {
   const word = normalizeText(area.station + "駅");
