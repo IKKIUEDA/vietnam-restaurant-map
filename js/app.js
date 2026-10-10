@@ -1830,6 +1830,7 @@ function applyFilters(onlyIfChanged = false, skipFit = false) {
 // 種類を選ぶ(食材店・カフェを選んだときは、料理の絞り込みを「すべて」に戻す。料理の情報がないため)
 function selectType(key) {
   selectedType = key;
+  if (typeof recordTypePick === "function") recordTypePick(key); // ホームの「あなたへのおすすめ」のため(この端末の中だけ)
   if (key === "grocery" || key === "cafe") selectedDish = ALL;
   applyFilters();
 }
@@ -1847,7 +1848,12 @@ function scheduleSearchTracking() {
   clearTimeout(searchTrackTimer);
   searchTrackTimer = setTimeout(() => {
     const term = searchInput.value.trim();
-    if (term) trackEvent("search", { search_term: term.slice(0, 100), results: entries.filter((e) => e.visible).length });
+    const results = entries.filter((e) => e.visible).length;
+    if (term) trackEvent("search", { search_term: term.slice(0, 100), results });
+    // ホームの「あなたへのおすすめ」のため、検索した言葉を、この端末の中だけに記録する(結果があったときだけ)
+    if (term && results > 0 && typeof recordSearch === "function") {
+      recordSearch(term, searchTerms, [...searchPlaces.values()].flat());
+    }
   }, 1500);
 }
 searchInput.addEventListener("focus", ensureStationIndex); // 駅の名前で探せるよう、駅のデータを先に読み込んでおく
