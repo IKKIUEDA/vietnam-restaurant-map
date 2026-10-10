@@ -1,179 +1,154 @@
-// マイリスト(My List。行きたいお店のリスト)
-//   ・リストに入るのは、このサイトに登録しているお店だけ(名所・大学など、お店以外の場所は入れない)
-//   ・ホームの「マイリスト」: 作ったリストを、カードで出す。押すと、そのリストの一覧(URL「?view=todo&list=ID」)
-//   ・リストの一覧: お店を「おすすめ順」に並べる。おすすめ順 = みんなのレビューの評価(★)が高い順
-//     (評価が同じ・レビューがまだ無いお店は、リストを作ったときの順)。
-//     カードを押すと、そのお店のページ(URL「?shop=ID」)が開く。「行った」のチェックは持たない
-//   ・「新しいマイリストを作る」(URL「?view=todo」): 行き先と、やりたいこと(食事・カフェ・食材の買い物)を選ぶと、
-//     その近くのお店から、リストを自動で作る
-//   ・作ったリストは、この端末(ブラウザの localStorage)の中だけに保存する。サーバーや第三者には送らない
-//   ・レビューの評価は、店舗ページのレビューと同じもの(Firestore)を読むだけ。リストの中身は送らない
+// マイリスト(My List)
+//   ・最初に「どのエリア(東京・千葉・埼玉・神奈川)」と「何を探す(料理店・カフェ・食材店)」を選んで保存する
+//   ・保存したあとは、エリアごとのカード(そのエリアの、選んだ種類のお店の件数)を出す。
+//     カードを押すと、そのエリアのお店の一覧(URL「?view=todo&area=東京都」)。お店のカードを押すと、お店のページ(?shop=ID)
+//   ・お店の一覧は「おすすめ順」= みんなのレビューの評価(★)が高い順(同じなら、レビューが多い順 → データの順)
+//   ・選んだ内容を変えるときは、右上の設定マーク(URL「?view=todo&edit=1」)から
+//   ・選んだ内容は、この端末(ブラウザの localStorage)の中だけに保存する。サーバーや第三者には送らない
+//   ・レビューの評価は、店舗ページのレビューと同じもの(Firestore)を読むだけ。選んだ内容は送らない
+//   ・「こちらもおすすめ」: 最近見たお店があるエリアのうち、まだ選んでいないエリア(計算は端末の中だけ)
 
-const TODO_KEY = "vf_todo_lists"; // [{ id, title, createdAt, items: [{ kind: "shop", id }] }]
-const TODO_MAX_LISTS = 20;
-const TODO_MAX_ITEMS = 5;
+const MYLIST_KEY = "vf_mylist"; // { prefs: ["東京都", ...], types: ["restaurant", ...], savedAt }
+const OLD_TODO_KEY = "vf_todo_lists"; // 前の版の「行きたいお店のリスト」。もう使わないので、見つけたら消す
+const MYLIST_TYPES = ["restaurant", "cafe", "grocery"];
 
 const TODO_TEXT = {
   ja: {
     sectionTitle: "マイリスト",
-    sectionSub: "気になるお店をまとめて、あとで見返せます",
-    newList: "新しいマイリストを作る",
-    newListSub: "行き先とやりたいことを選ぶだけ",
+    sectionSub: "行きたいエリアと、探したいお店を選んでおけます",
+    start: "マイリストを作る",
+    startSub: "エリアと、探したいお店を選ぶだけ",
+    settings: "マイリストの設定",
+    settingsOpen: "マイリストの設定を変える",
+    close: "閉じる",
     count: (n) => `${n}件`,
-    remove: "このリストを削除",
-    removeConfirm: "本当に削除する",
-    storedNote: "マイリストは、この端末の中だけに保存しています",
+    areaCount: (n) => `${n}つのエリア`,
+    alsoTitle: "こちらもおすすめ",
+    storedNote: "マイリストの設定は、この端末の中だけに保存しています",
+    backToList: "マイリストに戻る",
     backToHome: "ホームに戻る",
     all: "すべて",
     rankNote: "おすすめ順(レビューの評価が高い順)",
     noReviews: "レビューはまだありません",
     reviews: (avg, n) => `${avg} (${n}件)`,
     detail: "お店のページを見る",
-    notFound: "このリストは見つかりませんでした(削除されたか、別の端末で作ったリストです)",
-    createTitle: "マイリストを作る",
-    back: "ホームに戻る",
-    step1: "どこへ行く?",
-    stationLabel: "駅名で探す",
-    stationPlaceholder: "駅名を入れる(例: 蒲田)",
-    stationButton: "決める",
-    stationNotFound: "その駅が見つかりませんでした",
-    step2: "何をしたい?(いくつでも)",
-    wantMeal: "食事",
-    wantCafe: "カフェ",
-    wantGrocery: "食材の買い物",
-    make: "おすすめのリストを作る",
-    needDest: "行き先を選んでください",
-    needWant: "やりたいことを1つ以上選んでください",
-    noShops: "この近くに、条件に合うお店が見つかりませんでした。行き先か、やりたいことを変えてみてください",
-    previewLabel: "できあがったリスト(おすすめ順)",
-    titleFor: (d) => `${d}のまわり`,
-    removeItem: "リストから外す",
-    save: "マイリストに保存",
-    redo: "作り直す",
+    empty: "このエリアには、選んだ種類のお店がまだありません",
+    step1: "どのエリアに行く?(いくつでも)",
+    step2: "何を探す?(いくつでも)",
+    needArea: "エリアを1つ以上選んでください",
+    needType: "探したいお店を1つ以上選んでください",
+    save: "この内容で保存",
+    saved: "保存しました",
+    reset: "マイリストをリセット",
+    resetConfirm: "本当にリセットする",
   },
   en: {
     sectionTitle: "My List",
-    sectionSub: "Keep the shops you like in one place",
-    newList: "Make a new My List",
-    newListSub: "Just pick a place and what you want to do",
+    sectionSub: "Pick the areas you want to go and the shops you're looking for",
+    start: "Make My List",
+    startSub: "Just choose areas and the kinds of shops",
+    settings: "My List settings",
+    settingsOpen: "Change My List settings",
+    close: "Close",
     count: (n) => `${n} shops`,
-    remove: "Delete this list",
-    removeConfirm: "Really delete",
-    storedNote: "My Lists are saved only on this device",
+    areaCount: (n) => (n === 1 ? "1 area" : `${n} areas`),
+    alsoTitle: "You may also like",
+    storedNote: "My List settings are saved only on this device",
+    backToList: "Back to My List",
     backToHome: "Back to home",
     all: "All",
     rankNote: "Recommended order (highest rated first)",
     noReviews: "No reviews yet",
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "See shop page",
-    notFound: "This list couldn't be found (it was deleted, or made on another device)",
-    createTitle: "Make a My List",
-    back: "Back to home",
-    step1: "Where are you going?",
-    stationLabel: "Search by station",
-    stationPlaceholder: "Station name (e.g. Kamata)",
-    stationButton: "Set",
-    stationNotFound: "That station couldn't be found",
-    step2: "What do you want to do? (any)",
-    wantMeal: "Eat",
-    wantCafe: "Cafe",
-    wantGrocery: "Grocery shopping",
-    make: "Make a list for me",
-    needDest: "Please choose a place",
-    needWant: "Please choose at least one thing to do",
-    noShops: "No matching shops were found near here. Try another place or other things to do",
-    previewLabel: "Your list (recommended order)",
-    titleFor: (d) => `Around ${d}`,
-    removeItem: "Remove from list",
-    save: "Save to My List",
-    redo: "Start over",
+    empty: "There are no shops of the chosen kinds in this area yet",
+    step1: "Which areas are you going to? (any)",
+    step2: "What are you looking for? (any)",
+    needArea: "Please choose at least one area",
+    needType: "Please choose at least one kind of shop",
+    save: "Save",
+    saved: "Saved",
+    reset: "Reset My List",
+    resetConfirm: "Really reset",
   },
   vi: {
     sectionTitle: "Danh sách của tôi",
-    sectionSub: "Lưu những quán bạn thích để xem lại sau",
-    newList: "Tạo danh sách mới",
-    newListSub: "Chỉ cần chọn nơi đến và việc muốn làm",
+    sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
+    start: "Tạo danh sách của tôi",
+    startSub: "Chỉ cần chọn khu vực và loại quán",
+    settings: "Cài đặt danh sách",
+    settingsOpen: "Thay đổi cài đặt danh sách",
+    close: "Đóng",
     count: (n) => `${n} quán`,
-    remove: "Xóa danh sách này",
-    removeConfirm: "Xóa thật",
-    storedNote: "Danh sách của tôi chỉ được lưu trên thiết bị này",
+    areaCount: (n) => `${n} khu vực`,
+    alsoTitle: "Có thể bạn cũng thích",
+    storedNote: "Cài đặt danh sách chỉ được lưu trên thiết bị này",
+    backToList: "Về danh sách của tôi",
     backToHome: "Về trang chủ",
     all: "Tất cả",
     rankNote: "Thứ tự gợi ý (đánh giá cao trước)",
     noReviews: "Chưa có đánh giá",
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "Xem trang quán",
-    notFound: "Không tìm thấy danh sách này (đã bị xóa hoặc được tạo trên thiết bị khác)",
-    createTitle: "Tạo danh sách của tôi",
-    back: "Về trang chủ",
-    step1: "Bạn đi đâu?",
-    stationLabel: "Tìm theo ga",
-    stationPlaceholder: "Tên ga (VD: Kamata)",
-    stationButton: "Chọn",
-    stationNotFound: "Không tìm thấy ga đó",
-    step2: "Bạn muốn làm gì? (chọn nhiều)",
-    wantMeal: "Ăn uống",
-    wantCafe: "Cà phê",
-    wantGrocery: "Mua thực phẩm",
-    make: "Tạo danh sách gợi ý",
-    needDest: "Hãy chọn nơi đến",
-    needWant: "Hãy chọn ít nhất một việc muốn làm",
-    noShops: "Không tìm thấy quán phù hợp gần đây. Hãy thử nơi đến hoặc việc khác",
-    previewLabel: "Danh sách đã tạo (thứ tự gợi ý)",
-    titleFor: (d) => `Quanh ${d}`,
-    removeItem: "Bỏ khỏi danh sách",
-    save: "Lưu vào danh sách của tôi",
-    redo: "Làm lại",
+    empty: "Khu vực này chưa có quán thuộc loại đã chọn",
+    step1: "Bạn sẽ đến khu vực nào? (chọn nhiều)",
+    step2: "Bạn đang tìm gì? (chọn nhiều)",
+    needArea: "Hãy chọn ít nhất một khu vực",
+    needType: "Hãy chọn ít nhất một loại quán",
+    save: "Lưu",
+    saved: "Đã lưu",
+    reset: "Đặt lại danh sách",
+    resetConfirm: "Đặt lại thật",
   },
 };
 function todoText() {
   return TODO_TEXT[currentLang] || TODO_TEXT.ja;
 }
 
-// 行き先の候補(よく使われる駅。位置は駅のおおよその位置)
-const TODO_PLACES = [
-  { key: "shinjuku", name: { ja: "新宿・新大久保", en: "Shinjuku / Shin-Okubo", vi: "Shinjuku / Shin-Okubo" }, lat: 35.6958, lng: 139.7003 },
-  { key: "ueno", name: { ja: "上野・日暮里", en: "Ueno / Nippori", vi: "Ueno / Nippori" }, lat: 35.7211, lng: 139.7742 },
-  { key: "ikebukuro", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7295, lng: 139.7109 },
-  { key: "yokohama", name: { ja: "横浜・関内", en: "Yokohama / Kannai", vi: "Yokohama / Kannai" }, lat: 35.4437, lng: 139.638 },
-  { key: "kawasaki", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5313, lng: 139.697 },
-  { key: "chiba", name: { ja: "千葉駅", en: "Chiba Station", vi: "Ga Chiba" }, lat: 35.6131, lng: 140.1134 },
-  { key: "funabashi", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7018, lng: 139.9853 },
-  { key: "omiya", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6237 },
-];
+// 選べるエリア = 地図にある都道府県(js/data.js の prefectures。いまは東京・神奈川・千葉・埼玉)
+function myListPrefs() {
+  return prefectures.filter((p) => restaurants.some((s) => s.prefecture === p.key));
+}
+// 選べる種類(カフェは、カフェのお店があるときだけ)
+function myListTypeChoices() {
+  return MYLIST_TYPES.filter((t) => restaurants.some((s) => shopType(s) === t));
+}
 
 // ---------------------------------------------------------------------
-// 保存(この端末の中だけ)。お店以外の項目(前の版で入っていた名所など)は、読み込むときに外す
+// 保存(この端末の中だけ)
 // ---------------------------------------------------------------------
-function loadTodoLists() {
+function loadMyList() {
   try {
-    const raw = localStorage.getItem(TODO_KEY) || "[]";
-    const v = JSON.parse(raw);
-    if (!Array.isArray(v)) return [];
-    const lists = v
-      .filter((l) => l && typeof l.id === "string" && Array.isArray(l.items))
-      .map((l) => ({
-        ...l,
-        // 以前の版の「行った」チェック(done)は、もう使わないので読み込まない
-        items: l.items.filter((it) => it && it.kind === "shop" && typeof it.id === "string").map((it) => ({ kind: "shop", id: it.id })),
-      }));
-    // 以前の版で保存した「行った」チェックが端末に残っていたら、1回だけ書き直して消す
-    if (raw.includes('"done"')) localStorage.setItem(TODO_KEY, JSON.stringify(lists));
-    return lists;
+    if (localStorage.getItem(OLD_TODO_KEY) !== null) localStorage.removeItem(OLD_TODO_KEY); // 前の版のリストは消す
+    const v = JSON.parse(localStorage.getItem(MYLIST_KEY) || "null");
+    if (!v || !Array.isArray(v.prefs) || !Array.isArray(v.types)) return null;
+    const prefKeys = prefectures.map((p) => p.key);
+    const prefs = v.prefs.filter((k) => prefKeys.includes(k));
+    const types = v.types.filter((t) => MYLIST_TYPES.includes(t));
+    return prefs.length && types.length ? { prefs, types } : null;
   } catch (e) {
-    return [];
+    return null;
   }
 }
-function saveTodoLists(lists) {
+function saveMyList(prefs, types) {
   try {
-    localStorage.setItem(TODO_KEY, JSON.stringify(lists.slice(0, TODO_MAX_LISTS)));
+    localStorage.setItem(MYLIST_KEY, JSON.stringify({ prefs, types, savedAt: new Date().toISOString() }));
     return true;
   } catch (e) {
     return false;
   }
 }
-function todoEntry(it) {
-  return entries.find((x) => x.shop.id === it.id) || null;
+function resetMyList() {
+  try {
+    localStorage.removeItem(MYLIST_KEY);
+  } catch (e) {
+    // 消せない(プライベートブラウズなど)ときは、何もしない
+  }
+}
+
+// そのエリアの、選んだ種類のお店
+function myListShops(prefKey, types) {
+  return entries.filter((e) => e.shop.prefecture === prefKey && types.includes(shopType(e.shop)));
 }
 
 // ---------------------------------------------------------------------
@@ -203,7 +178,7 @@ function loadTodoRatings(ids) {
     .catch(() => need.forEach((id) => todoRatings.set(id, null)))
     .then(() => {
       // 評価がそろったら、いま開いている画面を、おすすめ順に並べ直す
-      if (document.body.classList.contains("view-home") && typeof renderHomeMode === "function") {
+      if (document.body.classList.contains("view-home") && homeMode === "todo-area") {
         const y = homeView.scrollTop;
         renderHomeMode();
         homeView.scrollTop = y;
@@ -215,9 +190,9 @@ function todoRating(id) {
   return r && r !== "loading" ? r : null;
 }
 // おすすめ順: 評価(★の平均)が高い順 → 同じならレビューが多い順 → 同じなら、もとの順
-function sortByRecommendation(items) {
-  return items
-    .map((it, i) => ({ it, i, r: todoRating(it.id) }))
+function sortByRecommendation(list) {
+  return list
+    .map((e, i) => ({ e, i, r: todoRating(e.shop.id) }))
     .sort((a, b) => {
       const av = a.r && a.r.count ? a.r.avg : -1;
       const bv = b.r && b.r.count ? b.r.avg : -1;
@@ -226,44 +201,28 @@ function sortByRecommendation(items) {
       const bc = b.r ? b.r.count : 0;
       if (bc !== ac) return bc - ac;
       return a.i - b.i;
-    });
-}
-
-// ---------------------------------------------------------------------
-// リストを作る: 行き先の近くの、登録しているお店だけから選ぶ
-// ---------------------------------------------------------------------
-function buildTodoItems(dest, wants) {
-  const types = [];
-  if (wants.meal) types.push("restaurant");
-  if (wants.cafe) types.push("cafe");
-  if (wants.grocery) types.push("grocery");
-  const withKm = entries
-    .filter((e) => types.includes(shopType(e.shop)))
-    .map((e) => ({ e, km: distanceKm(dest.lat, dest.lng, e.shop.lat, e.shop.lng) }))
-    .sort((a, b) => a.km - b.km);
-  // 近い順に探す範囲を広げる(2km → 4km → 8km)。それでも無ければ、作らない
-  let pool = [];
-  for (const r of [2, 4, 8]) {
-    pool = withKm.filter((x) => x.km <= r);
-    if (pool.length >= Math.min(3, withKm.length)) break;
-  }
-  if (!pool.length) return [];
-  // まず、選んだ種類ごとに、いちばん近いお店を1つずつ(種類がかたよらないように)。残りは近い順
-  const picked = [];
-  types.forEach((t) => {
-    const x = pool.find((p) => shopType(p.e.shop) === t && !picked.includes(p));
-    if (x) picked.push(x);
-  });
-  pool.forEach((p) => {
-    if (picked.length < TODO_MAX_ITEMS && !picked.includes(p)) picked.push(p);
-  });
-  return picked.slice(0, TODO_MAX_ITEMS).map((p) => ({ kind: "shop", id: p.e.shop.id }));
+    })
+    .map((x) => x.e);
 }
 
 // ---------------------------------------------------------------------
 // 画面の部品
 // ---------------------------------------------------------------------
 const TODO_TYPE_COLORS = { restaurant: "#e53935", grocery: "#1e63d6", cafe: "#795548" };
+const TODO_PIN_ICON =
+  '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>';
+const TODO_GEAR_ICON =
+  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="3"></circle>' +
+  '<path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>';
+
+function myListAreaUrl(prefKey) {
+  return location.pathname + "?view=todo&area=" + encodeURIComponent(prefKey);
+}
+function myListEditUrl() {
+  return location.pathname + "?view=todo&edit=1";
+}
 
 function todoStars(id) {
   const x = todoText();
@@ -272,9 +231,8 @@ function todoStars(id) {
   return `<span class="todo-stars"><span class="todo-star" aria-hidden="true">★</span>${esc(x.reviews(r.avg.toFixed(1), r.count))}</span>`;
 }
 
-// お店のカード(リストの一覧・作る画面のプレビューで使う)
-//   カード全体が、お店のページへのリンク / opts.removeIndex: 「外す」ボタンの番号(作る画面だけ)
-function todoShopCard(entry, item, opts) {
+// お店のカード(カード全体が、お店のページへのリンク)
+function todoShopCard(entry) {
   const x = todoText();
   const h = homeText();
   const shop = entry.shop;
@@ -292,210 +250,250 @@ function todoShopCard(entry, item, opts) {
     `<span class="todo-shop-tags"><span class="todo-tag" style="color:${TODO_TYPE_COLORS[type]}">${esc(h.typeLabel[type])}</span>` +
     (category ? `<span class="todo-tag">${esc(category)}</span>` : "") +
     `</span>` +
-    (opts.removeIndex === undefined ? `<span class="todo-shop-more">${esc(x.detail)} ›</span>` : "") +
-    `</span></a>` +
-    (opts.removeIndex !== undefined
-      ? `<button type="button" class="todo-step-remove" data-todo-remove="${opts.removeIndex}" aria-label="${esc(x.removeItem)}">${homeIcon("close", 18)}</button>`
-      : "") +
-    `</li>`
+    `<span class="todo-shop-more">${esc(x.detail)} ›</span>` +
+    `</span></a></li>`
   );
 }
 
-// ホームの「マイリスト」の部分(js/home.js の renderHome が呼ぶ)。リストごとに1枚のカード
-function renderTodoSection() {
+// エリアのカード: エリア名と、種類ごとの件数(色の点つき)、合計の件数
+function myListAreaCard(pref, types, muted) {
   const x = todoText();
-  const lists = loadTodoLists();
-  const cards = lists
-    .map((list) => {
-      const rows = list.items.filter((it) => todoEntry(it));
-      const dots = rows
-        .slice(0, 6)
-        .map((it) => `<span class="todo-dot" style="background:${TODO_TYPE_COLORS[shopType(todoEntry(it).shop)]}"></span>`)
-        .join("");
-      return (
-        `<a class="todo-card" href="?view=todo&amp;list=${esc(list.id)}" data-todo-open="${esc(list.id)}">` +
-        `<span class="todo-card-head"><span class="todo-title">${esc(list.title)}</span></span>` +
-        `<span class="todo-card-foot"><span class="todo-dots" aria-hidden="true">${dots}</span>` +
-        `<span class="todo-count">${esc(x.count(rows.length))}</span>${homeIcon("forward", 20)}</span>` +
-        `</a>`
-      );
-    })
+  const h = homeText();
+  const shops = myListShops(pref.key, types);
+  const parts = types
+    .map((t) => ({ t, n: shops.filter((e) => shopType(e.shop) === t).length }))
+    .filter((p) => p.n > 0)
+    .map((p) => `<span class="mylist-kind"><span class="mylist-kind-dot" style="background:${TODO_TYPE_COLORS[p.t]}"></span>${esc(h.typeLabel[p.t])} ${p.n}</span>`)
     .join("");
   return (
+    `<a class="mylist-area${muted ? " is-muted" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
+    `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>` +
+    `<span class="mylist-area-body"><span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
+    `<span class="mylist-kinds">${parts}</span></span>` +
+    `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>` +
+    `</a>`
+  );
+}
+
+// 「こちらもおすすめ」: 最近見たお店があるエリアのうち、まだ選んでいないエリア(見た数が多い順、最大2つ)
+function myListAlsoPrefs(settings) {
+  const recent = typeof loadRecentShops === "function" ? loadRecentShops() : [];
+  const score = new Map();
+  recent.forEach((id, i) => {
+    const e = entries.find((x) => x.shop.id === id);
+    if (!e || settings.prefs.includes(e.shop.prefecture)) return;
+    score.set(e.shop.prefecture, (score.get(e.shop.prefecture) || 0) + Math.pow(0.8, i));
+  });
+  return myListPrefs()
+    .filter((p) => score.has(p.key) && myListShops(p.key, settings.types).length)
+    .sort((a, b) => score.get(b.key) - score.get(a.key))
+    .slice(0, 2);
+}
+
+function myListAreaCards(settings) {
+  return myListPrefs()
+    .filter((p) => settings.prefs.includes(p.key))
+    .map((p) => myListAreaCard(p, settings.types, false))
+    .join("");
+}
+
+// ホームの「マイリスト」の部分(js/home.js の renderHome が呼ぶ)
+function renderTodoSection() {
+  const x = todoText();
+  const settings = loadMyList();
+  if (!settings) {
+    return (
+      `<section class="home-section" id="home-todo">` +
+      `<h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
+      `<p class="home-reason home-reason-plain">${esc(x.sectionSub)}</p>` +
+      `<a class="todo-new" href="${esc(myListEditUrl())}" data-mylist-edit>` +
+      `<span class="todo-new-icon">${homeIcon("plus", 22)}</span>` +
+      `<span class="todo-new-text"><span>${esc(x.start)}</span><span>${esc(x.startSub)}</span></span>` +
+      `</a></section>`
+    );
+  }
+  return (
     `<section class="home-section" id="home-todo">` +
-    `<h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
-    `<p class="home-reason home-reason-plain">${esc(x.sectionSub)}</p>` +
-    cards +
-    `<a class="todo-new" href="?view=todo" data-todo-new>` +
-    `<span class="todo-new-icon">${homeIcon("plus", 22)}</span>` +
-    `<span class="todo-new-text"><span>${esc(x.newList)}</span><span>${esc(x.newListSub)}</span></span>` +
-    `</a>` +
-    (lists.length ? `<p class="home-history-note">${esc(x.storedNote)}</p>` : "") +
+    `<div class="mylist-head"><h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
+    `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a></div>` +
+    `<div class="mylist-areas">${myListAreaCards(settings)}</div>` +
     `</section>`
   );
 }
 
-// ---------------------------------------------------------------------
-// リストの一覧(URL「?view=todo&list=ID」)。お店を、おすすめ順に、カードで並べる
-// ---------------------------------------------------------------------
-let todoTypeFilter = "all";
-let todoPendingDelete = null; // 「削除」を1回押したリストの id(もう1回押すと、本当に消す)
-function renderTodoListPage(listId) {
+// 画面の上の部分(← 戻る / タイトル / 右上の設定マーク)
+function myListHeader(backUrl, backLabel, title, withGear) {
   const x = todoText();
-  const h = homeText();
-  const list = loadTodoLists().find((l) => l.id === listId);
-  const head =
-    `<div class="todo-create-head">` +
-    `<a class="todo-back" href="${esc(homeUrl())}" data-todo-back aria-label="${esc(x.backToHome)}">${homeIcon("back", 24)}</a>` +
-    `<span class="todo-back-label">${esc(x.backToHome)}</span></div>`;
-  if (!list) {
-    homePage.innerHTML = head + `<section class="home-section"><p class="home-reason home-reason-plain">${esc(x.notFound)}</p></section>`;
+  return (
+    `<div class="todo-create-head mylist-page-head">` +
+    `<a class="todo-back" href="${esc(backUrl)}" data-mylist-nav aria-label="${esc(backLabel)}">${homeIcon("back", 24)}</a>` +
+    `<h2 class="todo-create-title">${esc(title)}</h2>` +
+    (withGear ? `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>` : "") +
+    `</div>`
+  );
+}
+
+let myListToast = ""; // 保存した直後に、1回だけ出す「保存しました」
+
+// ---------------------------------------------------------------------
+// マイリストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
+// ---------------------------------------------------------------------
+function renderMyList() {
+  const x = todoText();
+  const settings = loadMyList();
+  if (!settings) {
+    renderMyListSettings();
     return;
   }
-  const items = list.items.filter((it) => todoEntry(it));
-  loadTodoRatings(items.map((it) => it.id));
-  const types = ["restaurant", "grocery", "cafe"].filter((t) => items.some((it) => shopType(todoEntry(it).shop) === t));
+  const also = myListAlsoPrefs(settings);
+  const toast = myListToast;
+  myListToast = "";
+  homePage.innerHTML =
+    myListHeader(homeUrl(), x.backToHome, x.sectionTitle, true) +
+    (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
+    `<section class="home-section mylist-section">` +
+    `<p class="mylist-summary">${esc(x.areaCount(settings.prefs.length))}</p>` +
+    `<div class="mylist-areas">${myListAreaCards(settings)}</div>` +
+    `</section>` +
+    (also.length
+      ? `<section class="home-section mylist-section"><h3 class="mylist-also-title">${esc(x.alsoTitle)}</h3>` +
+        `<div class="mylist-areas">${also.map((p) => myListAreaCard(p, settings.types, true)).join("")}</div></section>`
+      : "") +
+    `<section class="home-section"><p class="home-history-note">${esc(x.storedNote)}</p></section>`;
+}
+
+// ---------------------------------------------------------------------
+// エリアのお店の一覧(URL「?view=todo&area=東京都」)。おすすめ順に、カードで並べる
+// ---------------------------------------------------------------------
+let todoTypeFilter = "all";
+function renderMyListArea(prefKey) {
+  const x = todoText();
+  const h = homeText();
+  const pref = myListPrefs().find((p) => p.key === prefKey);
+  const settings = loadMyList() || { prefs: [], types: myListTypeChoices() };
+  if (!pref) {
+    renderMyList();
+    return;
+  }
+  const all = myListShops(pref.key, settings.types);
+  loadTodoRatings(all.map((e) => e.shop.id));
+  const types = settings.types.filter((t) => all.some((e) => shopType(e.shop) === t));
   if (todoTypeFilter !== "all" && !types.includes(todoTypeFilter)) todoTypeFilter = "all";
   const chip = (key, label) =>
     `<button type="button" class="todo-chip${todoTypeFilter === key ? " is-on" : ""}" aria-pressed="${todoTypeFilter === key}" data-todo-filter="${key}">${esc(label)}</button>`;
-  const shown = sortByRecommendation(items).filter(
-    ({ it }) => todoTypeFilter === "all" || shopType(todoEntry(it).shop) === todoTypeFilter
-  );
-  const deleting = todoPendingDelete === list.id;
+  const shown = sortByRecommendation(all).filter((e) => todoTypeFilter === "all" || shopType(e.shop) === todoTypeFilter);
   homePage.innerHTML =
-    head +
-    `<div class="todo-band"><span class="todo-band-icon">${homeIcon("fnb", 26)}</span>` +
-    `<span class="todo-band-title">${esc(list.title)}</span>` +
-    `<span class="todo-band-count">${esc(x.count(items.length))}</span></div>` +
+    myListHeader(location.pathname + "?view=todo", x.backToList, x.sectionTitle, true) +
+    `<div class="todo-band"><span class="todo-band-icon">${TODO_PIN_ICON}</span>` +
+    `<span class="todo-band-title">${esc(pick(pref.label))}</span>` +
+    `<span class="todo-band-count">${esc(x.count(all.length))}</span></div>` +
     `<section class="home-section todo-list-section">` +
     (types.length > 1 ? `<div class="todo-chips">${chip("all", x.all)}${types.map((t) => chip(t, h.typeLabel[t])).join("")}</div>` : "") +
-    `<p class="todo-rank-note">${esc(x.rankNote)}</p>` +
-    `<ul class="todo-shops">${shown.map(({ it }) => todoShopCard(todoEntry(it), it, {})).join("")}</ul>` +
-    `<div class="todo-delete-row"><button type="button" class="todo-delete${deleting ? " is-confirm" : ""}" data-todo-delete="${esc(list.id)}">${esc(deleting ? x.removeConfirm : x.remove)}</button></div>` +
-    `<p class="home-history-note">${esc(x.storedNote)}</p>` +
+    (shown.length
+      ? `<p class="todo-rank-note">${esc(x.rankNote)}</p><ul class="todo-shops">${shown.map(todoShopCard).join("")}</ul>`
+      : `<p class="home-reason home-reason-plain">${esc(x.empty)}</p>`) +
     `</section>`;
 }
 
 // ---------------------------------------------------------------------
-// 「マイリストを作る」の画面(URL「?view=todo」)
+// 設定の画面(URL「?view=todo&edit=1」): エリアと、探したいお店を選ぶ
 // ---------------------------------------------------------------------
-const todoDraft = { dest: null, wants: { meal: true, cafe: false, grocery: false }, items: null, message: "" };
+const myListDraft = { prefs: null, types: null, message: "", confirmReset: false };
+function startMyListDraft() {
+  const s = loadMyList();
+  myListDraft.prefs = s ? [...s.prefs] : [];
+  myListDraft.types = s ? [...s.types] : ["restaurant"];
+  myListDraft.message = "";
+  myListDraft.confirmReset = false;
+}
 
-function renderTodoCreate() {
+function renderMyListSettings() {
   const x = todoText();
-  const placeChip = (p) => {
-    const on = todoDraft.dest && todoDraft.dest.key === p.key;
-    return `<button type="button" class="todo-chip${on ? " is-on" : ""}" aria-pressed="${on}" data-todo-place="${esc(p.key)}">${esc(pick(p.name))}</button>`;
-  };
-  const customOn = todoDraft.dest && todoDraft.dest.key === "custom";
-  const wantBtn = (key, label, type) => {
-    const on = todoDraft.wants[key];
+  const h = homeText();
+  if (!myListDraft.prefs) startMyListDraft();
+  const saved = loadMyList();
+  const prefBtn = (p) => {
+    const on = myListDraft.prefs.includes(p.key);
     return (
-      `<button type="button" class="todo-want todo-want-${type}${on ? " is-on" : ""}" aria-pressed="${on}" data-todo-want="${key}">` +
-      `${homeIcon(type, 26)}<span>${esc(label)}</span></button>`
+      `<button type="button" class="mylist-pick${on ? " is-on" : ""}" aria-pressed="${on}" data-mylist-pref="${esc(p.key)}">` +
+      `<span>${esc(pick(p.label))}</span>${on ? homeIcon("check", 18) : ""}</button>`
     );
   };
-  let preview = "";
-  if (todoDraft.items && todoDraft.items.length) {
-    loadTodoRatings(todoDraft.items.map((it) => it.id));
-    const cards = sortByRecommendation(todoDraft.items)
-      .filter(({ it }) => todoEntry(it))
-      .map(({ it, i }) => todoShopCard(todoEntry(it), it, { removeIndex: i }))
-      .join("");
-    preview =
-      `<div class="home-divider"></div>` +
-      `<section class="home-section">` +
-      `<p class="todo-preview-label">${esc(x.previewLabel)}</p>` +
-      `<h2 class="home-h2">${esc(x.titleFor(pick(todoDraft.dest.name)))}</h2>` +
-      `<ul class="todo-shops">${cards}</ul>` +
-      `<div class="todo-actions">` +
-      `<button type="button" class="todo-primary" data-todo-save>${homeIcon("check", 18)}<span>${esc(x.save)}</span></button>` +
-      `<button type="button" class="todo-secondary" data-todo-make>${esc(x.redo)}</button>` +
-      `</div></section>`;
-  }
+  const typeBtn = (t) => {
+    const on = myListDraft.types.includes(t);
+    return (
+      `<button type="button" class="todo-want todo-want-${t}${on ? " is-on" : ""}" aria-pressed="${on}" data-mylist-type="${t}">` +
+      `${homeIcon(t, 26)}<span>${esc(h.typeLabel[t])}</span>` +
+      `<span class="mylist-want-check">${on ? homeIcon("check", 16) : ""}</span></button>`
+    );
+  };
   homePage.innerHTML =
-    `<div class="todo-create-head">` +
-    `<a class="todo-back" href="${esc(homeUrl())}" data-todo-back aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` +
-    `<h2 class="todo-create-title">${esc(x.createTitle)}</h2></div>` +
+    `<div class="todo-create-head mylist-page-head">` +
+    `<a class="todo-back" href="${esc(saved ? location.pathname + "?view=todo" : homeUrl())}" data-mylist-nav aria-label="${esc(x.close)}">${homeIcon("close", 24)}</a>` +
+    `<h2 class="todo-create-title">${esc(x.settings)}</h2>` +
+    `<button type="button" class="mylist-save-round" data-mylist-save aria-label="${esc(x.save)}" title="${esc(x.save)}">${homeIcon("check", 22)}</button>` +
+    `</div>` +
     `<section class="home-section todo-form-section">` +
     `<h3 class="todo-step-title"><span>1</span>${esc(x.step1)}</h3>` +
-    `<div class="todo-chips">${TODO_PLACES.map(placeChip).join("")}` +
-    (customOn ? `<button type="button" class="todo-chip is-on" aria-pressed="true">${esc(pick(todoDraft.dest.name))}</button>` : "") +
-    `</div>` +
-    `<form class="todo-station" data-todo-station>` +
-    `<label class="visually-hidden" for="todo-station-input">${esc(x.stationLabel)}</label>` +
-    `<input id="todo-station-input" type="search" autocomplete="off" placeholder="${esc(x.stationPlaceholder)}">` +
-    `<button type="submit">${esc(x.stationButton)}</button></form>` +
+    `<div class="mylist-picks">${myListPrefs().map(prefBtn).join("")}</div>` +
     `<h3 class="todo-step-title"><span>2</span>${esc(x.step2)}</h3>` +
-    `<div class="todo-wants">` +
-    wantBtn("meal", x.wantMeal, "restaurant") +
-    (restaurants.some((s) => shopType(s) === "cafe") ? wantBtn("cafe", x.wantCafe, "cafe") : "") +
-    wantBtn("grocery", x.wantGrocery, "grocery") +
-    `</div>` +
-    `<button type="button" class="todo-primary todo-make" data-todo-make>${homeIcon("sparkle", 20)}<span>${esc(x.make)}</span></button>` +
-    `<p class="home-status" role="status"${todoDraft.message ? "" : " hidden"}>${esc(todoDraft.message)}</p>` +
-    `</section>` +
-    preview;
+    `<div class="todo-wants">${myListTypeChoices().map(typeBtn).join("")}</div>` +
+    `<p class="home-status" role="status"${myListDraft.message ? "" : " hidden"}>${esc(myListDraft.message)}</p>` +
+    `<button type="button" class="todo-primary todo-make" data-mylist-save>${homeIcon("check", 20)}<span>${esc(x.save)}</span></button>` +
+    `<p class="home-history-note">${esc(x.storedNote)}</p>` +
+    (saved
+      ? `<div class="todo-delete-row"><button type="button" class="todo-delete${myListDraft.confirmReset ? " is-confirm" : ""}" data-mylist-reset>${esc(myListDraft.confirmReset ? x.resetConfirm : x.reset)}</button></div>`
+      : "") +
+    `</section>`;
 }
 
-function todoMake() {
+function myListSave() {
   const x = todoText();
-  todoDraft.message = "";
-  todoDraft.items = null;
-  if (!todoDraft.dest) todoDraft.message = x.needDest;
-  else if (!todoDraft.wants.meal && !todoDraft.wants.cafe && !todoDraft.wants.grocery) todoDraft.message = x.needWant;
+  if (!myListDraft.prefs.length) myListDraft.message = x.needArea;
+  else if (!myListDraft.types.length) myListDraft.message = x.needType;
   else {
-    const items = buildTodoItems(todoDraft.dest, todoDraft.wants);
-    if (!items.length) todoDraft.message = x.noShops;
-    else todoDraft.items = items;
+    // 画面の並び順(data.js の prefectures・種類の順)にそろえて保存する
+    const prefs = myListPrefs().map((p) => p.key).filter((k) => myListDraft.prefs.includes(k));
+    const types = MYLIST_TYPES.filter((t) => myListDraft.types.includes(t));
+    saveMyList(prefs, types);
+    myListDraft.prefs = null;
+    myListToast = x.saved;
+    navigate(location.pathname + "?view=todo");
+    return;
   }
-  renderTodoCreate();
-  const target = homePage.querySelector(todoDraft.items ? ".todo-shops" : ".home-status");
-  if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
-}
-
-function todoSave() {
-  if (!todoDraft.items || !todoDraft.items.length) return;
-  const list = {
-    id: "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    title: todoText().titleFor(pick(todoDraft.dest.name)),
-    createdAt: new Date().toISOString(),
-    items: todoDraft.items.map((it) => ({ kind: "shop", id: it.id })),
-  };
-  saveTodoLists([list, ...loadTodoLists()]);
-  todoDraft.items = null;
-  todoDraft.message = "";
-  navigate(location.pathname + "?view=todo&list=" + encodeURIComponent(list.id)); // 保存したリストの一覧を開く
+  renderMyListSettings();
+  const status = homePage.querySelector(".home-status");
+  if (status) status.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
 // ---------------------------------------------------------------------
-// 操作(ホームの中のクリック・入力を、まとめて受け取る)
+// 操作(ホームの中のクリックを、まとめて受け取る)
 // ---------------------------------------------------------------------
 homePage.addEventListener("click", (event) => {
   const t = event.target;
   const plain = !(event.metaKey || event.ctrlKey || event.shiftKey);
-  const newLink = t.closest("[data-todo-new]");
-  if (newLink) {
+  const edit = t.closest("[data-mylist-edit]");
+  if (edit) {
     if (!plain) return;
     event.preventDefault();
-    todoDraft.items = null;
-    todoDraft.message = "";
-    navigate(location.pathname + "?view=todo");
+    startMyListDraft();
+    navigate(myListEditUrl());
     return;
   }
-  const open = t.closest("[data-todo-open]");
-  if (open) {
+  const area = t.closest("[data-mylist-area]");
+  if (area) {
     if (!plain) return;
     event.preventDefault();
     todoTypeFilter = "all";
-    todoPendingDelete = null;
-    navigate(location.pathname + "?view=todo&list=" + encodeURIComponent(open.dataset.todoOpen));
+    navigate(myListAreaUrl(area.dataset.mylistArea));
     return;
   }
-  const back = t.closest("[data-todo-back]");
-  if (back) {
+  const nav = t.closest("[data-mylist-nav]");
+  if (nav) {
+    if (!plain) return;
     event.preventDefault();
-    navigate(homeUrl());
+    myListDraft.prefs = null; // 保存しないで閉じたときは、選びかけの内容を捨てる
+    navigate(nav.getAttribute("href"));
     return;
   }
   const filter = t.closest("[data-todo-filter]");
@@ -504,78 +502,34 @@ homePage.addEventListener("click", (event) => {
     renderHomeMode();
     return;
   }
-  const place = t.closest("[data-todo-place]");
-  if (place) {
-    const p = TODO_PLACES.find((x) => x.key === place.dataset.todoPlace);
-    if (p) todoDraft.dest = { ...p };
-    todoDraft.items = null;
-    renderTodoCreate();
+  const pref = t.closest("[data-mylist-pref]");
+  if (pref) {
+    const k = pref.dataset.mylistPref;
+    myListDraft.prefs = myListDraft.prefs.includes(k) ? myListDraft.prefs.filter((v) => v !== k) : [...myListDraft.prefs, k];
+    myListDraft.message = "";
+    renderMyListSettings();
     return;
   }
-  const want = t.closest("[data-todo-want]");
-  if (want) {
-    const k = want.dataset.todoWant;
-    todoDraft.wants[k] = !todoDraft.wants[k];
-    todoDraft.items = null;
-    renderTodoCreate();
+  const type = t.closest("[data-mylist-type]");
+  if (type) {
+    const k = type.dataset.mylistType;
+    myListDraft.types = myListDraft.types.includes(k) ? myListDraft.types.filter((v) => v !== k) : [...myListDraft.types, k];
+    myListDraft.message = "";
+    renderMyListSettings();
     return;
   }
-  if (t.closest("[data-todo-make]")) {
-    todoMake();
+  if (t.closest("[data-mylist-save]")) {
+    myListSave();
     return;
   }
-  if (t.closest("[data-todo-save]")) {
-    todoSave();
-    return;
-  }
-  const rm = t.closest("[data-todo-remove]");
-  if (rm && todoDraft.items) {
-    todoDraft.items.splice(Number(rm.dataset.todoRemove), 1);
-    if (!todoDraft.items.length) todoDraft.items = null;
-    renderTodoCreate();
-    return;
-  }
-  const del = t.closest("[data-todo-delete]");
-  if (del) {
-    const id = del.dataset.todoDelete;
-    if (todoPendingDelete === id) {
-      saveTodoLists(loadTodoLists().filter((l) => l.id !== id));
-      todoPendingDelete = null;
+  if (t.closest("[data-mylist-reset]")) {
+    if (myListDraft.confirmReset) {
+      resetMyList();
+      myListDraft.prefs = null;
       navigate(homeUrl());
     } else {
-      todoPendingDelete = id; // もう1回押すと、本当に消す(押し間違いで消えないように)
-      renderHomeMode();
+      myListDraft.confirmReset = true; // もう1回押すと、本当にリセットする(押し間違いで消えないように)
+      renderMyListSettings();
     }
   }
 });
-
-// 駅名で行き先を決める(全国の駅のデータから探す。js/app.js の findStationPlaces)
-homePage.addEventListener(
-  "submit",
-  (event) => {
-    if (!event.target.matches("[data-todo-station]")) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const input = event.target.querySelector("input");
-    const raw = input.value.trim();
-    if (!raw) return;
-    const x = todoText();
-    const tryFind = () => {
-      const places = findStationPlaces(normalizeText(raw).replace(/\s+/g, ""));
-      if (places && places.length) {
-        const [lat, lng] = places[0];
-        const label = raw.replace(/駅$/, "") + (currentLang === "ja" ? "駅" : "");
-        todoDraft.dest = { key: "custom", name: { ja: label, en: raw, vi: raw }, lat, lng };
-        todoDraft.message = "";
-      } else {
-        todoDraft.message = x.stationNotFound;
-      }
-      todoDraft.items = null;
-      renderTodoCreate();
-    };
-    ensureStationIndex();
-    if (stationIndex) tryFind();
-    else setTimeout(tryFind, 1500); // 駅のデータを読み込むのを、少し待つ
-  },
-  true
-);
