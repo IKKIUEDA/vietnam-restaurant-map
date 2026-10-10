@@ -301,6 +301,8 @@ function renderHome() {
     `<span class="home-feature-sub">${esc(sub)}</span></span></button>`;
 
   homePage.innerHTML =
+    // 上の写真の部分(写真: 運営者が撮影したホーチミンの夜景。images/hero-saigon-night.jpg)
+    `<div class="home-top">` +
     `<section class="home-hero">` +
     `<h2 class="home-catch">${esc(h.catch1)}<br><span>${esc(h.catch2)}</span></h2>` +
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
@@ -311,6 +313,7 @@ function renderHome() {
     `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search">` +
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
+    `</div>` +
     `<nav class="home-entries" aria-label="${esc(h.entriesLabel)}">` +
     // 入口は、いまは「近く」と「食品・飲料」の2つ(料理店・食材店・カフェは、食品・飲料の中の絞り込みで選ぶ)
     entryButton("near", h.near) +

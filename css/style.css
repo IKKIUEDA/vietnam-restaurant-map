@@ -3947,3 +3947,75 @@ a.todo-card .todo-card-foot {
   right: 8px;
   line-height: 0;
 }
+
+
+/* ---- ホームの上の写真(ヒーロー) ----
+   写真: 運営者が撮影したホーチミンの夜景(images/hero-saigon-night.jpg / スマホ用は -900)。
+   文字が読めるように、上と下を暗くするグラデーションを重ねる */
+.home-page {
+  padding-top: 0;
+}
+
+.home-top {
+  position: relative;
+  padding: 28px 0 24px;
+  border-radius: 0 0 28px 28px;
+  background-color: #0f2318;
+  background-image:
+    linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
+    url("../images/hero-saigon-night-900.jpg");
+  background-size: cover;
+  background-position: 42% 100%;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+@media (min-width: 700px) {
+  .home-top {
+    margin-top: 12px;
+    border-radius: 28px;
+    background-image:
+      linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
+      url("../images/hero-saigon-night.jpg");
+  }
+}
+
+.home-top .home-hero {
+  padding: 8px 22px 0;
+}
+
+.home-top .home-catch {
+  color: #ffffff;
+  font-size: 2rem;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.home-top .home-catch span {
+  color: #9be3a0;
+}
+
+.home-top .home-lead {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+.home-top .home-lead strong {
+  color: #ffffff;
+}
+
+.home-top .home-search {
+  padding: 92px 18px 0;
+}
+
+.home-top .home-search-box {
+  height: 56px;
+  border: none;
+  border-radius: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.home-top .home-search-btn {
+  height: 44px;
+  border-radius: 22px;
+}
