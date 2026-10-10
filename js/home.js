@@ -9,8 +9,7 @@
 
 const HOME_TEXT = {
   ja: {
-    catch1: "日本のベトナムを",
-    catch2: "探そう。",
+    catch: "日本のベトナムを探そう。",
     searchLabel: "店名・エリア・駅名で探す",
     searchPlaceholder: "店名・エリア・駅名で探す(例: 千葉駅)",
     searchButton: "探す",
@@ -39,8 +38,7 @@ const HOME_TEXT = {
     tabSaved: "保存",
   },
   en: {
-    catch1: "Find Vietnam",
-    catch2: "in Japan.",
+    catch: "Find Vietnam in Japan.",
     searchLabel: "Search by shop, area or station",
     searchPlaceholder: "Shop, area or station (e.g. Chiba Station)",
     searchButton: "Search",
@@ -69,8 +67,7 @@ const HOME_TEXT = {
     tabSaved: "Saved",
   },
   vi: {
-    catch1: "Tìm Việt Nam",
-    catch2: "tại Nhật Bản.",
+    catch: "Tìm Việt Nam tại Nhật Bản.",
     searchLabel: "Tìm theo tên quán, khu vực, ga",
     searchPlaceholder: "Tên quán, khu vực, ga (VD: ga Chiba)",
     searchButton: "Tìm",
@@ -304,7 +301,7 @@ function renderHome() {
     // 上の写真の部分(写真: 運営者が撮影したホーチミンの夜景。images/hero-saigon-night.jpg)
     `<div class="home-top">` +
     `<section class="home-hero">` +
-    `<h2 class="home-catch">${esc(h.catch1)}<br><span>${esc(h.catch2)}</span></h2>` +
+    `<h2 class="home-catch">${esc(h.catch)}</h2>` +
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
     `</section>` +
     `<form class="home-search" role="search">` +

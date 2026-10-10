@@ -3984,14 +3984,15 @@ a.todo-card .todo-card-foot {
   padding: 8px 22px 0;
 }
 
+/* 見出しは1行・すべて白文字。画面の幅に合わせて文字の大きさを変える(スマホでも1行に収まるように) */
 .home-top .home-catch {
   color: #ffffff;
-  font-size: 2rem;
+  font-size: clamp(1.25rem, 6.6vw, 2rem);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 .home-top .home-catch span {
-  color: #9be3a0;
+  color: inherit;
 }
 
 .home-top .home-lead {
@@ -4041,7 +4042,7 @@ a.todo-card .todo-card-foot {
   }
 
   .home-top .home-catch {
-    font-size: 3rem;
+    font-size: 2.8rem;
   }
 
   .home-top .home-lead {
