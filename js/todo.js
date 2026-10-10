@@ -147,15 +147,19 @@ const TODO_PLACES = [
 // ---------------------------------------------------------------------
 function loadTodoLists() {
   try {
-    const v = JSON.parse(localStorage.getItem(TODO_KEY) || "[]");
+    const raw = localStorage.getItem(TODO_KEY) || "[]";
+    const v = JSON.parse(raw);
     if (!Array.isArray(v)) return [];
-    return v
+    const lists = v
       .filter((l) => l && typeof l.id === "string" && Array.isArray(l.items))
       .map((l) => ({
         ...l,
         // 以前の版の「行った」チェック(done)は、もう使わないので読み込まない
         items: l.items.filter((it) => it && it.kind === "shop" && typeof it.id === "string").map((it) => ({ kind: "shop", id: it.id })),
       }));
+    // 以前の版で保存した「行った」チェックが端末に残っていたら、1回だけ書き直して消す
+    if (raw.includes('"done"')) localStorage.setItem(TODO_KEY, JSON.stringify(lists));
+    return lists;
   } catch (e) {
     return [];
   }
