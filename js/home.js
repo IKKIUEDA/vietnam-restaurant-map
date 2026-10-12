@@ -25,6 +25,8 @@ const HOME_TEXT = {
     recTitle: "あなたへのおすすめ",
     clearHistory: "履歴を消す",
     areaTitle: "エリアから探す",
+    areaPrev: "前のエリア",
+    areaNext: "次のエリア",
     areaCount: (n) => `${n}件`,
     featureTitle: "特集",
     featureCafeTag: "カフェ",
@@ -56,6 +58,8 @@ const HOME_TEXT = {
     recTitle: "Picked for you",
     clearHistory: "Clear history",
     areaTitle: "Browse by area",
+    areaPrev: "Previous areas",
+    areaNext: "More areas",
     areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
     featureTitle: "Features",
     featureCafeTag: "Cafes",
@@ -87,6 +91,8 @@ const HOME_TEXT = {
     recTitle: "Gợi ý cho bạn",
     clearHistory: "Xóa lịch sử",
     areaTitle: "Tìm theo khu vực",
+    areaPrev: "Khu vực trước",
+    areaNext: "Khu vực tiếp",
     areaCount: (n) => `${n} quán`,
     featureTitle: "Chủ đề",
     featureCafeTag: "Cà phê",
@@ -272,20 +278,22 @@ function homeIcon(name, size = 24) {
 //   ・カードを押すと、地図の画面で「○○駅」と検索したのと同じ結果を出す
 //   ・lat/lng は、地図の検索と同じ駅のデータ(data/stations-jp.json)の位置
 //   ・件数は、地図の検索と同じ決まり(駅から 2km 以内、または住所などに「○○駅」の文字がある)で数える
-//   ・image: エリアの写真(あとで用意したら "images/area-shinjuku.jpg" のように書く)。無いときは色のカード
+//   ・image: エリアの写真(用意したら "images/area-shinjuku.jpg" のように書く)。無いときは色のカード
+//   ・source: 写真の入手元(記録用。画面には出ない)。写真AC・Pexels はクレジット表記が不要
+//   ・credit: 写真のクレジット(例: "撮影: ○○" / "Photo: ○○ / CC BY 4.0")。書くと、写真の右下に小さく出す
 //   ・color: 写真が無いときのカードの色(エリアごとに少しずつ変える)
 // ---------------------------------------------------------------------
 const HOME_AREAS = [
-  { station: "新宿", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6922, lng: 139.7006, color: "#2e7d32", image: "" },
-  { station: "池袋", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7281, lng: 139.711, color: "#00796b", image: "" },
-  { station: "上野", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7134, lng: 139.7765, color: "#c0392b", image: "" },
-  { station: "渋谷", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.6581, lng: 139.7018, color: "#6a4c93", image: "" },
-  { station: "横浜", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4662, lng: 139.6232, color: "#1e63d6", image: "" },
-  { station: "川崎", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5314, lng: 139.6969, color: "#0277bd", image: "" },
-  { station: "千葉", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6137, lng: 140.1125, color: "#e67e22", image: "" },
-  { station: "船橋", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7017, lng: 139.9852, color: "#795548", image: "" },
-  { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "" },
-  { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "" },
+  { station: "新宿", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6922, lng: 139.7006, color: "#2e7d32", image: "images/areas/shinjuku.jpg", source: "写真AC" },
+  { station: "池袋", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7281, lng: 139.711, color: "#00796b", image: "images/areas/ikebukuro.jpg", source: "写真AC" },
+  { station: "上野", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7134, lng: 139.7765, color: "#c0392b", image: "images/areas/ueno.jpg", source: "写真AC" },
+  { station: "渋谷", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.6581, lng: 139.7018, color: "#6a4c93", image: "images/areas/shibuya.jpg", source: "写真AC" },
+  { station: "横浜", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4662, lng: 139.6232, color: "#1e63d6", image: "images/areas/yokohama.jpg", source: "Pexels" },
+  { station: "川崎", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5314, lng: 139.6969, color: "#0277bd", image: "images/areas/kawasaki.jpg", source: "写真AC" },
+  { station: "千葉", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6137, lng: 140.1125, color: "#e67e22", image: "images/areas/chiba.jpg", source: "写真AC" },
+  { station: "船橋", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7017, lng: 139.9852, color: "#795548", image: "images/areas/funabashi.jpg", source: "写真AC" },
+  { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "images/areas/shinmatsudo.jpg", source: "写真AC" },
+  { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "images/areas/omiya.jpg", source: "写真AC" },
 ];
 function homeAreaCount(area) {
   const word = normalizeText(area.station + "駅");
@@ -297,14 +305,14 @@ function renderHomeAreas() {
   const cards = HOME_AREAS.map((a) => ({ a, n: homeAreaCount(a) }))
     .filter((x) => x.n > 0)
     .map(({ a, n }) => {
-      const bg = a.image
-        ? `background-image:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,0.6) 100%),url('${esc(a.image)}');`
-        : `background-color:${a.color};`;
+      // 写真は <img loading="lazy"> で出す(横にスクロールして見えたときに読み込むので、ホームの表示が重くならない)
       return (
-        `<li><button type="button" class="home-area${a.image ? " has-image" : ""}" style="${bg}" data-home-area="${esc(a.station)}">` +
+        `<li><button type="button" class="home-area${a.image ? " has-image" : ""}" style="background-color:${a.color}" data-home-area="${esc(a.station)}">` +
+        (a.image ? `<img class="home-area-img" src="${esc(a.image)}" alt="" loading="lazy" width="480" height="336">` : "") +
         `<span class="home-area-pin" aria-hidden="true">${homeIcon("near", 18)}</span>` +
         `<span class="home-area-name">${esc(pick(a.name))}</span>` +
         `<span class="home-area-count">${esc(homeText().areaCount(n))}</span>` +
+        (a.image && a.credit ? `<span class="home-area-credit">${esc(a.credit)}</span>` : "") +
         `</button></li>`
       );
     })
@@ -312,7 +320,12 @@ function renderHomeAreas() {
   if (!cards) return "";
   return (
     `<section class="home-section home-area-section">` +
-    `<h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
+    `<div class="home-area-head"><h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
+    // PC 用の「‹ ›」ボタン(マウスでも横に送れるように。スマホは指で横にスクロール)
+    `<span class="home-area-arrows">` +
+    `<button type="button" class="home-area-arrow" data-area-scroll="-1" aria-label="${esc(homeText().areaPrev)}">${homeIcon("back", 20)}</button>` +
+    `<button type="button" class="home-area-arrow" data-area-scroll="1" aria-label="${esc(homeText().areaNext)}">${homeIcon("forward", 20)}</button>` +
+    `</span></div>` +
     `<ul class="home-areas">${cards}</ul>` +
     `</section>`
   );
@@ -457,6 +470,12 @@ homePage.addEventListener("click", (event) => {
     event.preventDefault();
     const entry = entries.find((e) => e.shop.id === shopLink.dataset.shopId);
     if (entry) openShop(entry);
+    return;
+  }
+  const arrow = event.target.closest("[data-area-scroll]");
+  if (arrow) {
+    const list = homePage.querySelector(".home-areas");
+    if (list) list.scrollBy({ left: Number(arrow.dataset.areaScroll) * list.clientWidth * 0.8, behavior: "smooth" });
     return;
   }
   const areaBtn = event.target.closest("[data-home-area]");
