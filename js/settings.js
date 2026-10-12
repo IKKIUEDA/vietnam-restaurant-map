@@ -39,7 +39,13 @@ const SETTINGS_TEXT = {
     reqReset: "未対応に戻す",
     reqDelete: "削除",
     reqDeleteConfirm: "本当に削除",
-    googleManaged: "Google アカウントでログインしているため、メールアドレスとパスワードは Google アカウントで管理されています。変更は Google アカウントの設定から行ってください。",
+    googleEmail: "Google アカウントでログインしているため、メールアドレスは Google アカウントで管理されています。変更は Google アカウントの設定から行ってください。",
+    setPwTitle: "このサイト用のパスワードを設定する",
+    setPwLead: (email) => `Google のアカウントはそのままで、このサイト用のパスワードを追加できます。設定すると、Google でも、メールアドレス(${email})+パスワードでも、ログインできるようになります。`,
+    setPwBtn: "パスワードを設定する",
+    setPwNote: "ボタンを押すと、本人確認のため、Google のアカウント選択画面が開きます。",
+    pwSet: "パスワードを設定しました。次回から、メールアドレスとパスワードでもログインできます。",
+    pwAlready: "このメールアドレスには、すでにパスワードが設定されています",
     currentEmail: "現在のメールアドレス",
     verified: "認証済み",
     notVerified: "未認証",
@@ -127,7 +133,13 @@ const SETTINGS_TEXT = {
     reqReset: "Mark as new",
     reqDelete: "Delete",
     reqDeleteConfirm: "Really delete",
-    googleManaged: "You're logged in with Google, so your email address and password are managed by your Google Account. Please change them in your Google Account settings.",
+    googleEmail: "You're logged in with Google, so your email address is managed by your Google Account. Please change it in your Google Account settings.",
+    setPwTitle: "Set a password for this site",
+    setPwLead: (email) => `You can add a password for this site while keeping your Google login. After that, you can log in either with Google or with your email address (${email}) and password.`,
+    setPwBtn: "Set password",
+    setPwNote: "When you tap the button, the Google account picker opens to confirm it's you.",
+    pwSet: "Password set. From now on, you can also log in with your email address and password.",
+    pwAlready: "A password is already set for this email address",
     currentEmail: "Current email address",
     verified: "Verified",
     notVerified: "Not verified",
@@ -215,7 +227,13 @@ const SETTINGS_TEXT = {
     reqReset: "Đặt lại chưa xử lý",
     reqDelete: "Xóa",
     reqDeleteConfirm: "Xóa thật",
-    googleManaged: "Bạn đang đăng nhập bằng Google, nên email và mật khẩu được quản lý bởi tài khoản Google. Vui lòng thay đổi trong phần cài đặt tài khoản Google.",
+    googleEmail: "Bạn đang đăng nhập bằng Google, nên địa chỉ email được quản lý bởi tài khoản Google. Vui lòng thay đổi trong phần cài đặt tài khoản Google.",
+    setPwTitle: "Đặt mật khẩu cho trang này",
+    setPwLead: (email) => `Bạn có thể thêm mật khẩu cho trang này mà vẫn giữ đăng nhập bằng Google. Sau đó, bạn có thể đăng nhập bằng Google hoặc bằng email (${email}) và mật khẩu.`,
+    setPwBtn: "Đặt mật khẩu",
+    setPwNote: "Khi nhấn nút, màn hình chọn tài khoản Google sẽ mở ra để xác nhận danh tính.",
+    pwSet: "Đã đặt mật khẩu. Từ lần sau, bạn cũng có thể đăng nhập bằng email và mật khẩu.",
+    pwAlready: "Email này đã có mật khẩu",
     currentEmail: "Email hiện tại",
     verified: "Đã xác minh",
     notVerified: "Chưa xác minh",
@@ -332,6 +350,7 @@ function renderSettingsSub(sub, params, page) {
   const s = settingsText();
   const api = window.authApi;
   const hasPassword = !!(api && typeof api.hasPassword === "function" && api.hasPassword());
+  const hasGoogle = !!(api && typeof api.hasGoogle === "function" && api.hasGoogle());
 
   if (sub === "spot") {
     const type = params.get("type");
@@ -404,8 +423,9 @@ function renderSettingsSub(sub, params, page) {
 
   if (sub === "email") {
     const st = settingsStateFor("email");
-    if (!hasPassword) {
-      page(x.emailSetting, acctSettingsUrl("account"), `<p class="acct-soon">${esc(s.googleManaged)}</p>`);
+    // Google でログインできる人のメールアドレスは、Google アカウントのもの(このサイトだけで変えると、ずれてしまう)
+    if (hasGoogle || !hasPassword) {
+      page(x.emailSetting, acctSettingsUrl("account"), `<p class="acct-soon">${esc(s.googleEmail)}</p>`);
       return true;
     }
     const user = api.currentUser();
@@ -434,11 +454,24 @@ function renderSettingsSub(sub, params, page) {
 
   if (sub === "password") {
     const st = settingsStateFor("password");
+    const user = api.currentUser();
     if (!hasPassword) {
-      page(x.passwordSetting, acctSettingsUrl("account"), `<p class="acct-soon">${esc(s.googleManaged)}</p>`);
+      // Google でログインしている人: このサイト用のパスワードを追加できる
+      page(
+        x.passwordSetting,
+        acctSettingsUrl("account"),
+        `<h3 class="set-heading">${esc(s.setPwTitle)}</h3>` +
+          `<p class="acct-small">${esc(s.setPwLead(user ? user.email : ""))}</p>` +
+          `<form class="acct-form" data-set-form="set-password" novalidate>` +
+          settingsInput({ name: "newPassword", label: s.newPassword, type: "password", autocomplete: "new-password", required: true }) +
+          settingsInput({ name: "newPassword2", label: s.newPassword2, type: "password", autocomplete: "new-password", required: true }) +
+          `<p class="acct-small">${esc(s.setPwNote)}</p>` +
+          settingsMessageHtml(st) +
+          `<div class="todo-actions"><button type="submit" class="todo-primary"${st.busy ? " disabled" : ""}>${esc(st.busy ? x.saving : s.setPwBtn)}</button></div>` +
+          `</form>`
+      );
       return true;
     }
-    const user = api.currentUser();
     page(
       x.passwordSetting,
       acctSettingsUrl("account"),
@@ -703,6 +736,30 @@ homePage.addEventListener(
         })
         .catch((error) => {
           console.warn("パスワードを変更できませんでした:", error);
+          fail(settingsErrorText(error));
+        });
+      return;
+    }
+
+    if (kind === "set-password") {
+      const p1 = form.elements.newPassword.value;
+      const p2 = form.elements.newPassword2.value;
+      if (p1.length < 6) return fail(s.errors.weakPassword);
+      if (p1 !== p2) return fail(s.pwMismatch);
+      start();
+      api
+        .reauthWithGoogle()
+        .then(() => api.linkPassword(p1))
+        .then(() => {
+          // 設定できたら、パスワードの変更・再設定の画面に切り替わる(次に描くとき hasPassword が true になる)
+          settingsState = { key: "password", busy: false, error: false, message: s.pwSet, done: false, fields: {} };
+          settingsRender();
+        })
+        .catch((error) => {
+          console.warn("パスワードを設定できませんでした:", error);
+          const code = (error && error.code) || "";
+          if (code === "auth/provider-already-linked" || code === "auth/email-already-in-use" || code === "auth/credential-already-in-use")
+            return fail(s.pwAlready);
           fail(settingsErrorText(error));
         });
       return;
