@@ -452,9 +452,10 @@ function renderUserPage(uid) {
   loadAccountData(uid, false);
   const data = accountData;
   const isMe = !!(authUser && authUser.uid === uid);
-  const name = accountDisplayName(data, isMe ? resolveAuthName(authUser) : "");
+  const clicked = window.lastUserLink && window.lastUserLink.uid === uid ? window.lastUserLink.name : "";
+  const name = accountDisplayName(data, isMe ? resolveAuthName(authUser) : "") || clicked;
   const backHref = history.length > 1 ? "back" : homeUrl();
-  if (data.status === "ready" && !data.profile && !data.photos.length && !data.reviews.length && !isMe) {
+  if (data.status === "ready" && !data.profile && !data.photos.length && !data.reviews.length && !isMe && !clicked) {
     homePage.innerHTML = accountHeader(x.title, backHref) + `<section class="home-section"><p class="acct-note">${esc(x.notFound)}</p></section>`;
     return;
   }

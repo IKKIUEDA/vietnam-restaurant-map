@@ -3058,5 +3058,7 @@ document.addEventListener("click", (event) => {
   const link = event.target.closest("a[data-user-link]");
   if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
   event.preventDefault();
+  // 押した名前を控えておく(まだプロフィールを作っていない人でも、名前は出せるように。js/account.js)
+  window.lastUserLink = { uid: link.dataset.userLink, name: link.textContent };
   navigate(location.pathname + "?user=" + encodeURIComponent(link.dataset.userLink));
 });
