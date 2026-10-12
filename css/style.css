@@ -5131,3 +5131,105 @@ a.user-link:hover {
 .acct-message[hidden] {
   display: none;
 }
+
+/* =====================================================================
+   特集のページ(js/feature.js)
+   ===================================================================== */
+.feature-band {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 16px 0;
+  padding: 18px 20px;
+  border-radius: 20px;
+  color: #ffffff;
+  box-shadow: var(--shadow-card);
+}
+
+.feature-band-cafe {
+  background: #5d4037;
+}
+
+.feature-band-grocery {
+  background: #1e63d6;
+}
+
+.feature-band-icon {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-band-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feature-band-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.feature-band-count {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.feature-section {
+  padding-top: 16px;
+}
+
+/* 絞り込み: 横に1列で並べて、横にスクロール */
+.feature-chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 -20px;
+  padding: 2px 20px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.feature-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.feature-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.feature-chip-icon {
+  display: inline-flex;
+  color: var(--c-primary);
+}
+
+.feature-chip.is-on .feature-chip-icon {
+  color: #ffffff;
+}
+
+.feature-location-note {
+  margin-top: 4px;
+}
+
+@media (min-width: 900px) {
+  .feature-band {
+    margin: 16px 0 0;
+  }
+
+  .feature-chips {
+    margin: 0;
+    padding: 2px 0 8px;
+    flex-wrap: wrap;
+  }
+}
