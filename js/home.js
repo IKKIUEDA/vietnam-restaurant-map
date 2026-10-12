@@ -39,7 +39,7 @@ const HOME_TEXT = {
     tabsLabel: "メインメニュー",
     tabHome: "ホーム",
     tabMap: "地図",
-    tabSaved: "保存",
+    tabAccount: "アカウント",
   },
   en: {
     catch: "Find Vietnam in Japan.",
@@ -72,7 +72,7 @@ const HOME_TEXT = {
     tabsLabel: "Main menu",
     tabHome: "Home",
     tabMap: "Map",
-    tabSaved: "Saved",
+    tabAccount: "Account",
   },
   vi: {
     catch: "Tìm Việt Nam tại Nhật Bản.",
@@ -105,7 +105,7 @@ const HOME_TEXT = {
     tabsLabel: "Menu chính",
     tabHome: "Trang chủ",
     tabMap: "Bản đồ",
-    tabSaved: "Đã lưu",
+    tabAccount: "Tài khoản",
   },
 };
 function homeText() {
@@ -268,6 +268,7 @@ const HOME_ICONS = {
   search: '<circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>',
   home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path>',
   heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path>',
+  user: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path>',
 };
 function homeIcon(name, size = 24) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${HOME_ICONS[name]}</svg>`;
@@ -531,7 +532,10 @@ function showHome(mode, listId) {
   showList(true); // 詳細ページなどの状態を片付ける(一覧・地図の状態は、そのまま残る)
   document.body.classList.add("view-home");
   homeView.hidden = false;
-  homeMode = typeof renderMyList === "function" && ["todo", "todo-edit", "todo-area"].includes(mode) ? mode : "home";
+  const modes = [];
+  if (typeof renderMyList === "function") modes.push("todo", "todo-edit", "todo-area");
+  if (typeof renderAccountPage === "function") modes.push("account", "user");
+  homeMode = modes.includes(mode) ? mode : "home";
   homeListId = listId || null;
   renderHomeMode();
   homeView.scrollTop = 0;
@@ -542,6 +546,8 @@ function renderHomeMode() {
   if (homeMode === "todo") renderMyList();
   else if (homeMode === "todo-edit") renderMyListSettings();
   else if (homeMode === "todo-area") renderMyListArea(homeListId);
+  else if (homeMode === "account") renderAccountPage();
+  else if (homeMode === "user") renderUserPage(homeListId);
   else renderHome();
 }
 function hideHome() {
@@ -552,16 +558,19 @@ function hideHome() {
 // 画面の下のタブ(スマホだけ。ホーム・地図・保存)
 function renderTabs() {
   const h = homeText();
-  const isHome = document.body.classList.contains("view-home");
-  const isMap = !isHome && !document.body.classList.contains("view-detail") && !document.body.classList.contains("view-content-page");
+  const inHome = document.body.classList.contains("view-home");
+  const isAccount = inHome && (homeMode === "account" || homeMode === "user");
+  const isHome = inHome && !isAccount;
+  const isMap = !inHome && !document.body.classList.contains("view-detail") && !document.body.classList.contains("view-content-page");
   const tab = (key, icon, label, current) =>
     `<button type="button" class="app-tab${current ? " is-current" : ""}" data-tab="${key}"${current ? ' aria-current="page"' : ""}>` +
     `${homeIcon(icon, 24)}<span>${esc(label)}</span></button>`;
   appTabs.setAttribute("aria-label", h.tabsLabel);
   appTabs.innerHTML =
     tab("home", "home", h.tabHome, isHome) +
-    tab("map", "map", h.tabMap, isMap && !favoritesOnly) +
-    tab("saved", "heart", h.tabSaved, isMap && favoritesOnly);
+    tab("map", "map", h.tabMap, isMap) +
+    // 保存した店は、アカウントの中に入れた(アカウント → ♡ 保存した店)
+    tab("account", "user", h.tabAccount, isAccount);
 }
 appTabs.addEventListener("click", (event) => {
   const btn = event.target.closest("[data-tab]");
@@ -571,12 +580,7 @@ appTabs.addEventListener("click", (event) => {
   else if (key === "map") {
     navigate(mapUrl());
     if (favoritesOnly) resetFilters();
-  } else if (key === "saved") {
-    navigate(mapUrl());
-    resetFilters();
-    favoritesOnly = true;
-    applyFilters();
-  }
+  } else if (key === "account") navigate(location.pathname + "?view=account");
   renderTabs();
 });
 

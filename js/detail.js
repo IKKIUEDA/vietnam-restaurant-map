@@ -62,6 +62,10 @@ function routeFromLocation() {
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
+  // アカウント(js/account.js): 「?view=account」= 自分のアカウント / 「?user=ID」= その人のプロフィール
+  const userId = params.get("user");
+  if (userId && typeof showHome === "function") return { name: "home", mode: "user", list: userId };
+  if (view === "account" && typeof showHome === "function") return { name: "home", mode: "account" };
   // マイリスト(js/todo.js): 「?view=todo」= マイリスト / 「&edit=1」= 設定 / 「&area=東京都」= そのエリアのお店の一覧
   if (view === "todo" && typeof showHome === "function") {
     if (params.get("area")) return { name: "home", mode: "todo-area", list: params.get("area") };
@@ -1794,7 +1798,7 @@ function renderPhotos() {
             `<img class="photo-thumb" src="${esc(p.secure_url)}" alt="" loading="lazy">` +
             (categoryLabel ? `<span class="photo-category-label">${esc(categoryLabel)}</span>` : "") +
             `</button>` +
-            `<div class="photo-meta"><span class="photo-author">${esc(p.authorName || "")}</span>` +
+            `<div class="photo-meta">${userLinkHtml(p.uid, p.authorName, "photo-author")}` +
             (p.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
             `</div>` +
             (p.description ? `<p class="photo-caption">${esc(p.description)}</p>` : "") +
@@ -2227,7 +2231,7 @@ function renderPhotoCommentListHtml(cState, t) {
       const isMine = myUid && c.uid === myUid;
       return (
         `<li class="photo-comment-item${c.hidden ? " is-hidden" : ""}">` +
-        `<div class="photo-comment-head"><span class="photo-comment-author">${esc(c.authorName || "")}</span>` +
+        `<div class="photo-comment-head">${userLinkHtml(c.uid, c.authorName, "photo-comment-author")}` +
         (c.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
         `</div>` +
         `<p class="photo-comment-text">${esc(c.comment)}</p>` +
@@ -2685,7 +2689,7 @@ function renderReviews() {
           const isMine = myUid && r.id === myUid;
           return (
             `<li class="review-item${r.hidden ? " is-hidden" : ""}">` +
-            `<div class="review-head"><span class="review-author">${esc(r.authorName || "")}</span>` +
+            `<div class="review-head">${userLinkHtml(r.id, r.authorName, "review-author")}` +
             `<span class="review-head-right">` +
             `<span class="review-stars" aria-label="${esc(t.reviewRatingLabel)}: ${Number(r.rating) || 0}/5">${starsText(r.rating)}</span>` +
             (r.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
@@ -3040,3 +3044,19 @@ window.addEventListener("popstate", renderRoute);
 //   (ホームから始まったときも、地図は隠れた状態で作られているので、同じように合わせ直す)
 listMapNeedsFit = ["shop", "home"].includes(routeFromLocation().name);
 renderRoute();
+
+
+// 投稿者の名前: 押すと、その人のプロフィール(URL「?user=ユーザーID」。js/account.js)を開く
+function userLinkHtml(uid, name, className) {
+  const label = esc(name || "");
+  if (!uid || !/^[A-Za-z0-9_-]{1,128}$/.test(String(uid)) || typeof renderUserPage !== "function") {
+    return `<span class="${className}">${label}</span>`;
+  }
+  return `<a class="${className} user-link" href="?user=${encodeURIComponent(uid)}" data-user-link="${esc(uid)}">${label}</a>`;
+}
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[data-user-link]");
+  if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  event.preventDefault();
+  navigate(location.pathname + "?user=" + encodeURIComponent(link.dataset.userLink));
+});
