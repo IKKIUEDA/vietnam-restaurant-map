@@ -11,6 +11,7 @@ const ACCOUNT_TEXT = {
     title: "アカウント",
     loginLead: "ログインすると、プロフィールの設定や、写真・レビューの投稿ができます",
     login: "ログイン・新規登録",
+    loginTitle: "ログインまたは新規登録",
     saved: "♡ 保存した店",
     clearHistory: "閲覧・検索の履歴を消す",
     clearHistoryNote: "ホームの「あなたへのおすすめ」に使っている、この端末の中の記録(見たお店・検索した言葉・選んだ種類)を消します",
@@ -60,6 +61,7 @@ const ACCOUNT_TEXT = {
     title: "Account",
     loginLead: "Log in to set up your profile and post photos and reviews",
     login: "Log in / Sign up",
+    loginTitle: "Log in or sign up",
     saved: "♡ Saved shops",
     clearHistory: "Clear browsing and search history",
     clearHistoryNote: "Deletes the records on this device used for ‘Picked for you’ on the home screen (shops you viewed, words you searched, kinds you chose)",
@@ -109,6 +111,7 @@ const ACCOUNT_TEXT = {
     title: "Tài khoản",
     loginLead: "Đăng nhập để cài đặt hồ sơ và đăng ảnh, đánh giá",
     login: "Đăng nhập / Đăng ký",
+    loginTitle: "Đăng nhập hoặc đăng ký",
     saved: "♡ Quán đã lưu",
     clearHistory: "Xóa lịch sử xem và tìm kiếm",
     clearHistoryNote: "Xóa dữ liệu trên thiết bị này dùng cho ‘Gợi ý cho bạn’ ở trang chủ (quán đã xem, từ khóa đã tìm, loại quán đã chọn)",
@@ -344,13 +347,16 @@ function savedRowHtml() {
 //   ・ログインしていなくても使える(記録は、ブラウザの中にあるため)
 let accountClearConfirm = false;
 let accountClearDone = false;
-function clearHistoryHtml() {
+function clearHistoryHtml(compact) {
   const x = accountText();
   return (
     `<div class="acct-history">` +
     `<button type="button" class="acct-text-btn acct-history-btn${accountClearConfirm ? " is-confirm" : ""}" data-acct-action="clear-history">` +
     `${esc(accountClearConfirm ? x.clearHistoryConfirm : x.clearHistory)}</button>` +
-    `<p class="acct-small">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p></div>`
+    (accountClearConfirm || accountClearDone || !compact
+      ? `<p class="acct-small">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p>`
+      : "") +
+    `</div>`
   );
 }
 
@@ -366,12 +372,15 @@ function renderAccountPage() {
   if (!authUser) {
     accountEditing = false;
     homePage.innerHTML =
+      // ログインしていないとき: シンプルに「ログインまたは新規登録」だけを、画面のまん中に
+      //   (保存した店・履歴を消すは、ログインしなくても使えるので、下に小さく残す)
       accountHeader(x.title) +
-      `<section class="home-section acct-section">` +
-      `<div class="acct-card acct-login">${accountAvatar("", "?", 64)}<p>${esc(x.loginLead)}</p>` +
-      `<button type="button" class="todo-primary" data-acct-action="login">${esc(x.login)}</button></div>` +
-      savedRowHtml() +
-      clearHistoryHtml() +
+      `<section class="home-section acct-section acct-guest">` +
+      `<div class="acct-guest-main"><div class="acct-guest-card">` +
+      `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
+      `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
+      `</div></div>` +
+      `<div class="acct-guest-sub">${savedRowHtml()}${clearHistoryHtml(true)}</div>` +
       `</section>`;
     return;
   }

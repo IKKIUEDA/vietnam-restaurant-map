@@ -5604,3 +5604,73 @@ a.user-link:hover {
   color: var(--c-text-sub);
   line-height: 1.5;
 }
+
+/* アカウント(ログインしていないとき): シンプルなログインの枠を、まん中に */
+.acct-guest {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 260px);
+}
+
+.acct-guest-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.acct-guest-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px 20px;
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  background: var(--c-surface);
+  text-align: center;
+}
+
+.acct-guest-title {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.acct-guest-btn {
+  width: 100%;
+  max-width: 320px;
+  min-height: 50px;
+  border: 2px solid var(--c-primary);
+  border-radius: 12px;
+  background: var(--c-surface);
+  color: var(--c-primary);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.acct-guest-btn:hover {
+  background: var(--c-primary-soft);
+}
+
+.acct-guest-sub {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.acct-guest-sub .acct-row {
+  min-height: 48px;
+  margin-top: 0;
+  box-shadow: none;
+  font-size: 0.9rem;
+}
+
+.acct-guest-sub .acct-history {
+  margin-top: 10px;
+}
+
+.acct-guest-sub .acct-history-btn {
+  font-size: 0.8rem;
+}
