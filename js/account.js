@@ -40,6 +40,8 @@ const ACCOUNT_TEXT = {
     cancel: "やめる",
     saved_ok: "保存しました",
     saveError: "保存できませんでした。時間をおいて、もう一度お試しください",
+    saving: "保存しています…",
+    rulesError: "保存できませんでした(データベースの設定がまだ反映されていない可能性があります)",
     needName: "ニックネームを入れてください",
     uploading: "画像を送っています…",
     deleteProfile: "プロフィールを削除",
@@ -83,6 +85,8 @@ const ACCOUNT_TEXT = {
     cancel: "Cancel",
     saved_ok: "Saved",
     saveError: "Couldn't save. Please try again later",
+    saving: "Saving…",
+    rulesError: "Couldn't save (the database settings may not be updated yet)",
     needName: "Please enter a nickname",
     uploading: "Uploading image…",
     deleteProfile: "Delete profile",
@@ -126,6 +130,8 @@ const ACCOUNT_TEXT = {
     cancel: "Hủy",
     saved_ok: "Đã lưu",
     saveError: "Không lưu được. Vui lòng thử lại sau",
+    saving: "Đang lưu…",
+    rulesError: "Không lưu được (cài đặt cơ sở dữ liệu có thể chưa được cập nhật)",
     needName: "Hãy nhập biệt danh",
     uploading: "Đang gửi ảnh…",
     deleteProfile: "Xóa hồ sơ",
@@ -174,7 +180,15 @@ let accountData = null; // { uid, status: "loading"|"ready"|"error", profile, ph
 let accountTab = "photos";
 let accountEditing = false;
 let accountDraft = null; // { displayName, bio, photoURL, busy, message, error, confirmDelete }
-let accountMessage = ""; // 保存しました など(1回だけ出す)
+let accountMessage = ""; // 保存しました など(数秒だけ出す)
+let accountMessageTimer = null;
+function setAccountMessage(text) {
+  accountMessage = text;
+  clearTimeout(accountMessageTimer);
+  accountMessageTimer = setTimeout(() => {
+    accountMessage = "";
+  }, 3000);
+}
 let accountAdminMessage = "";
 
 function loadAccountData(uid, withCheckins) {
@@ -345,7 +359,6 @@ function renderAccountPage() {
   const photoURL = data.profile && data.profile.photoURL;
   const bio = data.profile && data.profile.bio;
   const msg = accountMessage;
-  accountMessage = "";
   homePage.innerHTML =
     accountHeader(x.title) +
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
@@ -399,9 +412,10 @@ function renderAccountEdit() {
     `<label class="acct-label" for="acct-bio">${esc(x.bioLabel)}</label>` +
     `<textarea id="acct-bio" class="acct-input" maxlength="160" rows="4" placeholder="${esc(x.bioPlaceholder)}">${esc(d.bio)}</textarea>` +
     `<p class="acct-small">${esc(x.publicNote)}</p>` +
-    `<p class="home-status" role="status"${d.message ? "" : " hidden"}>${esc(d.message)}</p>` +
+    // 結果(エラーなど)は、目立つ枠で出す
+    `<p class="acct-message${d.error ? " is-error" : ""}" role="status"${d.message ? "" : " hidden"}>${esc(d.message)}</p>` +
     `<div class="todo-actions">` +
-    `<button type="submit" class="todo-primary"${d.busy ? " disabled" : ""}>${esc(x.save)}</button>` +
+    `<button type="submit" class="todo-primary"${d.busy ? " disabled" : ""}>${esc(d.busy ? x.saving : x.save)}</button>` +
     `<button type="button" class="todo-secondary" data-acct-action="cancel"${d.busy ? " disabled" : ""}>${esc(x.cancel)}</button></div>` +
     (data && data.profile
       ? `<div class="todo-delete-row"><button type="button" class="todo-delete${d.confirmDelete ? " is-confirm" : ""}" data-acct-action="delete">${esc(d.confirmDelete ? x.deleteConfirm : x.deleteProfile)}</button></div>`
@@ -536,12 +550,13 @@ homePage.addEventListener("click", (event) => {
         accountEditing = false;
         accountDraft = null;
         accountData = null;
-        accountMessage = x.deleted;
+        setAccountMessage(x.deleted);
       })
       .catch((error) => {
         console.warn("プロフィールを削除できませんでした:", error);
         accountDraft.busy = false;
         accountDraft.message = x.saveError;
+        accountDraft.error = true;
       })
       .then(() => renderHomeMode());
   } else if (action === "admin-delete") {
@@ -578,6 +593,7 @@ homePage.addEventListener("change", (event) => {
   keepAccountDraftInputs();
   accountDraft.busy = true;
   accountDraft.message = x.uploading;
+  accountDraft.error = false;
   renderHomeMode();
   makeAvatarBlob(file)
     .then((blob) => getProfileApi().then((api) => api.uploadAvatar(blob)))
@@ -588,6 +604,7 @@ homePage.addEventListener("change", (event) => {
     .catch((error) => {
       console.warn("アイコン画像を送れませんでした:", error);
       accountDraft.message = x.saveError;
+      accountDraft.error = true;
     })
     .then(() => {
       accountDraft.busy = false;
@@ -609,10 +626,14 @@ homePage.addEventListener(
     const bio = d.bio.trim().slice(0, 160);
     if (!displayName) {
       d.message = x.needName;
+      d.error = true;
       renderHomeMode();
+      showAccountMessage();
       return;
     }
     d.busy = true;
+    d.message = "";
+    d.error = false;
     renderHomeMode();
     getProfileApi()
       .then((api) => api.saveProfile({ displayName, bio, photoURL: d.photoURL || "" }))
@@ -620,18 +641,29 @@ homePage.addEventListener(
         accountEditing = false;
         accountDraft = null;
         accountData = null; // 読み込み直す
-        accountMessage = x.saved_ok;
+        setAccountMessage(x.saved_ok);
         homeView.scrollTop = 0;
       })
       .catch((error) => {
         console.warn("プロフィールを保存できませんでした:", error);
         d.busy = false;
-        d.message = x.saveError;
+        d.error = true;
+        // 「権限がない」= Firestore のルール(firestore.rules)が、まだ新しいものになっていない
+        d.message = error && error.code === "permission-denied" ? x.rulesError : x.saveError;
       })
-      .then(() => renderHomeMode());
+      .then(() => {
+        renderHomeMode();
+        showAccountMessage();
+      });
   },
   true
 );
+
+// エラーなどの結果が、画面の外にあっても見えるように、そこまで動かす
+function showAccountMessage() {
+  const el = homePage.querySelector(".acct-message:not([hidden])");
+  if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
 
 // ログイン・ログアウトしたら、アカウント画面を描き直す(js/auth.js の renderAuth から呼ばれる)
 let accountLastUid;
