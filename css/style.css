@@ -5596,3 +5596,11 @@ a.user-link:hover {
     color: var(--c-primary);
   }
 }
+
+/* ホームの見出しの下の、ひとこと説明 */
+.home-section-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--c-text-sub);
+  line-height: 1.5;
+}

@@ -28,12 +28,14 @@ const HOME_TEXT = {
     nearLoading: "現在地を調べています…",
     nearFailed: "現在地を取得できませんでした。地図から探してください",
     recTitle: "あなたへのおすすめ",
+    recSub: "おすすめのベトナム料理店やカフェをご紹介",
     reviewCount: (n) => `レビュー ${n}件`,
     areaTitle: "エリアから探す",
     areaPrev: "前のエリア",
     areaNext: "次のエリア",
     areaCount: (n) => `${n}件`,
     featureTitle: "特集",
+    featureSub: "テーマ別・目的別でベトナムの魅力を発掘しよう",
     featureCafeTag: "カフェ",
     featureCafeTitle: "ベトナムコーヒーで\nひと休み",
     featureCafeSub: (n) => `関東のベトナムカフェ ${n}件`,
@@ -66,12 +68,14 @@ const HOME_TEXT = {
     nearLoading: "Finding your location…",
     nearFailed: "Couldn't get your location. Please use the map instead",
     recTitle: "Picked for you",
+    recSub: "Vietnamese restaurants and cafes we think you'll like",
     reviewCount: (n) => (n === 1 ? "1 review" : `${n} reviews`),
     areaTitle: "Browse by area",
     areaPrev: "Previous areas",
     areaNext: "More areas",
     areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
     featureTitle: "Features",
+    featureSub: "Discover Vietnam by theme and purpose",
     featureCafeTag: "Cafes",
     featureCafeTitle: "Take a break with\nVietnamese coffee",
     featureCafeSub: (n) => `${n} Vietnamese cafes in Kanto`,
@@ -104,12 +108,14 @@ const HOME_TEXT = {
     nearLoading: "Đang tìm vị trí của bạn…",
     nearFailed: "Không lấy được vị trí. Vui lòng tìm trên bản đồ",
     recTitle: "Gợi ý cho bạn",
+    recSub: "Giới thiệu nhà hàng và quán cà phê Việt dành cho bạn",
     reviewCount: (n) => `${n} đánh giá`,
     areaTitle: "Tìm theo khu vực",
     areaPrev: "Khu vực trước",
     areaNext: "Khu vực tiếp",
     areaCount: (n) => `${n} quán`,
     featureTitle: "Chủ đề",
+    featureSub: "Khám phá nét hấp dẫn của Việt Nam theo chủ đề và mục đích",
     featureCafeTag: "Cà phê",
     featureCafeTitle: "Nghỉ chân với\ncà phê Việt",
     featureCafeSub: (n) => `${n} quán cà phê Việt ở Kanto`,
@@ -479,11 +485,13 @@ function renderHome() {
         `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
         `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="1" aria-label="${esc(h.areaNext)}">${homeIcon("forward", 20)}</button>` +
         `</span></div>` +
+        `<p class="home-section-sub">${esc(h.recSub)}</p>` +
         `<ul class="home-rec-cards">${recItems}</ul>` +
         `</section>`
       : "") +
     `<section class="home-section">` +
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
+    `<p class="home-section-sub">${esc(h.featureSub)}</p>` +
     `<div class="home-features">` +
     (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(count("cafe"))) : "") +
     feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
