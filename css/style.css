@@ -5367,3 +5367,31 @@ a.user-link:hover {
   color: #b71c1c;
   font-weight: bold;
 }
+
+/* スマホ: ホームの検索窓。案内文が切れないように、余白を少し詰める */
+@media (max-width: 480px) {
+  .home-top .home-search {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .home-top .home-search-box {
+    gap: 6px;
+    padding: 0 6px 0 14px;
+  }
+
+  .home-top .home-search-btn {
+    padding: 0 14px;
+  }
+
+  .home-search-box input::placeholder {
+    font-size: 15px;
+  }
+}
+
+/* とても幅の狭いスマホ(320px 前後)は、案内文をもう一段小さく */
+@media (max-width: 340px) {
+  .home-search-box input::placeholder {
+    font-size: 13px;
+  }
+}
