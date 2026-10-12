@@ -141,7 +141,7 @@ const ui = {
       },
       {
         title: "2. ユーザー投稿について",
-        body: "本サービスでは、ログインしたユーザーが、写真・Tips(お店の良いところ)・レビュー(評価・コメント)・チェックインなどを投稿できます。投稿された内容は、他のユーザーにも公開されます。投稿された写真は、運営者が内容を確認したうえで、そのお店のページや一覧の代表画像(トップ画像)として表示することがあります。値段が分かるメニュー・値札、人物、個人情報が写った写真は、代表画像には使いません。投稿者が写真を削除した場合や、写真が非表示になった場合は、代表画像からも外れます。",
+        body: "本サービスでは、ログインしたユーザーが、写真・Tips(お店の良いところ)・レビュー(評価・コメント)・チェックインなどを投稿できます。投稿された内容は、他のユーザーにも公開されます。投稿された写真は、運営者が内容を確認したうえで、そのお店のページや一覧の代表画像(トップ画像)として表示することがあります。値段が分かるメニュー・値札、人物、個人情報が写った写真は、代表画像には使いません。投稿者が写真を削除した場合や、写真が非表示になった場合は、代表画像からも外れます。また、ログインしたユーザーは、設定の「新しいスポットを追加」から、まだ掲載されていないお店の情報を運営者に送ることができます。送られた情報は運営者が確認し、掲載するかどうかと掲載する内容を判断します(掲載をお約束するものではなく、掲載するときに内容を確認・編集することがあります)。",
       },
       {
         title: "3. 投稿できる写真",
@@ -215,7 +215,8 @@ const ui = {
         title: "2. 取得する情報と、その利用目的",
         body: "本サービスでは、以下の情報を取得することがあります。",
         list: [
-          "ログイン情報(メールアドレス、Googleアカウントの表示名): アカウントの管理、投稿者名の表示のために利用します。",
+          "ログイン情報(メールアドレス、Googleアカウントの表示名): アカウントの管理、投稿者名の表示のために利用します。メールアドレスでログインしている方には、ご本人の操作に応じて、メールアドレスの認証・変更や、パスワード再設定のためのメールを、Firebase の仕組みで送ります。",
+          "スポットの情報提供(設定の「新しいスポットを追加」から送られた、お店の種類・店名・住所・最寄り駅・URL・メモと、送信日時、送信したアカウントのID): 運営者が内容を確認し、地図に掲載するかを判断するために利用します。他の利用者には公開せず、送った方のお名前も表示しません。掲載するときは、お店の情報として掲載します。",
           "投稿情報(Tips・Check-in・レビュー・写真、それぞれの内容と投稿日時): サービス内でのお店情報の共有・表示のために利用します。",
           "位置情報: ホームの「近く」や特集の「近く」を押したとき、または店舗ページで現在地からの距離を表示するときに、その場で、近くの店舗を探す・距離を計算するために利用します。位置情報は、ブラウザで許可した場合だけ取得し、保存することはありません。",
           "本サービス内での行動の記録(見たお店・検索した言葉・選んだお店の種類・開いた特集): ホームの「あなたへのおすすめ」と、マイリストの「こちらもおすすめ」で、その方に合わせた店舗・エリアを選ぶために利用します。お使いの端末(ブラウザ)の中だけに保存し、本サービスのサーバーや第三者に送ることはありません(おすすめの計算も、端末の中で行います)。ログイン中はアカウント画面の「閲覧・検索の履歴を消す」から、また、ブラウザの設定でこのサイトのデータ(Cookie とサイトデータ)を削除することでも、いつでもまとめて削除できます。",
@@ -235,7 +236,7 @@ const ui = {
       },
       {
         title: "5. 情報の保存期間・削除について",
-        body: "投稿した情報(Tips・Check-in・レビュー・写真)は、投稿したご本人が、いつでも削除できます(削除機能は、各投稿のそばにあります)。削除すると、そのデータは削除され、また新しく投稿できる状態に戻ります。退会(アカウントに関するご相談)をご希望の場合は、下記のお問い合わせ窓口までご連絡ください。",
+        body: "投稿した情報(Tips・Check-in・レビュー・写真)は、投稿したご本人が、いつでも削除できます(削除機能は、各投稿のそばにあります)。削除すると、そのデータは削除され、また新しく投稿できる状態に戻ります。また、アカウント画面の「設定」→「アカウント設定」→「アカウントの削除」から、いつでも退会できます。退会すると、アカウント、プロフィール、投稿(写真・レビュー・Tips・チェックイン・いいね・コメント)、送ったスポットの情報を削除します。ただし、写真・アイコンの画像ファイルは、画像保存サービス(Cloudinary)上に残る場合があります(本サービスでは表示されなくなります)。画像ファイルの削除をご希望の場合や、退会についてのご相談は、下記のお問い合わせ窓口までご連絡ください。なお、すでに地図に掲載したお店の情報は、お店の情報として残ります。",
       },
       {
         title: "6. Cookieについて",
@@ -543,7 +544,7 @@ const ui = {
       },
       {
         title: "2. About user submissions",
-        body: "Logged-in users can post photos, Tips (things they liked about a shop), reviews (a rating and comment), and check-ins. Submitted content is shown to other users. After review by the operator, a posted photo may be shown as the main image of that shop on its page and in lists. Photos showing prices (menus or price tags), people or personal information are never used as main images. If the poster deletes the photo or it is hidden, it is also removed as the main image.",
+        body: "Logged-in users can post photos, Tips (things they liked about a shop), reviews (a rating and comment), and check-ins. Submitted content is shown to other users. After review by the operator, a posted photo may be shown as the main image of that shop on its page and in lists. Photos showing prices (menus or price tags), people or personal information are never used as main images. If the poster deletes the photo or it is hidden, it is also removed as the main image. Logged-in users can also send information about places not yet listed to the operator via ‘Add a new spot’ in Settings. The operator reviews it and decides whether and how to list it (listing is not guaranteed, and the details may be checked and edited before listing).",
       },
       {
         title: "3. Photos you may post",
@@ -618,7 +619,8 @@ const ui = {
         title: "2. Information we collect, and why",
         body: "The Service may collect the following information.",
         list: [
-          "Login information (email address, Google account display name): used to manage your account and to show your name on your posts.",
+          "Login information (email address, Google account display name): used to manage your account and to show your name on your posts. If you log in with an email address, emails for verifying or changing your email address and for resetting your password are sent through Firebase when you request them.",
+          "Place submissions (the kind of place, name, address, nearest station, URL and note sent via ‘Add a new spot’ in Settings, with the date and time and the ID of the sending account): used by the operator to review the information and decide whether to list it on the map. It is not shown to other users, and the sender's name is not displayed. If listed, it is published as shop information.",
           "Submission information (the content and post date/time of each Tips, check-in, review, and photo): used to share and display shop information within the Service.",
           "Location: used on the spot, when you tap ‘Nearby’ on the home screen or ‘Near me’ in a feature, or when a shop page shows the distance from where you are, to find nearby shops and calculate distances. It is obtained only if you allow it in your browser, and we do not store it.",
           "Your activity on the Service (shops you viewed, words you searched for, the shop categories you chose, and the features you opened): used to pick shops and areas for you in ‘Picked for you’ on the home screen and ‘You may also like’ in My List. It is stored only on your device (in your browser) and is never sent to our servers or to third parties (the recommendations are also calculated on your device). You can delete all of it at any time with ‘Clear browsing and search history’ on the Account screen while logged in, or by deleting this site's data (cookies and site data) in your browser settings.",
@@ -638,7 +640,7 @@ const ui = {
       },
       {
         title: "5. Retention and deletion of information",
-        body: "You can delete your own submissions (Tips, check-ins, reviews, photos) at any time (a delete option is available next to each submission). Once deleted, the data is removed, and you can submit again. If you wish to close your account, please contact us using the details below.",
+        body: "You can delete your own submissions (Tips, check-ins, reviews, photos) at any time (a delete option is available next to each submission). Once deleted, the data is removed, and you can submit again. You can also delete your account at any time from Account → Settings → Account settings → Delete account. This deletes your account, profile, submissions (photos, reviews, Tips, check-ins, likes, comments) and the places you submitted. However, image files of photos and profile pictures may remain on our image storage service (Cloudinary), though they will no longer be shown on this service. To have those image files deleted, or for any questions about closing your account, please contact us using the details below. Shop information already listed on the map remains as shop information.",
       },
       {
         title: "6. About cookies",
@@ -945,7 +947,7 @@ const ui = {
       },
       {
         title: "2. Về nội dung người dùng đăng tải",
-        body: "Người dùng đã đăng nhập có thể đăng ảnh, Tips (điểm tốt của quán), đánh giá (số sao và bình luận) và check-in. Nội dung đã đăng sẽ được hiển thị cho những người dùng khác. Sau khi đơn vị vận hành kiểm tra, ảnh đã đăng có thể được hiển thị làm ảnh chính của quán trên trang quán và trong danh sách. Ảnh có giá tiền (thực đơn, bảng giá), người hoặc thông tin cá nhân sẽ không được dùng làm ảnh chính. Nếu người đăng xóa ảnh hoặc ảnh bị ẩn, ảnh đó cũng sẽ không còn là ảnh chính.",
+        body: "Người dùng đã đăng nhập có thể đăng ảnh, Tips (điểm tốt của quán), đánh giá (số sao và bình luận) và check-in. Nội dung đã đăng sẽ được hiển thị cho những người dùng khác. Sau khi đơn vị vận hành kiểm tra, ảnh đã đăng có thể được hiển thị làm ảnh chính của quán trên trang quán và trong danh sách. Ảnh có giá tiền (thực đơn, bảng giá), người hoặc thông tin cá nhân sẽ không được dùng làm ảnh chính. Nếu người đăng xóa ảnh hoặc ảnh bị ẩn, ảnh đó cũng sẽ không còn là ảnh chính. Ngoài ra, người dùng đã đăng nhập có thể gửi thông tin về quán chưa được đăng cho đơn vị vận hành qua mục “Thêm địa điểm mới” trong Cài đặt. Đơn vị vận hành sẽ kiểm tra và quyết định có đăng hay không và đăng nội dung nào (không đảm bảo sẽ được đăng, và nội dung có thể được kiểm tra, chỉnh sửa trước khi đăng).",
       },
       {
         title: "3. Ảnh có thể đăng",
@@ -1020,7 +1022,8 @@ const ui = {
         title: "2. Thông tin thu thập và mục đích sử dụng",
         body: "Dịch vụ có thể thu thập các thông tin sau.",
         list: [
-          "Thông tin đăng nhập (địa chỉ email, tên hiển thị tài khoản Google): dùng để quản lý tài khoản và hiển thị tên người đăng.",
+          "Thông tin đăng nhập (địa chỉ email, tên hiển thị tài khoản Google): dùng để quản lý tài khoản và hiển thị tên người đăng. Với người đăng nhập bằng email, khi bạn yêu cầu, chúng tôi sẽ gửi email để xác minh, đổi địa chỉ email hoặc đặt lại mật khẩu thông qua Firebase.",
+          "Thông tin địa điểm được gửi (loại quán, tên quán, địa chỉ, ga gần nhất, URL, ghi chú gửi từ mục “Thêm địa điểm mới” trong Cài đặt, cùng thời gian gửi và ID của tài khoản gửi): dùng để đơn vị vận hành kiểm tra và quyết định có đăng lên bản đồ hay không. Thông tin này không được công khai cho người dùng khác và không hiển thị tên người gửi. Nếu được đăng, thông tin sẽ được công bố như thông tin của quán.",
           "Thông tin đăng tải (nội dung và thời gian đăng của từng Tips, check-in, đánh giá, ảnh): dùng để chia sẻ và hiển thị thông tin quán trong Dịch vụ.",
           "Vị trí: dùng ngay tại thời điểm bạn nhấn ‘Gần đây’ ở trang chủ hoặc trong trang chủ đề, hoặc khi trang quán hiển thị khoảng cách từ vị trí của bạn, để tìm quán gần và tính khoảng cách. Chỉ lấy khi bạn cho phép trên trình duyệt và không được lưu lại.",
           "Hoạt động của bạn trên Dịch vụ (quán đã xem, từ khóa đã tìm, loại quán đã chọn, chủ đề đã mở): dùng để chọn quán và khu vực phù hợp với bạn trong mục ‘Gợi ý cho bạn’ ở trang chủ và ‘Có thể bạn cũng thích’ trong Danh sách của tôi. Chỉ được lưu trên thiết bị (trình duyệt) của bạn, không gửi đến máy chủ của chúng tôi hay bên thứ ba (việc tính toán gợi ý cũng được thực hiện trên thiết bị). Bạn có thể xóa toàn bộ bất cứ lúc nào bằng ‘Xóa lịch sử xem và tìm kiếm’ trên màn hình Tài khoản khi đã đăng nhập, hoặc bằng cách xóa dữ liệu của trang này (cookie và dữ liệu trang) trong cài đặt trình duyệt.",
@@ -1040,7 +1043,7 @@ const ui = {
       },
       {
         title: "5. Về thời gian lưu trữ và xóa thông tin",
-        body: "Bạn có thể xóa nội dung mình đã đăng (Tips, check-in, đánh giá, ảnh) bất cứ lúc nào (nút xóa nằm cạnh mỗi bài đăng). Sau khi xóa, dữ liệu đó sẽ bị xóa và bạn có thể đăng lại. Nếu muốn ngừng sử dụng tài khoản, vui lòng liên hệ qua thông tin bên dưới.",
+        body: "Bạn có thể xóa nội dung mình đã đăng (Tips, check-in, đánh giá, ảnh) bất cứ lúc nào (nút xóa nằm cạnh mỗi bài đăng). Sau khi xóa, dữ liệu đó sẽ bị xóa và bạn có thể đăng lại. Bạn cũng có thể xóa tài khoản bất cứ lúc nào từ Tài khoản → Cài đặt → Cài đặt tài khoản → Xóa tài khoản. Khi xóa, tài khoản, hồ sơ, nội dung đã đăng (ảnh, đánh giá, Tips, check-in, lượt thích, bình luận) và thông tin địa điểm đã gửi sẽ bị xóa. Tuy nhiên, tệp ảnh của ảnh đã đăng và ảnh đại diện có thể vẫn còn trên dịch vụ lưu trữ ảnh (Cloudinary), nhưng sẽ không còn hiển thị trên dịch vụ này. Nếu muốn xóa các tệp ảnh đó hoặc cần tư vấn về việc xóa tài khoản, vui lòng liên hệ qua thông tin bên dưới. Thông tin quán đã được đăng trên bản đồ sẽ được giữ lại như thông tin của quán.",
       },
       {
         title: "6. Về Cookie",

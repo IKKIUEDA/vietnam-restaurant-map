@@ -424,6 +424,46 @@ service cloud.firestore {
         && request.resource.data.displayName.size() > 0
         && request.resource.data.displayName.size() <= 40
         && request.resource.data.createdAt == request.time;
+
+      // 本人だけ、削除できる(アカウントを削除するとき)
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---------------------------------------------------------------
+    // 🏪 新しいスポットの情報提供(設定 → 新しいスポットを追加。js/settings.js)
+    //
+    //   spotRequests/{自動生成ID} … 種類・店名・住所・最寄り駅・URL・メモ・送った人のID・送信日時・対応状況
+    //       他の利用者には見せない。読めるのは、送った本人と管理者だけ。
+    //       管理者が内容を確認し、地図に載せるかを判断する(載せるときは、運営者が js/data.js に書き足す)。
+    //       対応状況(status)を変えられるのは、管理者だけ。削除は、本人(アカウント削除のとき)と管理者。
+    // ---------------------------------------------------------------
+
+    match /spotRequests/{requestId} {
+      allow get, list: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(["uid", "type", "name", "address", "station", "url", "memo", "status", "createdAt"])
+        && request.resource.data.keys().hasAll(["uid", "type", "name", "address", "status", "createdAt"])
+        && request.resource.data.type in ["restaurant", "cafe", "grocery"]
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+        && request.resource.data.address is string
+        && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 200
+        && (!("station" in request.resource.data)
+            || (request.resource.data.station is string && request.resource.data.station.size() <= 40))
+        && (!("url" in request.resource.data)
+            || (request.resource.data.url is string && request.resource.data.url.size() <= 300
+                && request.resource.data.url.matches("^https?://.+")))
+        && (!("memo" in request.resource.data)
+            || (request.resource.data.memo is string && request.resource.data.memo.size() <= 200))
+        && request.resource.data.status == "new"
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
+        && request.resource.data.status in ["new", "done", "rejected"];
+
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
     // ---------------------------------------------------------------
