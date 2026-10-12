@@ -2934,30 +2934,33 @@ body.view-home #content {
   opacity: 0.9;
 }
 
-/* 画面の下のタブ(スマホだけ。詳細ページ・固定ページでは出さない) */
+/* 画面の下のタブ(スマホ・PC共通。詳細ページ・固定ページでは出さない) */
 .app-tabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1px solid #e3e6df;
+}
+
+/* PC は横に広いので、3つのタブを中央に寄せる */
+@media (min-width: 601px) {
+  .app-tabs {
+    grid-template-columns: repeat(3, minmax(0, 180px));
+    justify-content: center;
+  }
+}
+
+body.view-detail .app-tabs,
+body.view-content-page .app-tabs {
   display: none;
 }
 
-@media (max-width: 600px) {
-  .app-tabs {
-    flex: none;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    background: #ffffff;
-    border-top: 1px solid #e3e6df;
-  }
-
-  body.view-detail .app-tabs,
-  body.view-content-page .app-tabs {
-    display: none;
-  }
-
-  /* タブがあるので、ホームと地図の画面では、フッター(利用規約など)は出さない */
-  body:not(.view-detail):not(.view-content-page) #site-footer {
-    display: none;
-  }
+/* タブがあるので、ホームと地図の画面では、フッター(利用規約など)は出さない
+   (利用規約・プライバシーポリシーは、アカウントの設定と、ホームの一番下から開ける) */
+body:not(.view-detail):not(.view-content-page) #site-footer {
+  display: none;
 }
 
 .app-tab {
@@ -4297,11 +4300,6 @@ a.todo-card .todo-card-foot {
     border-radius: 20px;
     margin-top: 16px;
   }
-
-  /* PC は、画面の下に同じリンク(利用規約など)が常に出ているので、ホームの中のリンクは出さない */
-  .home-footer {
-    display: none;
-  }
 }
 
 /* =====================================================================
@@ -4731,11 +4729,9 @@ header h1 {
    アカウント・プロフィール(js/account.js)
    ===================================================================== */
 
-/* スマホは、画面の下の「アカウント」タブからログインするので、上のヘッダーのログインは出さない */
-@media (max-width: 600px) {
-  #auth-area {
-    display: none;
-  }
+/* スマホ・PCとも、画面の下の「アカウント」タブからログインするので、上のヘッダーのログインは出さない */
+#auth-area {
+  display: none;
 }
 
 /* PC のヘッダー: アイコン+名前を押すと、アカウント画面 */
