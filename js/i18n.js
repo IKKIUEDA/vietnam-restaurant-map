@@ -103,6 +103,7 @@ const ui = {
       "人物が写っている場合は、プライバシーに配慮し、必要に応じて本人の同意を得てください",
       "個人情報など、他人の権利を侵害する情報が含まれていないか、確認してください",
       "問題のある写真はレポートされ、非公開・削除される場合があります",
+      "投稿された写真は、運営者が内容を確認したうえで、お店のトップ画像に使うことがあります(値段・人物・個人情報が写った写真は使いません)",
     ],
     photosNoticeFooterPrefix: "詳しいルールは",
     photosNoticeFooterSuffix: "をご確認ください。",
@@ -140,7 +141,7 @@ const ui = {
       },
       {
         title: "2. ユーザー投稿について",
-        body: "本サービスでは、ログインしたユーザーが、写真・Tips(お店の良いところ)・レビュー(評価・コメント)・チェックインなどを投稿できます。投稿された内容は、他のユーザーにも公開されます。",
+        body: "本サービスでは、ログインしたユーザーが、写真・Tips(お店の良いところ)・レビュー(評価・コメント)・チェックインなどを投稿できます。投稿された内容は、他のユーザーにも公開されます。投稿された写真は、運営者が内容を確認したうえで、そのお店のページや一覧の代表画像(トップ画像)として表示することがあります。値段が分かるメニュー・値札、人物、個人情報が写った写真は、代表画像には使いません。投稿者が写真を削除した場合や、写真が非表示になった場合は、代表画像からも外れます。",
       },
       {
         title: "3. 投稿できる写真",
@@ -504,6 +505,7 @@ const ui = {
       "Please be mindful of privacy if people appear in the photo, and get their consent where needed",
       "Please check the photo does not contain personal information or infringe on someone else's rights",
       "Problematic photos may be reported and hidden or removed",
+      "After review by the operator, a posted photo may be used as the shop's main image (photos showing prices, people or personal information are never used)",
     ],
     photosNoticeFooterPrefix: "For details, please see our ",
     photosNoticeFooterSuffix: ".",
@@ -541,7 +543,7 @@ const ui = {
       },
       {
         title: "2. About user submissions",
-        body: "Logged-in users can post photos, Tips (things they liked about a shop), reviews (a rating and comment), and check-ins. Submitted content is shown to other users.",
+        body: "Logged-in users can post photos, Tips (things they liked about a shop), reviews (a rating and comment), and check-ins. Submitted content is shown to other users. After review by the operator, a posted photo may be shown as the main image of that shop on its page and in lists. Photos showing prices (menus or price tags), people or personal information are never used as main images. If the poster deletes the photo or it is hidden, it is also removed as the main image.",
       },
       {
         title: "3. Photos you may post",
@@ -905,6 +907,7 @@ const ui = {
       "Nếu có người xuất hiện trong ảnh, vui lòng cân nhắc về quyền riêng tư và xin phép khi cần thiết",
       "Vui lòng kiểm tra ảnh không chứa thông tin cá nhân hoặc xâm phạm quyền của người khác",
       "Ảnh có vấn đề có thể bị báo cáo và bị ẩn hoặc xóa",
+      "Sau khi đơn vị vận hành kiểm tra, ảnh đã đăng có thể được dùng làm ảnh chính của quán (không dùng ảnh có giá tiền, người hoặc thông tin cá nhân)",
     ],
     photosNoticeFooterPrefix: "Để biết chi tiết, vui lòng xem ",
     photosNoticeFooterSuffix: ".",
@@ -942,7 +945,7 @@ const ui = {
       },
       {
         title: "2. Về nội dung người dùng đăng tải",
-        body: "Người dùng đã đăng nhập có thể đăng ảnh, Tips (điểm tốt của quán), đánh giá (số sao và bình luận) và check-in. Nội dung đã đăng sẽ được hiển thị cho những người dùng khác.",
+        body: "Người dùng đã đăng nhập có thể đăng ảnh, Tips (điểm tốt của quán), đánh giá (số sao và bình luận) và check-in. Nội dung đã đăng sẽ được hiển thị cho những người dùng khác. Sau khi đơn vị vận hành kiểm tra, ảnh đã đăng có thể được hiển thị làm ảnh chính của quán trên trang quán và trong danh sách. Ảnh có giá tiền (thực đơn, bảng giá), người hoặc thông tin cá nhân sẽ không được dùng làm ảnh chính. Nếu người đăng xóa ảnh hoặc ảnh bị ẩn, ảnh đó cũng sẽ không còn là ảnh chính.",
       },
       {
         title: "3. Ảnh có thể đăng",

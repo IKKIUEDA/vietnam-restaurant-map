@@ -807,7 +807,18 @@ clusterGroup.addLayers(entries.map((entry) => entry.marker));
 const DEFAULT_IMAGE = "images/default-shop.svg"; // 一覧のカード用(正方形)
 const DEFAULT_HERO_IMAGE = "images/default-hero.svg"; // 詳細ページ用(横長)
 
-function getShopImage(shop) {
+// お店の画像:
+//   1. 管理者が確認して選んだ、投稿写真(トップ画像。index.html の fetchCovers → window.shopCovers)
+//      値段・人物・個人情報が写った写真は、選ばない。投稿写真が自動でトップになることは無い
+//   2. data.js の image
+//   3. デフォルト画像
+//   size: "card"(一覧のカード)/ "hero"(お店のページの大きな画像)
+function getShopImage(shop, size = "card") {
+  const cover = window.shopCovers && window.shopCovers.get(shop.id);
+  if (cover && cover.secure_url) {
+    const t = size === "hero" ? "c_fill,w_1200,h_675,q_auto,f_auto" : "c_fill,w_480,h_336,q_auto,f_auto";
+    return { src: String(cover.secure_url).replace("/image/upload/", `/image/upload/${t}/`), isDefault: false, cover };
+  }
   const value = typeof shop.image === "string" ? shop.image.trim() : "";
   const safe = /^https?:\/\//i.test(value) || (value !== "" && !value.includes(":") && !value.startsWith("//"));
   return safe ? { src: value, isDefault: false } : { src: DEFAULT_IMAGE, isDefault: true };
@@ -1044,15 +1055,11 @@ function renderScanOverlayTexts() {
   listOverlayButton.textContent = t.listOverlayButton(entries.filter((entry) => entry.visible).length);
 }
 
-// カードの画像を設定する: 投稿された写真の1枚目(entry.scanPhotoUrl)があれば、それ。無ければ、一覧のカードと同じ、いつもの画像
+// カードの画像を設定する: 一覧のカードと同じ画像(管理者が選んだトップ画像 → いつもの画像)
+//   投稿された写真を、確認なしで自動的にカードに出すことはしない(値段・人物などが写っていることがあるため)
 function setScanOverlayImage(img, entry) {
   if (!img) return;
   const name = pick(entry.shop.name);
-  if (entry.scanPhotoUrl) {
-    img.src = entry.scanPhotoUrl;
-    img.alt = name;
-    return;
-  }
   const image = getShopImage(entry.shop);
   img.src = image.src;
   img.alt = image.isDefault ? ui[currentLang].noPhoto : name;
@@ -1061,6 +1068,9 @@ function setScanOverlayImage(img, entry) {
 // 投稿された写真を、あとから読み込む(detail.js の getPhotosApi。読み込まれていなければ、いつもの画像のままにする)
 //   entry.scanPhotoUrl: undefined = まだ取得していない / null = 写真が無い(か、取得できなかった) / 文字列 = 写真のURL
 function loadScanOverlayPhoto(entry) {
+  // 投稿写真の1枚目を自動で出すのは、やめた(トップ画像は、管理者が確認して選ぶ。getShopImage)
+  return;
+  // eslint-disable-next-line no-unreachable
   if (entry.scanPhotoUrl !== undefined || typeof getPhotosApi !== "function") return;
   entry.scanPhotoUrl = null; // 取得中も「まだ無い」扱いにして、二重に取得しないようにする
   getPhotosApi()
@@ -1978,3 +1988,27 @@ if (map.getContainer().offsetWidth > 0) {
     padding: [40, 40],
   });
 }
+
+
+// トップ画像(管理者が選んだ投稿写真)を読み終えたら、いま出ている画像を差し替える
+function refreshShopImages() {
+  entries.forEach((entry) => {
+    const img = entry.item && entry.item.querySelector(".shop-thumb");
+    if (!img) return;
+    const image = getShopImage(entry.shop);
+    if (img.getAttribute("src") !== image.src) {
+      img.dataset.fallback = "";
+      img.src = image.src;
+      img.alt = image.isDefault ? ui[currentLang].noPhoto : pick(entry.shop.name);
+    }
+  });
+  if (typeof scanOverlayList !== "undefined" && scanOverlayList) {
+    scanOverlayList.querySelectorAll(".scan-overlay-item[data-idx]").forEach((li) => {
+      const entry = entries[Number(li.dataset.idx)];
+      if (entry) setScanOverlayImage(li.querySelector(".scan-overlay-thumb"), entry);
+    });
+  }
+  if (document.body.classList.contains("view-home") && typeof renderHomeMode === "function") renderHomeMode();
+  if (currentShopId !== null && typeof refreshDetailHero === "function") refreshDetailHero();
+}
+window.addEventListener("shop-covers-ready", refreshShopImages);

@@ -47,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261012h" />
+    <link rel="stylesheet" href="css/style.css?v=20261012i" />
   </head>
   <body>
     <header>
@@ -195,28 +195,28 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261012h"></script>
-    <script src="js/data.js?v=20261012h"></script>
-    <script src="js/app.js?v=20261012h"></script>
+    <script src="js/i18n.js?v=20261012i"></script>
+    <script src="js/data.js?v=20261012i"></script>
+    <script src="js/app.js?v=20261012i"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261012h"></script>
-    <script src="js/landmark-areas.js?v=20261012h"></script>
-    <script src="js/landmarks.js?v=20261012h"></script>
+    <script src="js/station-lines.js?v=20261012i"></script>
+    <script src="js/landmark-areas.js?v=20261012i"></script>
+    <script src="js/landmarks.js?v=20261012i"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261012h"></script>
+    <script src="js/auth.js?v=20261012i"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261012h"></script>
+    <script src="js/auth-modal.js?v=20261012i"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261012h"></script>
+    <script src="js/home.js?v=20261012i"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261012h"></script>
+    <script src="js/todo.js?v=20261012i"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/account.js?v=20261012h"></script>
+    <script src="js/account.js?v=20261012i"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261012h"></script>
-    <script src="js/detail.js?v=20261012h"></script>
+    <script src="js/feature.js?v=20261012i"></script>
+    <script src="js/detail.js?v=20261012i"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -676,6 +676,7 @@
           // レポートの理由として受け付けるキー(js/i18n.js の reportPhotoReasons の key と、同じにする)
           const PHOTO_REPORT_REASONS = ["copyright", "person", "privacy", "unrelated", "inappropriate", "misleading", "other"];
 
+          const shopIdOf = (snap) => (snap.ref.parent && snap.ref.parent.parent ? snap.ref.parent.parent.id : "");
           window.photosApi = {
             // そのお店の写真を、新しい順で返す(非表示のものも含む。表示するかどうかは、呼び出す側で判断する)
             async fetchPhotos(shopId) {
@@ -725,8 +726,31 @@
               await withTimeout(deleteDoc(photoRef(shopId, photoId)));
             },
             // 【管理者だけ】1枚の写真を、非表示にする / 元に戻す
+            //   非表示にするときは、トップ画像(isCover)からも外す
             async setPhotoHidden(shopId, photoId, hidden) {
-              await withTimeout(updateDoc(photoRef(shopId, photoId), { hidden: !!hidden }));
+              const data = { hidden: !!hidden };
+              if (hidden) data.isCover = false;
+              await withTimeout(updateDoc(photoRef(shopId, photoId), data));
+            },
+            // 【管理者だけ】1枚の写真を、そのお店のトップ画像にする / 外す(1店舗につき1枚だけ)
+            //   ・管理者が、値段・人物・個人情報が写っていないことを確認してから行う(detail.js の確認画面)
+            //   ・ほかにトップ画像になっている写真があれば、同時に外す
+            async setPhotoCover(shopId, photoId, on) {
+              const batch = writeBatch(db);
+              if (on) {
+                const current = await withTimeout(getDocs(query(photosCollection(shopId), where("isCover", "==", true), limit(20))));
+                current.docs.forEach((d) => {
+                  if (d.id !== photoId) batch.update(d.ref, { isCover: false });
+                });
+              }
+              batch.update(photoRef(shopId, photoId), { isCover: !!on });
+              await withTimeout(batch.commit());
+            },
+            // トップ画像になっている写真を、すべてのお店の分まとめて読む([{ shopId, photoId, secure_url, authorName, hidden }])
+            async fetchCovers() {
+              const q = query(collectionGroup(db, "photos"), where("isCover", "==", true), limit(500));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ shopId: shopIdOf(d), photoId: d.id, ...d.data() }));
             },
             // この写真を報告する(ログインしていなくても行える)。報告記録の作成と、reportCountの+1を、1回にまとめて書き込む
             async reportPhoto(shopId, photoId, reason) {
@@ -817,12 +841,25 @@
           };
           window.dispatchEvent(new Event("photos-api-ready"));
 
+          // お店のトップ画像(管理者が確認して選んだ、投稿写真)を、最初に1回だけ読む(js/app.js の getShopImage が使う)
+          //   読めなかったとき(インデックスの準備前など)は、いつもの画像のまま
+          window.photosApi
+            .fetchCovers()
+            .then((list) => {
+              const covers = new Map();
+              list.forEach((c) => {
+                if (!c.hidden && c.secure_url && c.shopId) covers.set(c.shopId, c);
+              });
+              window.shopCovers = covers;
+              window.dispatchEvent(new Event("shop-covers-ready"));
+            })
+            .catch((error) => console.warn("トップ画像を読めませんでした:", error));
+
           // --- プロフィール(アカウント画面。js/account.js) ---
           //   ・profiles/{ユーザーID} … ニックネーム・自己紹介・アイコン画像のURL(誰でも読める。書けるのは本人だけ)
           //   ・その人の写真・レビューの一覧は、collectionGroup(すべてのお店をまたいだ検索)で、uid が一致するものを集める
           //   ・チェックインの一覧は、本人だけが読める(行った場所の記録なので、他の人には見せない)
           const profileRef = (uid) => doc(db, "profiles", uid);
-          const shopIdOf = (snap) => (snap.ref.parent && snap.ref.parent.parent ? snap.ref.parent.parent.id : "");
           const checkUid = (uid) => {
             if (!/^[A-Za-z0-9_-]{1,128}$/.test(String(uid))) throw new Error("invalid user id");
             return uid;

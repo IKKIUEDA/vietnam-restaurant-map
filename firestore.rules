@@ -322,10 +322,11 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == resource.data.uid;
 
       allow update: if (
-        // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(投稿の中身は、変えられない)
+        // 管理者だけ、hidden(非表示フラグ)と isCover(お店のトップ画像にするか)だけを書き換えられる(投稿の中身は、変えられない)
         isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
-        && request.resource.data.hidden is bool
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden", "isCover"])
+        && (!("hidden" in request.resource.data) || request.resource.data.hidden is bool)
+        && (!("isCover" in request.resource.data) || request.resource.data.isCover is bool)
       ) || (
         // 誰でも(ログインしていなくても)、写真を報告したときの reportCount の +1。
         //   ・reports サブコレクションのドキュメントIDは自動採番のため、「報告の作成と、同時に行われているか」を
@@ -457,7 +458,7 @@ service cloud.firestore {
     // 🔎 お店をまたいだ検索(collectionGroup)。プロフィール画面で「その人の投稿一覧」を出すために使う
     //   ・写真・レビューは、もともと誰でも読める内容なので、お店をまたいで読めても、見える範囲は変わらない
     //   ・チェックインは、本人の記録だけ(uid が自分のもの)。管理者は、uid を書き足すために全件を読める
-    //   ・この検索には、Firebase コンソールで「uid の単一フィールド インデックス(コレクション グループ)」を有効にする必要がある
+    //   ・この検索には、Firebase コンソールで「uid / isCover の単一フィールド インデックス(コレクション グループ)」を有効にする必要がある
     // ---------------------------------------------------------------
 
     match /{path=**}/photos/{photoId} {
