@@ -178,7 +178,7 @@ function loadTodoRatings(ids) {
     .catch(() => need.forEach((id) => todoRatings.set(id, null)))
     .then(() => {
       // 評価がそろったら、いま開いている画面を、おすすめ順に並べ直す
-      if (document.body.classList.contains("view-home") && homeMode === "todo-area") {
+      if (document.body.classList.contains("view-home") && (homeMode === "todo-area" || homeMode === "feature")) {
         const y = homeView.scrollTop;
         renderHomeMode();
         homeView.scrollTop = y;

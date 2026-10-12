@@ -66,6 +66,8 @@ function routeFromLocation() {
   const userId = params.get("user");
   if (userId && typeof showHome === "function") return { name: "home", mode: "user", list: userId };
   if (view === "account" && typeof showHome === "function") return { name: "home", mode: "account" };
+  // 特集(js/feature.js): 「?view=feature&type=cafe」
+  if (view === "feature" && typeof showHome === "function") return { name: "home", mode: "feature", list: params.get("type") };
   // マイリスト(js/todo.js): 「?view=todo」= マイリスト / 「&edit=1」= 設定 / 「&area=東京都」= そのエリアのお店の一覧
   if (view === "todo" && typeof showHome === "function") {
     if (params.get("area")) return { name: "home", mode: "todo-area", list: params.get("area") };

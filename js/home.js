@@ -507,6 +507,9 @@ homePage.addEventListener("click", (event) => {
     navigate(mapUrl());
     resetFilters();
     if (window.matchMedia("(max-width: 600px)").matches) openScanOverlay("list");
+  } else if ((key === "cafe" || key === "grocery") && typeof renderFeaturePage === "function") {
+    // 特集: その種類のお店の一覧(近く・エリアで絞り込める。js/feature.js)
+    navigate(featureUrl(key));
   } else openMapWithType(key);
 });
 
@@ -535,6 +538,7 @@ function showHome(mode, listId) {
   const modes = [];
   if (typeof renderMyList === "function") modes.push("todo", "todo-edit", "todo-area");
   if (typeof renderAccountPage === "function") modes.push("account", "user");
+  if (typeof renderFeaturePage === "function") modes.push("feature");
   homeMode = modes.includes(mode) ? mode : "home";
   homeListId = listId || null;
   renderHomeMode();
@@ -548,6 +552,7 @@ function renderHomeMode() {
   else if (homeMode === "todo-area") renderMyListArea(homeListId);
   else if (homeMode === "account") renderAccountPage();
   else if (homeMode === "user") renderUserPage(homeListId);
+  else if (homeMode === "feature") renderFeaturePage(homeListId);
   else renderHome();
 }
 function hideHome() {
