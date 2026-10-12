@@ -19,6 +19,14 @@ const ACCOUNT_TEXT = {
     clearHistoryDone: "履歴を消しました",
     savedCount: (n) => `${n}件`,
     editProfile: "プロフィールを編集",
+    shareProfile: "プロフィールをシェア",
+    shareTitle: (name) => `${name}のプロフィール | ベトナムフーディー`,
+    linkCopied: "プロフィールのリンクをコピーしました",
+    linkCopyFailed: (url) => `リンク: ${url}`,
+    settings: "アカウント設定",
+    settingsOpen: "アカウント設定を開く",
+    terms: "利用規約",
+    privacy: "プライバシーポリシー",
     viewPublic: "公開プロフィールを見る",
     photos: "写真",
     reviews: "レビュー",
@@ -69,6 +77,14 @@ const ACCOUNT_TEXT = {
     clearHistoryDone: "History cleared",
     savedCount: (n) => `${n}`,
     editProfile: "Edit profile",
+    shareProfile: "Share profile",
+    shareTitle: (name) => `${name}'s profile | Vietnam Foodie`,
+    linkCopied: "Profile link copied",
+    linkCopyFailed: (url) => `Link: ${url}`,
+    settings: "Account settings",
+    settingsOpen: "Open account settings",
+    terms: "Terms of Service",
+    privacy: "Privacy Policy",
     viewPublic: "View public profile",
     photos: "Photos",
     reviews: "Reviews",
@@ -119,6 +135,14 @@ const ACCOUNT_TEXT = {
     clearHistoryDone: "Đã xóa lịch sử",
     savedCount: (n) => `${n} quán`,
     editProfile: "Sửa hồ sơ",
+    shareProfile: "Chia sẻ hồ sơ",
+    shareTitle: (name) => `Hồ sơ của ${name} | Vietnam Foodie`,
+    linkCopied: "Đã sao chép liên kết hồ sơ",
+    linkCopyFailed: (url) => `Liên kết: ${url}`,
+    settings: "Cài đặt tài khoản",
+    settingsOpen: "Mở cài đặt tài khoản",
+    terms: "Điều khoản sử dụng",
+    privacy: "Chính sách quyền riêng tư",
     viewPublic: "Xem hồ sơ công khai",
     photos: "Ảnh",
     reviews: "Đánh giá",
@@ -389,6 +413,10 @@ function renderAccountPage() {
     renderAccountEdit();
     return;
   }
+  if (new URLSearchParams(location.search).get("settings") === "1") {
+    renderAccountSettings();
+    return;
+  }
   const data = accountData;
   const name = accountDisplayName(data, resolveAuthName(authUser));
   const photoURL = data.profile && data.profile.photoURL;
@@ -402,11 +430,33 @@ function renderAccountPage() {
     `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>` +
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div></div>` +
-    `<div class="acct-actions">` +
-    `<button type="button" class="todo-secondary" data-acct-action="edit">${esc(x.editProfile)}</button>` +
-    `<a class="acct-link" href="${esc(userUrl(uid))}" data-acct-nav>${esc(x.viewPublic)} ›</a></div>` +
+    // プロフィールの編集 / シェア / アカウント設定(歯車)
+    `<div class="acct-action-row">` +
+    `<button type="button" class="acct-pill" data-acct-action="edit">${esc(x.editProfile)}</button>` +
+    `<button type="button" class="acct-pill" data-acct-action="share">${esc(x.shareProfile)}</button>` +
+    `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
+    `</div>` +
     savedRowHtml() +
     accountPostsHtml(data, ["photos", "reviews", "checkins"]) +
+    `</section>`;
+}
+
+// アカウント設定(URL「?view=account&settings=1」。プロフィール画面の歯車から開く)
+//   公開プロフィール・履歴を消す・利用規約・プライバシーポリシー・ログアウト(管理者は、管理用のボタンも)
+function renderAccountSettings() {
+  const x = accountText();
+  const t = ui[currentLang];
+  const row = (attrs, label, extra) =>
+    `<li><${attrs.startsWith("href") ? "a" : "button type=\"button\""} class="acct-setting${extra || ""}" ${attrs}>` +
+    `<span>${esc(label)}</span>${homeIcon("forward", 18)}</${attrs.startsWith("href") ? "a" : "button"}></li>`;
+  homePage.innerHTML =
+    accountHeader(x.settings, accountUrl()) +
+    `<section class="home-section acct-section">` +
+    `<ul class="acct-settings">` +
+    row(`href="${esc(userUrl(authUser.uid))}" data-acct-nav`, x.viewPublic) +
+    row(`href="${esc(termsUrl())}" data-home-nav`, t.termsPageTitle || x.terms) +
+    row(`href="${esc(privacyUrl())}" data-home-nav`, t.privacyPageTitle || x.privacy) +
+    `</ul>` +
     clearHistoryHtml() +
     `<div class="acct-bottom">` +
     `<button type="button" class="acct-logout" data-acct-action="logout">${esc(x.logout)}</button>` +
@@ -415,6 +465,28 @@ function renderAccountPage() {
         (accountAdminMessage ? `<p class="acct-note">${esc(accountAdminMessage)}</p>` : "")
       : "") +
     `</div></section>`;
+}
+function accountSettingsUrl() {
+  return location.pathname + "?view=account&settings=1";
+}
+const ACCOUNT_GEAR_ICON = typeof TODO_GEAR_ICON !== "undefined" ? TODO_GEAR_ICON : homeIcon("sparkle", 22);
+
+// プロフィールをシェア: スマホなどは、端末のシェア画面(LINE・メールなど)。使えないときは、リンクをコピー
+function shareMyProfile() {
+  const x = accountText();
+  const url = location.origin + location.pathname + "?user=" + encodeURIComponent(authUser.uid);
+  const name = accountDisplayName(accountData, resolveAuthName(authUser));
+  if (navigator.share) {
+    navigator.share({ title: x.shareTitle(name), url }).catch(() => {}); // やめたときは、何もしない
+    return;
+  }
+  const done = (text) => {
+    setAccountMessage(text);
+    renderHomeMode();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => done(x.linkCopied), () => done(x.linkCopyFailed(url)));
+  } else done(x.linkCopyFailed(url));
 }
 
 // プロフィールの編集
@@ -559,6 +631,10 @@ homePage.addEventListener("click", (event) => {
       accountClearDone = true;
     }
     renderHomeMode();
+    return;
+  }
+  if (action === "share") {
+    shareMyProfile();
     return;
   }
   if (action === "login") openAuthModal();
