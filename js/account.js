@@ -180,7 +180,15 @@ let accountData = null; // { uid, status: "loading"|"ready"|"error", profile, ph
 let accountTab = "photos";
 let accountEditing = false;
 let accountDraft = null; // { displayName, bio, photoURL, busy, message, error, confirmDelete }
-let accountMessage = ""; // 保存しました など(1回だけ出す)
+let accountMessage = ""; // 保存しました など(数秒だけ出す)
+let accountMessageTimer = null;
+function setAccountMessage(text) {
+  accountMessage = text;
+  clearTimeout(accountMessageTimer);
+  accountMessageTimer = setTimeout(() => {
+    accountMessage = "";
+  }, 3000);
+}
 let accountAdminMessage = "";
 
 function loadAccountData(uid, withCheckins) {
@@ -351,7 +359,6 @@ function renderAccountPage() {
   const photoURL = data.profile && data.profile.photoURL;
   const bio = data.profile && data.profile.bio;
   const msg = accountMessage;
-  accountMessage = "";
   homePage.innerHTML =
     accountHeader(x.title) +
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
@@ -543,7 +550,7 @@ homePage.addEventListener("click", (event) => {
         accountEditing = false;
         accountDraft = null;
         accountData = null;
-        accountMessage = x.deleted;
+        setAccountMessage(x.deleted);
       })
       .catch((error) => {
         console.warn("プロフィールを削除できませんでした:", error);
@@ -634,7 +641,7 @@ homePage.addEventListener(
         accountEditing = false;
         accountDraft = null;
         accountData = null; // 読み込み直す
-        accountMessage = x.saved_ok;
+        setAccountMessage(x.saved_ok);
         homeView.scrollTop = 0;
       })
       .catch((error) => {
