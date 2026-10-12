@@ -221,6 +221,14 @@ const TODO_GEAR_ICON =
   '<circle cx="12" cy="12" r="3"></circle>' +
   '<path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>';
 
+// 都道府県の写真(ホームの「エリアから探す」の写真から、その都道府県の代表のエリアを使う。js/home.js の HOME_AREAS)
+const MYLIST_PREF_PHOTO_STATION = { 東京都: "新宿", 神奈川県: "横浜", 千葉県: "千葉", 埼玉県: "大宮" };
+function myListPrefImage(prefKey) {
+  const station = MYLIST_PREF_PHOTO_STATION[prefKey];
+  const area = typeof HOME_AREAS !== "undefined" ? HOME_AREAS.find((a) => a.station === station) : null;
+  return area && area.image ? area.image : "";
+}
+
 function myListAreaUrl(prefKey) {
   return location.pathname + "?view=todo&area=" + encodeURIComponent(prefKey);
 }
@@ -271,7 +279,9 @@ function myListAreaCard(pref, types, muted) {
     .join("");
   return (
     `<a class="mylist-area${muted ? " is-muted" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
-    `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>` +
+    (myListPrefImage(pref.key)
+      ? `<span class="mylist-area-icon has-photo"><img src="${esc(myListPrefImage(pref.key))}" alt="" loading="lazy" width="120" height="84"></span>`
+      : `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>`) +
     `<span class="mylist-area-body"><span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
     `<span class="mylist-kinds">${parts}</span></span>` +
     `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>` +
@@ -388,7 +398,11 @@ function renderMyListArea(prefKey) {
   const shown = sortByRecommendation(all).filter((e) => todoTypeFilter === "all" || shopType(e.shop) === todoTypeFilter);
   homePage.innerHTML =
     myListHeader(location.pathname + "?view=todo", x.backToList, x.sectionTitle, true) +
-    `<div class="todo-band"><span class="todo-band-icon">${TODO_PIN_ICON}</span>` +
+    // 上の帯: その都道府県の写真を、うしろに敷く(写真が無いときは、緑の帯)
+    (myListPrefImage(pref.key)
+      ? `<div class="todo-band has-photo"><img class="todo-band-photo" src="${esc(myListPrefImage(pref.key))}" alt="" width="480" height="336">` +
+        `<span class="todo-band-icon">${TODO_PIN_ICON}</span>`
+      : `<div class="todo-band"><span class="todo-band-icon">${TODO_PIN_ICON}</span>`) +
     `<span class="todo-band-title">${esc(pick(pref.label))}</span>` +
     `<span class="todo-band-count">${esc(x.count(all.length))}</span></div>` +
     `<section class="home-section todo-list-section">` +
