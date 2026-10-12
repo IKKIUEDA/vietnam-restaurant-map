@@ -5395,3 +5395,53 @@ a.user-link:hover {
     font-size: 13px;
   }
 }
+
+/* マイリスト: エリア(都道府県)の写真 */
+.mylist-area-icon.has-photo {
+  width: 72px;
+  height: 56px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #e8f3e8;
+}
+
+.mylist-area-icon.has-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mylist-area.is-muted .mylist-area-icon.has-photo img {
+  filter: saturate(0.6);
+}
+
+/* エリアのお店の一覧: 上の帯に写真を敷き、暗く重ねて白い文字を読みやすく */
+.todo-band.has-photo {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  background: #1f2d24;
+}
+
+.todo-band.has-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 60%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.todo-band-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.todo-band.has-photo > span {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
