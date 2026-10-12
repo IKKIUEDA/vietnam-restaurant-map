@@ -373,14 +373,13 @@ function renderAccountPage() {
     accountEditing = false;
     homePage.innerHTML =
       // ログインしていないとき: シンプルに「ログインまたは新規登録」だけを、画面のまん中に
-      //   (保存した店・履歴を消すは、ログインしなくても使えるので、下に小さく残す)
+      //   (保存した店は、地図の「♡ 保存した店」から見られる。履歴を消すは、ログイン後のアカウント画面にある)
       accountHeader(x.title) +
       `<section class="home-section acct-section acct-guest">` +
       `<div class="acct-guest-main"><div class="acct-guest-card">` +
       `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
       `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
       `</div></div>` +
-      `<div class="acct-guest-sub">${savedRowHtml()}${clearHistoryHtml(true)}</div>` +
       `</section>`;
     return;
   }
