@@ -607,9 +607,6 @@ function renderAccountEdit() {
     `<div class="todo-actions">` +
     `<button type="submit" class="todo-primary"${d.busy ? " disabled" : ""}>${esc(d.busy ? x.saving : x.save)}</button>` +
     `<button type="button" class="todo-secondary" data-acct-action="cancel"${d.busy ? " disabled" : ""}>${esc(x.cancel)}</button></div>` +
-    (data && data.profile
-      ? `<div class="todo-delete-row"><button type="button" class="todo-delete${d.confirmDelete ? " is-confirm" : ""}" data-acct-action="delete">${esc(d.confirmDelete ? x.deleteConfirm : x.deleteProfile)}</button></div>`
-      : "") +
     `</form></section>`;
 }
 
@@ -730,29 +727,6 @@ homePage.addEventListener("click", (event) => {
     keepAccountDraftInputs();
     accountDraft.photoURL = "";
     renderHomeMode();
-  } else if (action === "delete") {
-    keepAccountDraftInputs();
-    if (!accountDraft.confirmDelete) {
-      accountDraft.confirmDelete = true; // もう1回押すと、本当に削除する
-      renderHomeMode();
-      return;
-    }
-    accountDraft.busy = true;
-    getProfileApi()
-      .then((api) => api.deleteProfile())
-      .then(() => {
-        accountEditing = false;
-        accountDraft = null;
-        accountData = null;
-        setAccountMessage(x.deleted);
-      })
-      .catch((error) => {
-        console.warn("プロフィールを削除できませんでした:", error);
-        accountDraft.busy = false;
-        accountDraft.message = x.saveError;
-        accountDraft.error = true;
-      })
-      .then(() => renderHomeMode());
   } else if (action === "admin-delete") {
     const uid = btn.dataset.uid;
     getProfileApi()
