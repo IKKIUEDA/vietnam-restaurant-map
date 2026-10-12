@@ -348,32 +348,8 @@ function renderDetail() {
       </section>
     </article>`;
 
-  // --- ① 画像: 文字として埋め込まず、あとから設定する(画像の名前などに、変わった文字が入っても安全にするため) ---
-  const image = getShopImage(shop);
-  const hero = detailPage.querySelector(".detail-hero-img");
-  const credit = typeof shop.imageCredit === "string" ? shop.imageCredit.trim() : "";
-  const showDefault = () => {
-    hero.src = DEFAULT_HERO_IMAGE; // 詳細ページ用の、横長のデフォルト画像
-    hero.alt = t.noPhoto;
-    hero.classList.add("is-default");
-    detailPage.querySelector(".detail-credit").hidden = true;
-  };
-  hero.addEventListener("error", () => {
-    if (!hero.classList.contains("is-default")) showDefault(); // 読み込めなかったときは、デフォルト画像に切り替える(1回だけ)
-  });
-  if (image.isDefault) {
-    showDefault();
-  } else {
-    hero.src = image.src;
-    hero.alt = name;
-    if (credit) {
-      const creditEl = detailPage.querySelector(".detail-credit");
-      creditEl.textContent = credit; // クレジット(画像の下に、小さく出る)
-      creditEl.hidden = false;
-      const source = typeof shop.imageSource === "string" ? shop.imageSource.trim() : "";
-      creditEl.title = source ? `${credit} / ${source}` : credit;
-    }
-  }
+  // --- ① 画像(js/detail.js の setDetailHero) ---
+  setDetailHero(shop);
 
   // --- ⑤ Google マップへのリンク(外部リンクだけ。Google の情報を取得・表示することは、しない) ---
   updateDetailLinks();
@@ -1795,12 +1771,13 @@ function renderPhotos() {
           const isMine = myUid && p.uid === myUid;
           const categoryLabel = p.category ? photoCategoryLabel(t, p.category) : "";
           return (
-            `<li class="photo-item${p.hidden ? " is-hidden" : ""}">` +
+            `<li class="photo-item${p.hidden ? " is-hidden" : ""}${isAdmin && state.coverCheckId === p.id ? " is-cover-checking" : ""}">` +
             `<button type="button" class="photo-thumb-btn" data-index="${index}" aria-label="${esc(t.photosEnlarge)}">` +
             `<img class="photo-thumb" src="${esc(p.secure_url)}" alt="" loading="lazy">` +
             (categoryLabel ? `<span class="photo-category-label">${esc(categoryLabel)}</span>` : "") +
             `</button>` +
             `<div class="photo-meta">${userLinkHtml(p.uid, p.authorName, "photo-author")}` +
+            (isAdmin && p.isCover ? `<span class="cover-badge">${esc(coverText().badge)}</span>` : "") +
             (p.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
             `</div>` +
             (p.description ? `<p class="photo-caption">${esc(p.description)}</p>` : "") +
@@ -1815,7 +1792,7 @@ function renderPhotos() {
             (isAdmin
               ? `<button type="button" class="btn btn-small admin-toggle-btn" data-id="${esc(p.id)}" ${
                   state.adminBusy.has(p.id) ? "disabled" : ""
-                }>${esc(p.hidden ? t.adminRestore : t.adminHide)}</button>`
+                }>${esc(p.hidden ? t.adminRestore : t.adminHide)}</button>` + adminCoverButtonHtml(state, p)
               : "") +
             // 誰でも(ログインしていなくても)、この写真を報告できる(今は非表示。PHOTO_REPORT_BUTTON_VISIBLE を参照)
             (PHOTO_REPORT_BUTTON_VISIBLE
@@ -1825,6 +1802,7 @@ function renderPhotos() {
               : "") +
             `</div>` +
             (PHOTO_REPORT_BUTTON_VISIBLE && state.reportFormPhotoId === p.id ? renderPhotoReportFormHtml(state, t) : "") +
+            (isAdmin && state.coverCheckId === p.id ? adminCoverCheckHtml() : "") +
             (isAdmin ? renderAdminReportSummaryHtml(p, state, t) : "") +
             `</li>`
           );
@@ -1929,6 +1907,7 @@ function renderPhotos() {
       if (photo) adminTogglePhotoHidden(state, photo);
     });
   });
+  bindAdminCover(box, state);
   // 💬 コメント欄(グリッドの各写真、および、拡大表示の中。写真の数だけ存在しうる)
   box.querySelectorAll(".photo-comments-block[data-photo-id]").forEach((commentsBox) => {
     const photoId = commentsBox.dataset.photoId;
@@ -2103,6 +2082,12 @@ function adminTogglePhotoHidden(state, photo) {
     .then((api) => api.setPhotoHidden(state.shopId, photo.id, nextHidden))
     .then(() => {
       photo.hidden = nextHidden; // 読み込み直さず、ローカルの一覧にも、そのまま反映する
+      // 非表示にした写真は、トップ画像からも外れる(index.html の setPhotoHidden)
+      if (nextHidden && photo.isCover) {
+        photo.isCover = false;
+        if (window.shopCovers) window.shopCovers.delete(state.shopId);
+        if (typeof refreshShopImages === "function") refreshShopImages();
+      }
     })
     .catch((error) => {
       console.warn("写真の非表示切り替えに失敗:", error);
@@ -3064,3 +3049,182 @@ document.addEventListener("click", (event) => {
   window.lastUserLink = { uid: link.dataset.userLink, name: link.textContent };
   navigate(location.pathname + "?user=" + encodeURIComponent(link.dataset.userLink));
 });
+
+
+// お店のページの大きな画像: 管理者が選んだトップ画像(投稿写真)→ data.js の画像 → デフォルト画像
+//   画像は、文字として埋め込まず、あとから設定する(画像の名前などに、変わった文字が入っても安全にするため)
+function setDetailHero(shop) {
+  const t = ui[currentLang];
+  const name = pick(shop.name);
+  const image = getShopImage(shop, "hero");
+  const hero = detailPage.querySelector(".detail-hero-img");
+  const creditEl = detailPage.querySelector(".detail-credit");
+  if (!hero) return;
+  const showDefault = () => {
+    hero.src = DEFAULT_HERO_IMAGE; // 詳細ページ用の、横長のデフォルト画像
+    hero.alt = t.noPhoto;
+    hero.classList.add("is-default");
+    if (creditEl) creditEl.hidden = true;
+  };
+  hero.onerror = () => {
+    if (!hero.classList.contains("is-default")) showDefault(); // 読み込めなかったときは、デフォルト画像に切り替える(1回だけ)
+  };
+  hero.classList.remove("is-default");
+  if (creditEl) creditEl.hidden = true;
+  if (image.isDefault) {
+    showDefault();
+    return;
+  }
+  hero.src = image.src;
+  hero.alt = name;
+  // クレジット: トップ画像(投稿写真)は投稿者の名前、data.js の画像は imageCredit
+  const credit = image.cover
+    ? image.cover.authorName
+      ? `📷 ${image.cover.authorName}`
+      : ""
+    : typeof shop.imageCredit === "string"
+    ? shop.imageCredit.trim()
+    : "";
+  if (credit && creditEl) {
+    creditEl.textContent = credit; // 文字として入れる
+    creditEl.hidden = false;
+    const source = !image.cover && typeof shop.imageSource === "string" ? shop.imageSource.trim() : "";
+    creditEl.title = source ? `${credit} / ${source}` : credit;
+  }
+}
+function refreshDetailHero() {
+  const entry = entries.find((e) => e.shop.id === currentShopId);
+  if (entry) setDetailHero(entry.shop);
+}
+
+
+// ---------------------------------------------------------------------
+// 【管理者だけ】投稿写真を、お店のトップ画像にする / 外す
+//   ・投稿写真は、自動ではトップ画像にならない。管理者が1枚ずつ見直して、確認の3項目にチェックしてから決める
+//   ・人物・メニュー(値段が写りやすい)のカテゴリーの写真と、非表示の写真は、トップ画像にできない
+// ---------------------------------------------------------------------
+const COVER_TEXT = {
+  ja: {
+    badge: "トップ画像",
+    set: "トップ画像にする",
+    unset: "トップ画像から外す",
+    notAllowed: "人物・メニューの写真や、非表示の写真は、トップ画像にできません",
+    checkTitle: "トップ画像にする前に、写真を確認してください",
+    checks: [
+      "値段(メニュー・値札・レシートなど)が写っていない",
+      "人の顔・車のナンバー・名札など、個人が分かるものが写っていない",
+      "料理・店内・外観など、お店の紹介にふさわしい写真である",
+    ],
+    confirm: "確認しました。トップ画像にする",
+    cancel: "やめる",
+    error: "変更できませんでした。もう一度お試しください",
+  },
+  en: {
+    badge: "Main image",
+    set: "Use as main image",
+    unset: "Remove as main image",
+    notAllowed: "Photos of people or menus, and hidden photos, can't be used as the main image",
+    checkTitle: "Please review the photo before using it as the main image",
+    checks: [
+      "No prices are visible (menus, price tags, receipts, etc.)",
+      "Nothing identifies a person (faces, license plates, name tags, etc.)",
+      "It suits introducing the shop (food, interior or exterior)",
+    ],
+    confirm: "Reviewed — use as main image",
+    cancel: "Cancel",
+    error: "Couldn't update. Please try again",
+  },
+  vi: {
+    badge: "Ảnh chính",
+    set: "Đặt làm ảnh chính",
+    unset: "Bỏ khỏi ảnh chính",
+    notAllowed: "Không thể dùng ảnh người, ảnh thực đơn hoặc ảnh đã ẩn làm ảnh chính",
+    checkTitle: "Hãy kiểm tra ảnh trước khi đặt làm ảnh chính",
+    checks: [
+      "Không thấy giá tiền (thực đơn, bảng giá, hóa đơn...)",
+      "Không có gì xác định được cá nhân (mặt người, biển số xe, bảng tên...)",
+      "Phù hợp để giới thiệu quán (món ăn, bên trong, bên ngoài)",
+    ],
+    confirm: "Đã kiểm tra — đặt làm ảnh chính",
+    cancel: "Hủy",
+    error: "Không thay đổi được. Vui lòng thử lại",
+  },
+};
+function coverText() {
+  return COVER_TEXT[currentLang] || COVER_TEXT.ja;
+}
+function coverAllowed(p) {
+  return !p.hidden && !["people", "menu"].includes(p.category);
+}
+function adminCoverButtonHtml(state, p) {
+  const x = coverText();
+  const busy = state.coverBusy === p.id;
+  if (p.isCover) {
+    return ` <button type="button" class="btn btn-small admin-cover-btn" data-cover-id="${esc(p.id)}" data-cover-on="0"${busy ? " disabled" : ""}>${esc(x.unset)}</button>`;
+  }
+  const ok = coverAllowed(p);
+  return ` <button type="button" class="btn btn-small admin-cover-btn" data-cover-id="${esc(p.id)}" data-cover-on="1"${busy || !ok ? " disabled" : ""}${ok ? "" : ` title="${esc(x.notAllowed)}"`}>${esc(x.set)}</button>`;
+}
+function adminCoverCheckHtml() {
+  const x = coverText();
+  return (
+    `<div class="cover-check" role="group" aria-label="${esc(x.checkTitle)}">` +
+    `<p class="cover-check-title">${esc(x.checkTitle)}</p>` +
+    x.checks.map((c) => `<label class="cover-check-item"><input type="checkbox" data-cover-check> <span>${esc(c)}</span></label>`).join("") +
+    `<div class="cover-check-actions"><button type="button" class="btn btn-small btn-primary" data-cover-confirm disabled>${esc(x.confirm)}</button>` +
+    `<button type="button" class="btn btn-small" data-cover-cancel>${esc(x.cancel)}</button></div></div>`
+  );
+}
+function bindAdminCover(box, state) {
+  box.querySelectorAll(".admin-cover-btn[data-cover-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.coverId;
+      if (btn.dataset.coverOn === "1") {
+        state.coverCheckId = id; // まず、確認の3項目を出す
+        renderPhotos();
+      } else setPhotoCover(state, id, false);
+    });
+  });
+  const check = box.querySelector(".cover-check");
+  if (!check) return;
+  const boxes = [...check.querySelectorAll("[data-cover-check]")];
+  const confirm = check.querySelector("[data-cover-confirm]");
+  boxes.forEach((b) => b.addEventListener("change", () => (confirm.disabled = !boxes.every((x) => x.checked))));
+  confirm.addEventListener("click", () => {
+    if (!boxes.every((x) => x.checked)) return;
+    const id = state.coverCheckId;
+    state.coverCheckId = null;
+    setPhotoCover(state, id, true);
+  });
+  check.querySelector("[data-cover-cancel]").addEventListener("click", () => {
+    state.coverCheckId = null;
+    renderPhotos();
+  });
+}
+function setPhotoCover(state, photoId, on) {
+  const photo = state.photos.find((p) => p.id === photoId);
+  if (!photo || (on && !coverAllowed(photo))) return;
+  state.coverBusy = photoId;
+  state.message = null;
+  renderPhotos();
+  getPhotosApi()
+    .then((api) => api.setPhotoCover(state.shopId, photoId, on))
+    .then(() => {
+      state.photos.forEach((p) => {
+        if (on && p.id !== photoId) p.isCover = false;
+      });
+      photo.isCover = on;
+      if (!window.shopCovers) window.shopCovers = new Map();
+      if (on) window.shopCovers.set(state.shopId, { shopId: state.shopId, photoId, secure_url: photo.secure_url, authorName: photo.authorName });
+      else window.shopCovers.delete(state.shopId);
+      if (typeof refreshShopImages === "function") refreshShopImages();
+    })
+    .catch((error) => {
+      console.warn("トップ画像の変更に失敗:", error);
+      state.message = { key: "adminUpdateError", error: true };
+    })
+    .then(() => {
+      state.coverBusy = null;
+      if (photosState === state) renderPhotos();
+    });
+}

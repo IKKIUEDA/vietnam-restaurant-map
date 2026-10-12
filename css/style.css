@@ -5506,3 +5506,58 @@ a.user-link:hover {
     height: 40px;
   }
 }
+
+/* 【管理者】投稿写真をトップ画像にする(js/detail.js) */
+.cover-badge {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #2e7d32;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.cover-check {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #f1d9a8;
+  border-radius: 12px;
+  background: #fff8ea;
+  font-size: 0.85rem;
+}
+
+.cover-check-title {
+  margin: 0 0 8px;
+  font-weight: bold;
+  color: #8d5a00;
+}
+
+.cover-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.cover-check-item input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: #2e7d32;
+}
+
+.cover-check-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 確認の3項目を出している写真は、横いっぱいに広げて読みやすく */
+.photo-item.is-cover-checking {
+  grid-column: 1 / -1;
+}
