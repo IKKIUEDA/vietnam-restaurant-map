@@ -5110,3 +5110,24 @@ a.user-link:hover {
     gap: 8px;
   }
 }
+
+/* プロフィール編集の結果(保存中・エラー) */
+.acct-message {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  font-size: 0.9rem;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.acct-message.is-error {
+  background: #fdecea;
+  color: #b71c1c;
+}
+
+.acct-message[hidden] {
+  display: none;
+}
