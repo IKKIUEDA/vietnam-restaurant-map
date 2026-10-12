@@ -47,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261012a" />
+    <link rel="stylesheet" href="css/style.css?v=20261012b" />
   </head>
   <body>
     <header>
@@ -195,24 +195,26 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261012a"></script>
-    <script src="js/data.js?v=20261012a"></script>
-    <script src="js/app.js?v=20261012a"></script>
+    <script src="js/i18n.js?v=20261012b"></script>
+    <script src="js/data.js?v=20261012b"></script>
+    <script src="js/app.js?v=20261012b"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261012a"></script>
-    <script src="js/landmark-areas.js?v=20261012a"></script>
-    <script src="js/landmarks.js?v=20261012a"></script>
+    <script src="js/station-lines.js?v=20261012b"></script>
+    <script src="js/landmark-areas.js?v=20261012b"></script>
+    <script src="js/landmarks.js?v=20261012b"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261012a"></script>
+    <script src="js/auth.js?v=20261012b"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261012a"></script>
+    <script src="js/auth-modal.js?v=20261012b"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261012a"></script>
+    <script src="js/home.js?v=20261012b"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261012a"></script>
-    <script src="js/detail.js?v=20261012a"></script>
+    <script src="js/todo.js?v=20261012b"></script>
+    <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
+    <script src="js/account.js?v=20261012b"></script>
+    <script src="js/detail.js?v=20261012b"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -370,6 +372,8 @@
           orderBy,
           limit,
           getDocs,
+          collectionGroup,
+          where,
         } = loaded(firestoreModule);
         const db = getFirestore(app);
 
@@ -488,9 +492,20 @@
               throw error;
             }
             const batch = writeBatch(db);
-            batch.set(checkinRef(shopId, uid), { checkedInAt: serverTimestamp() });
-            batch.set(checkinCountRef(shopId), { count: increment(1) }, { merge: true });
-            await withTimeout(batch.commit());
+            // uid: 誰のチェックインか(アカウント画面で「自分のチェックイン一覧」を出すため。本人にしか読めない)
+            //   新しいルール(firestore.rules)を公開する前でも動くように、断られたら uid なしで送り直す
+            const send = (data) => {
+              const batch = writeBatch(db);
+              batch.set(checkinRef(shopId, uid), data);
+              batch.set(checkinCountRef(shopId), { count: increment(1) }, { merge: true });
+              return withTimeout(batch.commit());
+            };
+            try {
+              await send({ uid, checkedInAt: serverTimestamp() });
+            } catch (error) {
+              if (error && error.code === "permission-denied") await send({ checkedInAt: serverTimestamp() });
+              else throw error;
+            }
           },
           // 【管理者だけ】そのお店の、チェックイン記録を、すべて返す(非表示のものも含む)
           async fetchCheckins(shopId) {
@@ -561,7 +576,15 @@
               error.code = "app/login-required";
               throw error;
             }
-            await withTimeout(setDoc(reviewRef(shopId, uid), { rating, comment, authorName, createdAt: serverTimestamp() }));
+            // uid: 誰のレビューか(プロフィール画面で「その人のレビュー一覧」を出すため)
+            //   新しいルール(firestore.rules)を公開する前でも動くように、断られたら uid なしで送り直す
+            try {
+              await withTimeout(setDoc(reviewRef(shopId, uid), { uid, rating, comment, authorName, createdAt: serverTimestamp() }));
+            } catch (error) {
+              if (error && error.code === "permission-denied") {
+                await withTimeout(setDoc(reviewRef(shopId, uid), { rating, comment, authorName, createdAt: serverTimestamp() }));
+              } else throw error;
+            }
           },
           // 【管理者だけ】1件のレビューを、非表示にする / 元に戻す(集計は無いので、これだけでよい)
           async setReviewHidden(shopId, uid, hidden) {
@@ -791,10 +814,91 @@
             },
           };
           window.dispatchEvent(new Event("photos-api-ready"));
+
+          // --- プロフィール(アカウント画面。js/account.js) ---
+          //   ・profiles/{ユーザーID} … ニックネーム・自己紹介・アイコン画像のURL(誰でも読める。書けるのは本人だけ)
+          //   ・その人の写真・レビューの一覧は、collectionGroup(すべてのお店をまたいだ検索)で、uid が一致するものを集める
+          //   ・チェックインの一覧は、本人だけが読める(行った場所の記録なので、他の人には見せない)
+          const profileRef = (uid) => doc(db, "profiles", uid);
+          const shopIdOf = (snap) => (snap.ref.parent && snap.ref.parent.parent ? snap.ref.parent.parent.id : "");
+          const checkUid = (uid) => {
+            if (!/^[A-Za-z0-9_-]{1,128}$/.test(String(uid))) throw new Error("invalid user id");
+            return uid;
+          };
+          window.profileApi = {
+            currentUid,
+            // プロフィールを読む(まだ作っていなければ null)
+            async fetchProfile(uid) {
+              const snapshot = await withTimeout(getDoc(profileRef(checkUid(uid))));
+              return snapshot.exists() ? snapshot.data() : null;
+            },
+            // 自分のプロフィールを保存する({ displayName, bio, photoURL })
+            async saveProfile({ displayName, bio, photoURL }) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              await withTimeout(setDoc(profileRef(uid), { displayName, bio, photoURL, updatedAt: serverTimestamp() }));
+            },
+            // 自分のプロフィールを削除する(管理者は、他の人のプロフィールも削除できる)
+            async deleteProfile(uid) {
+              await withTimeout(deleteDoc(profileRef(checkUid(uid || currentUid()))));
+            },
+            // アイコン画像をアップロードして、画像のURLを返す(写真投稿と同じ Cloudinary を使う)
+            async uploadAvatar(blob) {
+              if (!currentUid()) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const { secure_url } = await uploadToCloudinary(blob);
+              return secure_url;
+            },
+            // その人が投稿した写真([{ id, shopId, secure_url, createdAt, hidden, ... }])
+            async fetchUserPhotos(uid) {
+              const q = query(collectionGroup(db, "photos"), where("uid", "==", checkUid(uid)), limit(120));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, shopId: shopIdOf(d), ...d.data() }));
+            },
+            // その人が投稿したレビュー([{ shopId, rating, comment, createdAt, hidden, ... }])
+            async fetchUserReviews(uid) {
+              const q = query(collectionGroup(db, "reviews"), where("uid", "==", checkUid(uid)), limit(120));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, shopId: shopIdOf(d), ...d.data() }));
+            },
+            // 自分のチェックイン(本人だけ。[{ shopId, checkedInAt, hidden }])
+            async fetchMyCheckins() {
+              const uid = currentUid();
+              if (!uid) return [];
+              const q = query(collectionGroup(db, "checkins"), where("uid", "==", uid), limit(200));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, shopId: shopIdOf(d), ...d.data() }));
+            },
+            // 【管理者だけ・1回だけ使う】uid が入っていない、前からあるレビュー・チェックインに、uid(= ドキュメント名)を入れる
+            //   (プロフィールの一覧に、前からの投稿も出るようにするため)。戻り値: 書き足した件数
+            async backfillUids() {
+              if (!isAdminNow()) return 0;
+              let n = 0;
+              for (const name of ["reviews", "checkins"]) {
+                const snapshot = await withTimeout(getDocs(query(collectionGroup(db, name), limit(500))));
+                for (const d of snapshot.docs) {
+                  if (d.data().uid) continue;
+                  await withTimeout(updateDoc(d.ref, { uid: d.id }));
+                  n += 1;
+                }
+              }
+              return n;
+            },
+          };
+          window.dispatchEvent(new Event("profile-api-ready"));
         } catch (error) {
           console.warn("写真機能(Firebase Storage)の読み込みに失敗:", error);
           window.photosApiFailed = true;
           window.dispatchEvent(new Event("photos-api-failed"));
+          window.profileApiFailed = true;
+          window.dispatchEvent(new Event("profile-api-failed"));
         }
       } catch (error) {
         console.warn("Firestore の読み込みに失敗:", error);
@@ -802,6 +906,8 @@
         window.checkinApiFailed = true;
         window.reviewsApiFailed = true;
         window.photosApiFailed = true; // Firestore が読み込めなければ、写真機能も使えない
+        window.profileApiFailed = true;
+        window.dispatchEvent(new Event("profile-api-failed"));
         window.dispatchEvent(new Event("tips-api-failed"));
         window.dispatchEvent(new Event("checkin-api-failed"));
         window.dispatchEvent(new Event("reviews-api-failed"));

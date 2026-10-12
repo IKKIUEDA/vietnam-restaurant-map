@@ -209,17 +209,20 @@ service cloud.firestore {
       allow list: if isAdmin();
 
       // 自分の記録だけ、1回だけ作れる
+      //   uid(誰のチェックインか)は、入れるなら本人のIDだけ(アカウント画面の「自分のチェックイン一覧」用)
       allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["checkedInAt"])
-        && request.resource.data.checkedInAt == request.time;
+        && request.resource.data.keys().hasOnly(["checkedInAt", "uid"])
+        && request.resource.data.checkedInAt == request.time
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid);
 
       // 本人だけ、自分のチェックインを取り消せる(削除すると、またチェックインできる状態に戻る)
       allow delete: if signedIn() && request.auth.uid == uid;
 
-      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる
+      // 管理者だけ、hidden(非表示フラグ)と uid(前からの記録に、ドキュメント名と同じIDを入れるときだけ)を書き換えられる
       allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
-        && request.resource.data.hidden is bool;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden", "uid"])
+        && (!("hidden" in request.resource.data) || request.resource.data.hidden is bool)
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid);
     }
 
     // ---------------------------------------------------------------
@@ -239,8 +242,9 @@ service cloud.firestore {
 
       // 自分の記録だけ、1回だけ作れる
       allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["rating", "comment", "authorName", "createdAt"])
+        && request.resource.data.keys().hasOnly(["rating", "comment", "authorName", "createdAt", "uid"])
         && request.resource.data.keys().hasAll(["rating", "comment", "authorName", "createdAt"])
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid)
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
         && request.resource.data.comment is string
@@ -252,10 +256,12 @@ service cloud.firestore {
       // 本人だけ、自分のレビューを削除できる(削除すると、また投稿できる状態に戻る)
       allow delete: if signedIn() && request.auth.uid == uid;
 
-      // 管理者だけ、hidden(非表示フラグ)だけを書き換えられる(投稿の中身は、変えられない)
+      // 管理者だけ、hidden(非表示フラグ)と uid(前からのレビューに、ドキュメント名と同じIDを入れるときだけ)を書き換えられる
+      //   (投稿の中身は、変えられない)
       allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden"])
-        && request.resource.data.hidden is bool;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["hidden", "uid"])
+        && (!("hidden" in request.resource.data) || request.resource.data.hidden is bool)
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid);
     }
 
     // ---------------------------------------------------------------
@@ -417,6 +423,53 @@ service cloud.firestore {
         && request.resource.data.displayName.size() > 0
         && request.resource.data.displayName.size() <= 40
         && request.resource.data.createdAt == request.time;
+    }
+
+    // ---------------------------------------------------------------
+    // 👤 プロフィール(アカウント画面。js/account.js)
+    //
+    //   profiles/{ユーザーID} … ニックネーム(displayName)・自己紹介(bio)・アイコン画像のURL(photoURL)・更新日時
+    //       誰でも読める(投稿者の名前を押すと、その人のプロフィールが開くため)。
+    //       書けるのは本人だけ。削除は、本人と管理者(不適切な内容の対応のため)。
+    //       アイコン画像は、このアプリの Cloudinary のものだけ(空でもよい)。
+    // ---------------------------------------------------------------
+
+    match /profiles/{uid} {
+      allow read: if true;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["displayName", "bio", "photoURL", "updatedAt"])
+        && request.resource.data.keys().hasAll(["displayName", "bio", "photoURL", "updatedAt"])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0 && request.resource.data.displayName.size() <= 30
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 160
+        && request.resource.data.photoURL is string
+        && (request.resource.data.photoURL == ""
+          || (request.resource.data.photoURL.size() <= 2000
+            && request.resource.data.photoURL.matches("^https://res[.]cloudinary[.]com/e1tbcqtm/.*")))
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 🔎 お店をまたいだ検索(collectionGroup)。プロフィール画面で「その人の投稿一覧」を出すために使う
+    //   ・写真・レビューは、もともと誰でも読める内容なので、お店をまたいで読めても、見える範囲は変わらない
+    //   ・チェックインは、本人の記録だけ(uid が自分のもの)。管理者は、uid を書き足すために全件を読める
+    //   ・この検索には、Firebase コンソールで「uid の単一フィールド インデックス(コレクション グループ)」を有効にする必要がある
+    // ---------------------------------------------------------------
+
+    match /{path=**}/photos/{photoId} {
+      allow read: if true;
+    }
+
+    match /{path=**}/reviews/{reviewId} {
+      allow read: if true;
+    }
+
+    match /{path=**}/checkins/{checkinId} {
+      allow list: if (signedIn() && resource.data.uid == request.auth.uid) || isAdmin();
     }
   }
 }

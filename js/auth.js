@@ -155,9 +155,16 @@ function renderAuth() {
   if (authUser) {
     // ログイン中: アイコン + ユーザー名 + ログアウト
     const name = resolveAuthName(authUser);
-    const who = document.createElement("span");
+    // アイコン+名前を押すと、アカウント画面を開く(js/account.js)
+    const who = document.createElement("a");
     who.className = "auth-user";
+    who.href = "?view=account";
     who.title = name;
+    who.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      navigate(location.pathname + "?view=account");
+    });
     who.append(createAvatar(authUser, name));
     if (name) {
       const nameEl = document.createElement("span");
@@ -171,6 +178,9 @@ function renderAuth() {
     authArea.append(createAuthButton(t.authOpenLogin, () => openAuthModal(), ""));
   }
   // ログイン状態がまだ分からないときは、何も出さない
+
+  // アカウント画面(js/account.js)も、ログイン状態に合わせて描き直す
+  if (typeof onAccountAuthChanged === "function") onAccountAuthChanged();
 
   if (authMessageKey) {
     const message = document.createElement("p");
