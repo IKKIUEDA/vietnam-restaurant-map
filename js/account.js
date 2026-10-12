@@ -379,15 +379,6 @@ function accountHeader(title, backHref) {
   );
 }
 
-function savedRowHtml() {
-  const x = accountText();
-  const n = typeof favorites !== "undefined" ? favorites.size : 0;
-  return (
-    `<button type="button" class="acct-row" data-acct-action="saved">` +
-    `<span class="acct-row-label">${esc(x.saved)}</span>` +
-    `<span class="acct-row-value">${esc(x.savedCount(n))}${homeIcon("forward", 18)}</span></button>`
-  );
-}
 
 // ---------------------------------------------------------------------
 // 「アカウント」(URL「?view=account」)
@@ -443,7 +434,6 @@ function renderAccountPage() {
     `<button type="button" class="acct-pill" data-acct-action="share">${esc(x.shareProfile)}</button>` +
     `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
     `</div>` +
-    savedRowHtml() +
     accountPostsHtml(data, ["photos", "reviews", "checkins"]) +
     `</section>`;
 }
@@ -705,13 +695,7 @@ homePage.addEventListener("click", (event) => {
     return;
   }
   if (action === "login") openAuthModal();
-  else if (action === "saved") {
-    navigate(mapUrl());
-    resetFilters();
-    favoritesOnly = true;
-    applyFilters();
-    renderTabs();
-  } else if (action === "logout") {
+  else if (action === "logout") {
     accountData = null;
     signOutFromGoogle();
   } else if (action === "edit") {
