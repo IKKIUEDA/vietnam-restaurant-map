@@ -23,8 +23,16 @@ const ACCOUNT_TEXT = {
     shareTitle: (name) => `${name}のプロフィール | ベトナムフーディー`,
     linkCopied: "プロフィールのリンクをコピーしました",
     linkCopyFailed: (url) => `リンク: ${url}`,
-    settings: "アカウント設定",
-    settingsOpen: "アカウント設定を開く",
+    settings: "設定",
+    addSpot: "新しいスポットを追加",
+    addSpotLead: "追加したいお店の種類を選んでください",
+    accountSettings: "アカウント設定",
+    emailSetting: "メールアドレスの変更・認証",
+    passwordSetting: "パスワードのリセットと変更",
+    deleteAccount: "アカウントの削除",
+    comingSoon: "この機能は準備中です。もうしばらくお待ちください。",
+    typeNames: { restaurant: "レストラン", cafe: "カフェ", grocery: "食材店" },
+    settingsOpen: "設定を開く",
     terms: "利用規約",
     privacy: "プライバシーポリシー",
     viewPublic: "公開プロフィールを見る",
@@ -81,8 +89,16 @@ const ACCOUNT_TEXT = {
     shareTitle: (name) => `${name}'s profile | Vietnam Foodie`,
     linkCopied: "Profile link copied",
     linkCopyFailed: (url) => `Link: ${url}`,
-    settings: "Account settings",
-    settingsOpen: "Open account settings",
+    settings: "Settings",
+    addSpot: "Add a new spot",
+    addSpotLead: "Choose the kind of shop you want to add",
+    accountSettings: "Account settings",
+    emailSetting: "Change / verify email address",
+    passwordSetting: "Reset / change password",
+    deleteAccount: "Delete account",
+    comingSoon: "This feature is coming soon.",
+    typeNames: { restaurant: "Restaurant", cafe: "Cafe", grocery: "Grocery" },
+    settingsOpen: "Open settings",
     terms: "Terms of Service",
     privacy: "Privacy Policy",
     viewPublic: "View public profile",
@@ -139,8 +155,16 @@ const ACCOUNT_TEXT = {
     shareTitle: (name) => `Hồ sơ của ${name} | Vietnam Foodie`,
     linkCopied: "Đã sao chép liên kết hồ sơ",
     linkCopyFailed: (url) => `Liên kết: ${url}`,
-    settings: "Cài đặt tài khoản",
-    settingsOpen: "Mở cài đặt tài khoản",
+    settings: "Cài đặt",
+    addSpot: "Thêm địa điểm mới",
+    addSpotLead: "Chọn loại quán bạn muốn thêm",
+    accountSettings: "Cài đặt tài khoản",
+    emailSetting: "Đổi / xác minh địa chỉ email",
+    passwordSetting: "Đặt lại / đổi mật khẩu",
+    deleteAccount: "Xóa tài khoản",
+    comingSoon: "Tính năng này đang được chuẩn bị.",
+    typeNames: { restaurant: "Nhà hàng", cafe: "Cà phê", grocery: "Tạp hóa" },
+    settingsOpen: "Mở cài đặt",
     terms: "Điều khoản sử dụng",
     privacy: "Chính sách quyền riêng tư",
     viewPublic: "Xem hồ sơ công khai",
@@ -443,28 +467,112 @@ function renderAccountPage() {
 
 // アカウント設定(URL「?view=account&settings=1」。プロフィール画面の歯車から開く)
 //   公開プロフィール・履歴を消す・利用規約・プライバシーポリシー・ログアウト(管理者は、管理用のボタンも)
+// 設定(URL「?view=account&settings=1」。プロフィール画面の歯車から開く)
+//   ・sub=spot(新しいスポットを追加 → 種類を選ぶ)/ sub=account(アカウント設定)
+//     sub=email / password / delete(アカウント設定の中の各画面)
+//   ・各機能の中身は、これから作る(いまは「準備中」と表示する)
+const ACCT_ICONS = {
+  spot: '<path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M9 7h1M14 7h1M9 11h1M14 11h1"></path><path d="M10 21v-4h4v4"></path>',
+  account: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"></path>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
+  doc: '<path d="M6 3h9l4 4v14H6z"></path><path d="M15 3v4h4"></path><path d="M9 12h6M9 16h6"></path>',
+  shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 8v4l3 2"></path>',
+  logout: '<path d="M9 4H5v16h4"></path><path d="M14 8l4 4-4 4"></path><path d="M18 12H9"></path>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path>',
+  key: '<circle cx="8" cy="15" r="4"></circle><path d="M11 12l9-9M17 6l3 3M14 9l2 2"></path>',
+  trash: '<path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path>',
+};
+function acctIcon(name) {
+  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ACCT_ICONS[name]}</svg>`;
+}
+function acctSettingsUrl(sub, extra) {
+  return accountSettingsUrl() + (sub ? "&sub=" + encodeURIComponent(sub) : "") + (extra || "");
+}
+// 1行(アイコン・文字・›)。href があればリンク、無ければボタン
+function acctRow({ icon, iconHtml, label, href, action, danger, nav = "data-acct-nav" }) {
+  const inner =
+    `<span class="acct-setting-icon">${iconHtml || acctIcon(icon)}</span>` +
+    `<span class="acct-setting-label">${esc(label)}</span>${homeIcon("forward", 18)}`;
+  const cls = `acct-setting${danger ? " is-danger" : ""}`;
+  return href
+    ? `<li><a class="${cls}" href="${esc(href)}" ${nav}>${inner}</a></li>`
+    : `<li><button type="button" class="${cls}" data-acct-action="${esc(action)}">${inner}</button></li>`;
+}
+
 function renderAccountSettings() {
   const x = accountText();
   const t = ui[currentLang];
-  const row = (attrs, label, extra) =>
-    `<li><${attrs.startsWith("href") ? "a" : "button type=\"button\""} class="acct-setting${extra || ""}" ${attrs}>` +
-    `<span>${esc(label)}</span>${homeIcon("forward", 18)}</${attrs.startsWith("href") ? "a" : "button"}></li>`;
-  homePage.innerHTML =
-    accountHeader(x.settings, accountUrl()) +
-    `<section class="home-section acct-section">` +
+  const params = new URLSearchParams(location.search);
+  const sub = params.get("sub");
+  const page = (title, backHref, body) => {
+    homePage.innerHTML = accountHeader(title, backHref) + `<section class="home-section acct-section">${body}</section>`;
+  };
+  const soon = `<p class="acct-soon">${esc(x.comingSoon)}</p>`;
+
+  if (sub === "spot") {
+    const type = params.get("type");
+    if (["restaurant", "cafe", "grocery"].includes(type)) {
+      page(`${x.addSpot}(${x.typeNames[type]})`, acctSettingsUrl("spot"), soon);
+      return;
+    }
+    page(
+      x.addSpot,
+      accountSettingsUrl(),
+      `<p class="acct-lead">${esc(x.addSpotLead)}</p><ul class="acct-settings">` +
+        ["restaurant", "cafe", "grocery"]
+          .map((ty) =>
+            acctRow({
+              iconHtml: `<span class="acct-type-icon home-entry-${ty}"><span class="home-entry-icon">${homeIcon(ty, 22)}</span></span>`,
+              label: x.typeNames[ty],
+              href: acctSettingsUrl("spot", "&type=" + ty),
+            })
+          )
+          .join("") +
+        `</ul>`
+    );
+    return;
+  }
+  if (sub === "account") {
+    page(
+      x.accountSettings,
+      accountSettingsUrl(),
+      `<ul class="acct-settings">` +
+        acctRow({ icon: "mail", label: x.emailSetting, href: acctSettingsUrl("email") }) +
+        acctRow({ icon: "key", label: x.passwordSetting, href: acctSettingsUrl("password") }) +
+        acctRow({ icon: "trash", label: x.deleteAccount, href: acctSettingsUrl("delete"), danger: true }) +
+        `</ul>`
+    );
+    return;
+  }
+  if (sub === "email" || sub === "password" || sub === "delete") {
+    const title = sub === "email" ? x.emailSetting : sub === "password" ? x.passwordSetting : x.deleteAccount;
+    page(title, acctSettingsUrl("account"), soon);
+    return;
+  }
+
+  // 設定のトップ
+  page(
+    x.settings,
+    accountUrl(),
     `<ul class="acct-settings">` +
-    row(`href="${esc(userUrl(authUser.uid))}" data-acct-nav`, x.viewPublic) +
-    row(`href="${esc(termsUrl())}" data-home-nav`, t.termsPageTitle || x.terms) +
-    row(`href="${esc(privacyUrl())}" data-home-nav`, t.privacyPageTitle || x.privacy) +
-    `</ul>` +
-    clearHistoryHtml() +
-    `<div class="acct-bottom">` +
-    `<button type="button" class="acct-logout" data-acct-action="logout">${esc(x.logout)}</button>` +
-    (isAdminUser(authUser)
-      ? `<button type="button" class="acct-admin" data-acct-action="backfill">${esc(x.adminBackfill)}</button>` +
-        (accountAdminMessage ? `<p class="acct-note">${esc(accountAdminMessage)}</p>` : "")
-      : "") +
-    `</div></section>`;
+      acctRow({ icon: "spot", label: x.addSpot, href: acctSettingsUrl("spot") }) +
+      acctRow({ icon: "account", label: x.accountSettings, href: acctSettingsUrl("account") }) +
+      acctRow({ icon: "eye", label: x.viewPublic, href: userUrl(authUser.uid) }) +
+      `</ul>` +
+      `<ul class="acct-settings">` +
+      acctRow({ icon: "doc", label: t.termsPageTitle || x.terms, href: termsUrl(), nav: "data-home-nav" }) +
+      acctRow({ icon: "shield", label: t.privacyPageTitle || x.privacy, href: privacyUrl(), nav: "data-home-nav" }) +
+      acctRow({ icon: "history", label: accountClearConfirm ? x.clearHistoryConfirm : x.clearHistory, action: "clear-history", danger: accountClearConfirm }) +
+      acctRow({ icon: "logout", label: x.logout, action: "logout" }) +
+      `</ul>` +
+      (accountClearConfirm || accountClearDone ? `<p class="acct-small acct-center">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p>` : "") +
+      (isAdminUser(authUser)
+        ? `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="backfill">${esc(x.adminBackfill)}</button>` +
+          (accountAdminMessage ? `<p class="acct-note">${esc(accountAdminMessage)}</p>` : "") +
+          `</div>`
+        : "")
+  );
 }
 function accountSettingsUrl() {
   return location.pathname + "?view=account&settings=1";
