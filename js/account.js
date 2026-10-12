@@ -56,7 +56,6 @@ const ACCOUNT_TEXT = {
     iconChoose: "画像を選ぶ",
     iconRemove: "画像を外す",
     iconNote: "自分で撮った写真やイラストなど、使ってよい画像だけを選んでください。他の人の顔が写った写真や、有名人・キャラクターの画像は使えません。",
-    publicNote: "ニックネーム・アイコン・自己紹介と、投稿した写真・レビューは、プロフィールとして他の利用者も見られます。住所・電話番号など、個人を特定できる情報は書かないでください。",
     save: "保存する",
     cancel: "やめる",
     saved_ok: "保存しました",
@@ -122,7 +121,6 @@ const ACCOUNT_TEXT = {
     iconChoose: "Choose image",
     iconRemove: "Remove image",
     iconNote: "Only use images you have the right to use, such as your own photos or drawings. Photos of other people's faces, celebrities or characters are not allowed.",
-    publicNote: "Your nickname, picture, bio, and the photos and reviews you post are visible to other users on your profile. Don't include your address, phone number or other personal details.",
     save: "Save",
     cancel: "Cancel",
     saved_ok: "Saved",
@@ -188,7 +186,6 @@ const ACCOUNT_TEXT = {
     iconChoose: "Chọn ảnh",
     iconRemove: "Bỏ ảnh",
     iconNote: "Chỉ dùng ảnh bạn có quyền sử dụng, như ảnh tự chụp hoặc tranh tự vẽ. Không dùng ảnh có mặt người khác, người nổi tiếng hay nhân vật.",
-    publicNote: "Biệt danh, ảnh đại diện, giới thiệu và ảnh, đánh giá bạn đăng sẽ hiển thị cho người dùng khác trên hồ sơ. Đừng ghi địa chỉ, số điện thoại hay thông tin cá nhân.",
     save: "Lưu",
     cancel: "Hủy",
     saved_ok: "Đã lưu",
@@ -624,7 +621,6 @@ function renderAccountEdit() {
     `<input id="acct-name" class="acct-input" maxlength="30" value="${esc(d.displayName)}" autocomplete="nickname">` +
     `<label class="acct-label" for="acct-bio">${esc(x.bioLabel)}</label>` +
     `<textarea id="acct-bio" class="acct-input" maxlength="160" rows="4" placeholder="${esc(x.bioPlaceholder)}">${esc(d.bio)}</textarea>` +
-    `<p class="acct-small">${esc(x.publicNote)}</p>` +
     // 結果(エラーなど)は、目立つ枠で出す
     `<p class="acct-message${d.error ? " is-error" : ""}" role="status"${d.message ? "" : " hidden"}>${esc(d.message)}</p>` +
     `<div class="todo-actions">` +
