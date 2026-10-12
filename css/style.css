@@ -4102,9 +4102,25 @@ a.todo-card .todo-card-foot {
   background: #f0f6ef;
 }
 
-/* 写真のカード: 下を暗くして、白い文字を読みやすく */
-.home-area.has-image {
-  background-color: #2b3a30;
+/* 写真のカード: 写真をカードいっぱいに敷き、下を暗くして白い文字を読みやすく */
+.home-area-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-area.has-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+/* 文字・印は、写真と暗いグラデーションより上に出す */
+.home-area > span {
+  z-index: 1;
 }
 
 .home-area-credit {
