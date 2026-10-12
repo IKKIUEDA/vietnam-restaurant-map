@@ -410,7 +410,8 @@ function renderHome() {
 
   const entryButton = (key, label) =>
     `<button type="button" class="home-entry home-entry-${key}" data-home-action="${key}">` +
-    `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span>${esc(label)}</span></button>`;
+    `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span class="home-entry-label">${esc(label)}</span>` +
+    `<span class="home-entry-arrow" aria-hidden="true">${homeIcon("forward", 18)}</span></button>`;
 
   const rec = homeRecommendations();
   // おすすめは、写真つきのカードを横に並べる(1枚 = 1店舗。横にスライドして見る)
