@@ -389,23 +389,6 @@ function savedRowHtml() {
   );
 }
 
-// 「閲覧・検索の履歴を消す」(ホームの「あなたへのおすすめ」に使う、この端末の中の記録。js/home.js の clearActivity)
-//   ・ログインしていなくても使える(記録は、ブラウザの中にあるため)
-let accountClearConfirm = false;
-let accountClearDone = false;
-function clearHistoryHtml(compact) {
-  const x = accountText();
-  return (
-    `<div class="acct-history">` +
-    `<button type="button" class="acct-text-btn acct-history-btn${accountClearConfirm ? " is-confirm" : ""}" data-acct-action="clear-history">` +
-    `${esc(accountClearConfirm ? x.clearHistoryConfirm : x.clearHistory)}</button>` +
-    (accountClearConfirm || accountClearDone || !compact
-      ? `<p class="acct-small">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p>`
-      : "") +
-    `</div>`
-  );
-}
-
 // ---------------------------------------------------------------------
 // 「アカウント」(URL「?view=account」)
 // ---------------------------------------------------------------------
@@ -554,10 +537,8 @@ function renderAccountSettings() {
       `<ul class="acct-settings">` +
       acctRow({ icon: "doc", label: t.termsPageTitle || x.terms, href: termsUrl(), nav: "data-home-nav" }) +
       acctRow({ icon: "shield", label: t.privacyPageTitle || x.privacy, href: privacyUrl(), nav: "data-home-nav" }) +
-      acctRow({ icon: "history", label: accountClearConfirm ? x.clearHistoryConfirm : x.clearHistory, action: "clear-history", danger: accountClearConfirm }) +
       acctRow({ icon: "logout", label: x.logout, action: "logout" }) +
       `</ul>` +
-      (accountClearConfirm || accountClearDone ? `<p class="acct-small acct-center">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p>` : "") +
       (isAdminUser(authUser)
         ? `<ul class="acct-settings">` +
           acctRow({ icon: "spot", label: settingsText().adminRequests, href: acctSettingsUrl("requests") }) +
@@ -722,18 +703,6 @@ homePage.addEventListener("click", (event) => {
   if (!btn) return;
   const x = accountText();
   const action = btn.dataset.acctAction;
-  if (action === "clear-history") {
-    if (!accountClearConfirm) {
-      accountClearConfirm = true; // もう1回押すと、本当に消す(押し間違いで消えないように)
-      accountClearDone = false;
-    } else {
-      if (typeof clearActivity === "function") clearActivity();
-      accountClearConfirm = false;
-      accountClearDone = true;
-    }
-    renderHomeMode();
-    return;
-  }
   if (action === "share") {
     shareMyProfile();
     return;
