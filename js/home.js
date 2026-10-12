@@ -23,7 +23,7 @@ const HOME_TEXT = {
     nearLoading: "現在地を調べています…",
     nearFailed: "現在地を取得できませんでした。地図から探してください",
     recTitle: "あなたへのおすすめ",
-    clearHistory: "履歴を消す",
+    reviewCount: (n) => `レビュー ${n}件`,
     areaTitle: "エリアから探す",
     areaPrev: "前のエリア",
     areaNext: "次のエリア",
@@ -56,7 +56,7 @@ const HOME_TEXT = {
     nearLoading: "Finding your location…",
     nearFailed: "Couldn't get your location. Please use the map instead",
     recTitle: "Picked for you",
-    clearHistory: "Clear history",
+    reviewCount: (n) => (n === 1 ? "1 review" : `${n} reviews`),
     areaTitle: "Browse by area",
     areaPrev: "Previous areas",
     areaNext: "More areas",
@@ -89,7 +89,7 @@ const HOME_TEXT = {
     nearLoading: "Đang tìm vị trí của bạn…",
     nearFailed: "Không lấy được vị trí. Vui lòng tìm trên bản đồ",
     recTitle: "Gợi ý cho bạn",
-    clearHistory: "Xóa lịch sử",
+    reviewCount: (n) => `${n} đánh giá`,
     areaTitle: "Tìm theo khu vực",
     areaPrev: "Khu vực trước",
     areaNext: "Khu vực tiếp",
@@ -199,20 +199,33 @@ function clearActivity() {
 //     検索した言葉に合う・検索した駅の近く / よく見る・よく選ぶ種類
 //   ・記録が何もない人には、おすすめのお店は出さない(みんなに同じものは出さない)
 function homeRecommendations() {
+  // その人の、このサイトの中での行動(すべて、この端末の中だけにある記録)から、点数を付ける
+  //   ・見たお店: そのお店の近く(1.5kmで約0.37)/ 同じエリア / 同じカテゴリー / 同じ種類。新しく見たものほど重い
+  //   ・保存したお店(♡): そのお店の近く / 同じエリア
+  //   ・検索した言葉: 言葉が一致するお店、駅の近く(2km)のお店
+  //   ・選んだ種類(料理店・食材店・カフェ)、特集を開いた回数
+  //   ・マイリストで選んだエリア(都道府県)と種類
+  //   ・もう見たお店・保存したお店は出さない。同じエリアばかりにならないように、1エリア2件まで
   const recent = loadRecentShops();
   const searches = loadRecentSearches();
   const picks = loadTypePicks();
+  const myList = typeof loadMyList === "function" ? loadMyList() : null;
   const byId = new Map(entries.map((e) => [e.shop.id, e]));
   const viewed = recent.map((id) => byId.get(id)).filter(Boolean);
   const saved = entries.filter((e) => isFavorite(e.shop));
-  const hasSignal = viewed.length > 0 || saved.length > 0 || searches.length > 0 || Object.keys(picks).length > 0;
+  const hasSignal = viewed.length > 0 || saved.length > 0 || searches.length > 0 || Object.keys(picks).length > 0 || !!myList;
   if (!hasSignal) return { items: [], hasSignal: false };
 
-  // 種類の好み(見たお店の種類 + 選んだ種類)
+  // 種類の好み(見たお店の種類 + 選んだ種類 + マイリストの種類)
   const typeCount = { restaurant: 0, grocery: 0, cafe: 0 };
   viewed.forEach((e, i) => (typeCount[shopType(e.shop)] += Math.pow(0.85, i)));
-  Object.keys(typeCount).forEach((k) => (typeCount[k] += Number(picks[k]) || 0));
+  saved.forEach((e) => (typeCount[shopType(e.shop)] += 0.5));
+  Object.keys(typeCount).forEach((k) => (typeCount[k] += Math.min(5, Number(picks[k]) || 0)));
+  if (myList) myList.types.forEach((t) => (typeCount[t] += 1));
   const typeTotal = Object.values(typeCount).reduce((a, b) => a + b, 0);
+
+  const areaKey = (shop) => (shop.area && typeof shop.area === "object" ? shop.area.ja : String(shop.area || ""));
+  const catKey = (shop) => (typeof categoryText === "function" ? categoryText(shop) : "") || "";
 
   const exclude = new Set([...recent, ...saved.map((e) => e.shop.id)]); // もう見た・保存したお店は出さない
   const near = (km) => Math.exp(-km / 1.5); // 近いほど 1 に近い(1.5km で約 0.37)
@@ -220,33 +233,62 @@ function homeRecommendations() {
     .filter((e) => !exclude.has(e.shop.id))
     .map((e) => {
       const { lat, lng } = e.shop;
-      const parts = []; // [点数, 理由, 距離]
+      const area = areaKey(e.shop);
+      const cat = catKey(e.shop);
+      let score = 0;
       viewed.forEach((v, i) => {
-        const km = distanceKm(v.shop.lat, v.shop.lng, lat, lng);
-        parts.push([Math.pow(0.8, i) * near(km), { kind: "viewed", area: pick(v.shop.area) }, km]);
+        const w = Math.pow(0.8, i);
+        score += w * near(distanceKm(v.shop.lat, v.shop.lng, lat, lng));
+        if (area && areaKey(v.shop) === area) score += 0.35 * w;
+        if (cat && catKey(v.shop) === cat) score += 0.2 * w;
+        if (shopType(v.shop) === shopType(e.shop)) score += 0.1 * w;
       });
-      saved.forEach((f) => {
-        const km = distanceKm(f.shop.lat, f.shop.lng, lat, lng);
-        parts.push([0.8 * near(km), { kind: "saved", area: pick(f.shop.area) }, km]);
+      saved.forEach((fav) => {
+        score += 0.8 * near(distanceKm(fav.shop.lat, fav.shop.lng, lat, lng));
+        if (area && areaKey(fav.shop) === area) score += 0.3;
       });
       const text = getSearchText(e.shop);
       searches.forEach((sr, i) => {
         const w = Math.pow(0.8, i);
         const placeHit = (sr.places || []).some((p) => Array.isArray(p) && distanceMeters(p[0], p[1], lat, lng) <= SEARCH_NEAR_STATION_M);
-        if (placeHit || sr.terms.every((t) => text.includes(t))) parts.push([1.1 * w, { kind: "search", q: sr.q }, null]);
+        if (placeHit || sr.terms.every((t) => text.includes(t))) score += 1.1 * w;
       });
-      if (typeTotal > 0) {
-        const share = typeCount[shopType(e.shop)] / typeTotal;
-        if (share > 0) parts.push([0.6 * share, { kind: "type", type: shopType(e.shop) }, null]);
+      if (typeTotal > 0) score += 0.6 * (typeCount[shopType(e.shop)] / typeTotal);
+      if (myList) {
+        if (myList.prefs.includes(e.shop.prefecture)) score += 0.4;
+        if (!myList.types.includes(shopType(e.shop))) score *= 0.6;
       }
-      const score = parts.reduce((sum, p) => sum + p[0], 0);
-      const best = parts.sort((x, y) => y[0] - x[0])[0];
-      return { entry: e, score, why: best ? best[1] : null, km: best ? best[2] : null };
+      return { entry: e, score, area };
     })
     .filter((x) => x.score > 0.15)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-  return { items: scored, hasSignal: true };
+    .sort((a, b) => b.score - a.score);
+  // 同じエリアは2件まで(いろいろなお店が出るように)
+  const perArea = new Map();
+  const items = [];
+  for (const x of scored) {
+    const n = perArea.get(x.area) || 0;
+    if (x.area && n >= 2) continue;
+    perArea.set(x.area, n + 1);
+    items.push(x);
+    if (items.length >= 8) break;
+  }
+  return { items, hasSignal: true };
+}
+
+// おすすめのカードの「★ 4.5(3件)」。レビューの評価は js/todo.js の loadTodoRatings で読む
+function homeRatingHtml(id) {
+  const r = typeof todoRating === "function" ? todoRating(id) : null;
+  const n = r ? r.count : 0;
+  const label = homeText().reviewCount(n);
+  return n
+    ? `<span class="home-rec-star" aria-hidden="true">★</span><strong>${esc(r.avg.toFixed(1))}</strong> <span>${esc(label)}</span>`
+    : `<span class="home-rec-star is-none" aria-hidden="true">★</span><span>${esc(label)}</span>`;
+}
+// 評価を読み終えたら、ホームのカードの評価だけを書き換える(横にスクロールした位置が戻らないように、全体は描き直さない)
+function updateHomeRatings() {
+  homePage.querySelectorAll("[data-rating-for]").forEach((el) => {
+    el.innerHTML = homeRatingHtml(el.dataset.ratingFor);
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -354,16 +396,24 @@ function renderHome() {
     `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span>${esc(label)}</span></button>`;
 
   const rec = homeRecommendations();
+  // おすすめは、写真つきのカードを横に並べる(1枚 = 1店舗。横にスライドして見る)
+  if (typeof loadTodoRatings === "function") loadTodoRatings(rec.items.map((x) => x.entry.shop.id));
   const recItems = rec.items
     .map(({ entry }) => {
-      const type = shopType(entry.shop);
+      const shop = entry.shop;
+      const type = shopType(shop);
+      const image = getShopImage(shop);
+      const category = typeof categoryText === "function" ? categoryText(shop) : "";
       return (
-        `<li><a class="home-rec" href="${esc(shopUrl(entry.shop.id))}" data-shop-id="${esc(entry.shop.id)}">` +
-        `<span class="home-rec-icon home-type-${type}">${homeIcon(type, 28)}</span>` +
-        `<span class="home-rec-body"><span class="home-rec-name">${esc(pick(entry.shop.name))}</span>` +
-        `<span class="home-rec-meta">${esc(h.typeLabel[type])} ・ ${esc(pick(entry.shop.area))}</span>` +
-        `</span>` +
-        `</a></li>`
+        `<li><a class="home-rec-card" href="${esc(shopUrl(shop.id))}" data-shop-id="${esc(shop.id)}">` +
+        `<span class="home-rec-img"><img src="${esc(image.src)}" alt="" loading="lazy" width="320" height="200"></span>` +
+        `<span class="home-rec-card-body">` +
+        `<span class="home-rec-card-name">${esc(pick(shop.name))}</span>` +
+        `<span class="home-rec-rating" data-rating-for="${esc(shop.id)}">${homeRatingHtml(shop.id)}</span>` +
+        `<span class="home-rec-area">📍 ${esc(pick(shop.area))}</span>` +
+        `<span class="home-rec-tags"><span class="todo-tag" style="color:${(typeof TODO_TYPE_COLORS !== "undefined" && TODO_TYPE_COLORS[type]) || "#3f4d44"}">${esc(h.typeLabel[type])}</span>` +
+        (category ? `<span class="todo-tag">${esc(category)}</span>` : "") +
+        `</span></span></a></li>`
       );
     })
     .join("");
@@ -401,12 +451,15 @@ function renderHome() {
     // マイリスト(js/todo.js)
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     // あなたへのおすすめ: おすすめのお店があるときだけ出す(しくみの説明や距離は、画面には出さない)
+    //   (記録を消すボタンは、アカウントの画面にある。js/account.js)
     (rec.items.length
-      ? `<section class="home-section">` +
-        `<h2 class="home-h2">${esc(h.recTitle)}</h2>` +
-        `<ul class="home-rec-list">${recItems}</ul>` +
-        // 記録を消すボタンだけは、残しておく(この端末に保存している記録を、利用者がいつでも消せるように)
-        `<div class="home-clear-row"><button type="button" class="home-clear-history" data-home-action="clear-history">${esc(h.clearHistory)}</button></div>` +
+      ? `<section class="home-section home-rec-section">` +
+        `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2>` +
+        `<span class="home-area-arrows">` +
+        `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
+        `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="1" aria-label="${esc(h.areaNext)}">${homeIcon("forward", 20)}</button>` +
+        `</span></div>` +
+        `<ul class="home-rec-cards">${recItems}</ul>` +
         `</section>`
       : "") +
     `<section class="home-section">` +
@@ -471,6 +524,12 @@ homePage.addEventListener("click", (event) => {
     event.preventDefault();
     const entry = entries.find((e) => e.shop.id === shopLink.dataset.shopId);
     if (entry) openShop(entry);
+    return;
+  }
+  const listArrow = event.target.closest("[data-scroll-list]");
+  if (listArrow) {
+    const list = homePage.querySelector(listArrow.dataset.scrollList);
+    if (list) list.scrollBy({ left: Number(listArrow.dataset.scrollDir) * list.clientWidth * 0.8, behavior: "smooth" });
     return;
   }
   const arrow = event.target.closest("[data-area-scroll]");
