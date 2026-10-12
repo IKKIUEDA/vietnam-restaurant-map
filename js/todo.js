@@ -278,9 +278,9 @@ function myListAreaCard(pref, types, muted) {
     .map((p) => `<span class="mylist-kind"><span class="mylist-kind-dot" style="background:${TODO_TYPE_COLORS[p.t]}"></span>${esc(h.typeLabel[p.t])} ${p.n}</span>`)
     .join("");
   return (
-    `<a class="mylist-area${muted ? " is-muted" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
+    `<a class="mylist-area${muted ? " is-muted" : ""}${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
     (myListPrefImage(pref.key)
-      ? `<span class="mylist-area-icon has-photo"><img src="${esc(myListPrefImage(pref.key))}" alt="" loading="lazy" width="120" height="84"></span>`
+      ? `<span class="mylist-area-icon has-photo"><img src="${esc(myListPrefImage(pref.key))}" alt="" loading="lazy" width="480" height="336"></span>`
       : `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>`) +
     `<span class="mylist-area-body"><span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
     `<span class="mylist-kinds">${parts}</span></span>` +
