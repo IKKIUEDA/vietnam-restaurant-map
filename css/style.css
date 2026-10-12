@@ -5674,3 +5674,90 @@ a.user-link:hover {
 .acct-guest-sub .acct-history-btn {
   font-size: 0.8rem;
 }
+
+/* プロフィール: 編集 / シェア / 歯車(アカウント設定) */
+.acct-action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.acct-pill {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 12px;
+  background: #eceeea;
+  color: var(--c-text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.acct-pill:hover {
+  background: #e2e5df;
+}
+
+.acct-square {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #eceeea;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acct-square:hover {
+  background: #e2e5df;
+}
+
+/* アカウント設定の一覧 */
+.acct-settings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-card);
+}
+
+.acct-settings li + li {
+  border-top: 1px solid var(--c-border);
+}
+
+.acct-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 54px;
+  padding: 0 16px;
+  border: none;
+  background: none;
+  color: var(--c-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.acct-setting svg {
+  flex: none;
+  color: #6b766e;
+}
+
+@media (min-width: 600px) {
+  .acct-pill {
+    font-size: 0.95rem;
+  }
+}
