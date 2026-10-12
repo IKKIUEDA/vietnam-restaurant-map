@@ -5821,3 +5821,174 @@ a.user-link:hover {
 .acct-center {
   text-align: center;
 }
+
+/* =====================================================================
+   設定の各画面(js/settings.js): スポットの追加・メール・パスワード・アカウントの削除・届いたスポット
+   ===================================================================== */
+.set-notes {
+  margin: 14px 0 4px;
+  padding-left: 1.2em;
+  color: var(--c-text-sub);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.set-notes li + li {
+  margin-top: 4px;
+}
+.set-done {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  color: var(--c-text);
+}
+.set-done svg {
+  flex: none;
+  color: var(--c-primary);
+  margin-top: 2px;
+}
+.set-center {
+  justify-content: center;
+}
+.acct-card.set-card {
+  display: block;
+  margin: 12px 0 18px;
+  padding: 16px;
+}
+.set-heading {
+  margin: 22px 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.set-card .set-heading {
+  margin-top: 0;
+}
+.set-email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px;
+  font-weight: 600;
+  word-break: break-all;
+}
+.set-badge {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: #fdecea;
+  color: #b3261e;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.set-badge.is-ok {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+}
+.set-row-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.set-reset .acct-pill {
+  margin-top: 8px;
+}
+.set-danger-card {
+  border-color: #f2c4bf;
+  background: #fff8f7;
+}
+.set-danger-lead {
+  margin: 0 0 8px;
+  color: #b3261e;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.set-list {
+  margin: 0;
+  padding-left: 1.2em;
+  line-height: 1.7;
+}
+.set-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0 6px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.set-check input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  flex: none;
+  accent-color: #b3261e;
+}
+.todo-primary.set-danger-btn {
+  background: #b3261e;
+  border-color: #b3261e;
+}
+.todo-primary.set-danger-btn:hover {
+  background: #8f1d17;
+}
+.set-requests {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.set-request {
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
+}
+.set-request.is-done,
+.set-request.is-rejected {
+  opacity: 0.7;
+}
+.set-request-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+.set-request-type {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  font-weight: 700;
+}
+.set-request-status {
+  font-weight: 700;
+  color: var(--c-text-sub);
+}
+.set-request-head .acct-item-date {
+  margin-left: auto;
+}
+.set-request-name {
+  margin: 8px 0 2px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.set-request-line {
+  margin: 2px 0;
+  font-size: 0.88rem;
+  color: var(--c-text-sub);
+  word-break: break-all;
+}
+.set-request-memo {
+  color: var(--c-text);
+  white-space: pre-wrap;
+}
+.set-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}

@@ -253,6 +253,7 @@ function setAccountMessage(text) {
   }, 3000);
 }
 let accountAdminMessage = "";
+let accountGoodbye = ""; // アカウントを削除したあとのお知らせ(ログアウトした画面に出す)
 
 function loadAccountData(uid, withCheckins) {
   if (accountData && accountData.uid === uid && accountData.withCheckins === withCheckins) return;
@@ -423,6 +424,7 @@ function renderAccountPage() {
       // ログインしていないとき: シンプルに「ログインまたは新規登録」だけを、画面のまん中に
       //   (保存した店は、地図の「♡ 保存した店」から見られる。履歴を消すは、ログイン後のアカウント画面にある)
       accountHeader(x.title) +
+      (accountGoodbye ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(accountGoodbye)}</span></p>` : "") +
       `<section class="home-section acct-section acct-guest">` +
       `<div class="acct-guest-main"><div class="acct-guest-card">` +
       `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
@@ -431,6 +433,7 @@ function renderAccountPage() {
       `</section>`;
     return;
   }
+  accountGoodbye = "";
   const uid = authUser.uid;
   loadAccountData(uid, true);
   if (accountEditing) {
@@ -470,7 +473,7 @@ function renderAccountPage() {
 // 設定(URL「?view=account&settings=1」。プロフィール画面の歯車から開く)
 //   ・sub=spot(新しいスポットを追加 → 種類を選ぶ)/ sub=account(アカウント設定)
 //     sub=email / password / delete(アカウント設定の中の各画面)
-//   ・各機能の中身は、これから作る(いまは「準備中」と表示する)
+//   ・各機能の中身は js/settings.js(sub=requests は管理者だけの「届いたスポット」)
 const ACCT_ICONS = {
   spot: '<path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"></path><path d="M3 21h18"></path><path d="M9 7h1M14 7h1M9 11h1M14 11h1"></path><path d="M10 21v-4h4v4"></path>',
   account: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"></path>',
@@ -508,14 +511,10 @@ function renderAccountSettings() {
   const page = (title, backHref, body) => {
     homePage.innerHTML = accountHeader(title, backHref) + `<section class="home-section acct-section">${body}</section>`;
   };
-  const soon = `<p class="acct-soon">${esc(x.comingSoon)}</p>`;
+  // 各機能の画面(スポットの入力・メール・パスワード・削除・管理者の一覧)は js/settings.js
+  if (typeof renderSettingsSub === "function" && renderSettingsSub(sub, params, page)) return;
 
   if (sub === "spot") {
-    const type = params.get("type");
-    if (["restaurant", "cafe", "grocery"].includes(type)) {
-      page(`${x.addSpot}(${x.typeNames[type]})`, acctSettingsUrl("spot"), soon);
-      return;
-    }
     page(
       x.addSpot,
       accountSettingsUrl(),
@@ -545,11 +544,6 @@ function renderAccountSettings() {
     );
     return;
   }
-  if (sub === "email" || sub === "password" || sub === "delete") {
-    const title = sub === "email" ? x.emailSetting : sub === "password" ? x.passwordSetting : x.deleteAccount;
-    page(title, acctSettingsUrl("account"), soon);
-    return;
-  }
 
   // 設定のトップ
   page(
@@ -568,7 +562,10 @@ function renderAccountSettings() {
       `</ul>` +
       (accountClearConfirm || accountClearDone ? `<p class="acct-small acct-center">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p>` : "") +
       (isAdminUser(authUser)
-        ? `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="backfill">${esc(x.adminBackfill)}</button>` +
+        ? `<ul class="acct-settings">` +
+          acctRow({ icon: "spot", label: settingsText().adminRequests, href: acctSettingsUrl("requests") }) +
+          `</ul>` +
+          `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="backfill">${esc(x.adminBackfill)}</button>` +
           (accountAdminMessage ? `<p class="acct-note">${esc(accountAdminMessage)}</p>` : "") +
           `</div>`
         : "")

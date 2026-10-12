@@ -47,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261012p" />
+    <link rel="stylesheet" href="css/style.css?v=20261012q" />
   </head>
   <body>
     <header>
@@ -195,28 +195,29 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261012p"></script>
-    <script src="js/data.js?v=20261012p"></script>
-    <script src="js/app.js?v=20261012p"></script>
+    <script src="js/i18n.js?v=20261012q"></script>
+    <script src="js/data.js?v=20261012q"></script>
+    <script src="js/app.js?v=20261012q"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261012p"></script>
-    <script src="js/landmark-areas.js?v=20261012p"></script>
-    <script src="js/landmarks.js?v=20261012p"></script>
+    <script src="js/station-lines.js?v=20261012q"></script>
+    <script src="js/landmark-areas.js?v=20261012q"></script>
+    <script src="js/landmarks.js?v=20261012q"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261012p"></script>
+    <script src="js/auth.js?v=20261012q"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261012p"></script>
+    <script src="js/auth-modal.js?v=20261012q"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261012p"></script>
+    <script src="js/home.js?v=20261012q"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261012p"></script>
+    <script src="js/todo.js?v=20261012q"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/account.js?v=20261012p"></script>
+    <script src="js/account.js?v=20261012q"></script>
+    <script src="js/settings.js?v=20261012q"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261012p"></script>
-    <script src="js/detail.js?v=20261012p"></script>
+    <script src="js/feature.js?v=20261012q"></script>
+    <script src="js/detail.js?v=20261012q"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -332,6 +333,14 @@
           sendPasswordResetEmail,
           signOut,
           onAuthStateChanged,
+          EmailAuthProvider,
+          reauthenticateWithCredential,
+          reauthenticateWithPopup,
+          updatePassword,
+          verifyBeforeUpdateEmail,
+          sendEmailVerification,
+          deleteUser,
+          reload,
         } = loaded(authModule);
         auth = getAuth(app);
         createUserWithEmailAndPassword_ = createUserWithEmailAndPassword;
@@ -348,6 +357,26 @@
           signOut: () => signOut(auth),
           // ログイン状態が変わるたび(最初の復元も含む)に、callback(user または null)が呼ばれる
           onChange: (callback) => onAuthStateChanged(auth, callback),
+
+          // --- アカウント設定(js/settings.js) ---
+          //   メールアドレス・パスワードの変更、アカウントの削除は、Firebase の決まりで「最近ログインし直したこと」が必要。
+          //   そのため、先に本人確認(パスワードの入力、または Google のアカウント選択)をしてから行う
+          currentUser: () => auth.currentUser,
+          // メールアドレス+パスワードで登録した人か(Google ログインの人は false)
+          hasPassword: () =>
+            !!(auth.currentUser && auth.currentUser.providerData.some((p) => p.providerId === "password")),
+          reauthWithPassword: (password) =>
+            reauthenticateWithCredential(auth.currentUser, EmailAuthProvider.credential(auth.currentUser.email, password)),
+          reauthWithGoogle: () => reauthenticateWithPopup(auth.currentUser, provider),
+          // 認証メール(このメールアドレスが本人のものか確かめるメール)を送る
+          sendVerification: () => sendEmailVerification(auth.currentUser),
+          // 認証の状態などを、最新にする(メールのリンクを開いたあと)
+          reloadUser: () => reload(auth.currentUser),
+          // 新しいメールアドレスに確認メールを送る。メールのリンクを開いたときに、変更が完了する
+          changeEmail: (newEmail) => verifyBeforeUpdateEmail(auth.currentUser, newEmail),
+          changePassword: (newPassword) => updatePassword(auth.currentUser, newPassword),
+          // ログインの記録(アカウント)そのものを削除する。投稿などのデータは、先に profileApi.deleteMyData で消す
+          deleteAccount: () => deleteUser(auth.currentUser),
         };
         window.dispatchEvent(new Event("auth-api-ready"));
       } catch (error) {
@@ -929,6 +958,114 @@
                 }
               }
               return n;
+            },
+
+            // --- 新しいスポットの情報提供(spotRequests。運営者だけが一覧を見られる。firestore.rules) ---
+            //   data: { type, name, address, station, url, memo }(station・url・memo は任意。空ならフィールドごと送らない)
+            async submitSpot(data) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const record = { uid, type: data.type, name: data.name, address: data.address, status: "new", createdAt: serverTimestamp() };
+              ["station", "url", "memo"].forEach((k) => {
+                if (data[k]) record[k] = data[k];
+              });
+              await withTimeout(setDoc(doc(collection(db, "spotRequests")), record));
+            },
+            // 【管理者だけ】届いたスポットの一覧(新しい順)
+            async fetchSpotRequests() {
+              if (!isAdminNow()) return [];
+              const q = query(collection(db, "spotRequests"), orderBy("createdAt", "desc"), limit(200));
+              const snapshot = await withTimeout(getDocs(q));
+              return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            },
+            // 【管理者だけ】対応の状態を変える("new" 未対応 / "done" 掲載した / "rejected" 見送り)
+            async setSpotStatus(id, status) {
+              await withTimeout(updateDoc(doc(db, "spotRequests", checkUid(id)), { status }));
+            },
+            async deleteSpotRequest(id) {
+              await withTimeout(deleteDoc(doc(db, "spotRequests", checkUid(id))));
+            },
+
+            // --- アカウントの削除: 自分のデータを、すべて消す(js/settings.js) ---
+            //   写真・レビュー・チェックイン・Tips・いいね・コメント・スポットの情報提供・プロフィール・ニックネーム
+            //   ・人数の集計(Tips・チェックイン・いいね)は、いつもの取り消しと同じ方法で -1 する
+            //   ・Cloudinary 上の画像ファイルは、ブラウザからは消せない(秘密鍵が必要なため)。アプリからは見えなくなる
+            //   shopIds: 地図に載っているお店のID(js/data.js)。onProgress(done, total) で進み具合を知らせる
+            async deleteMyData(shopIds, onProgress) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              const progress = (done, total) => {
+                if (typeof onProgress === "function") onProgress(done, total);
+              };
+              const runAll = async (tasks) => {
+                // 少しずつ(8件ずつ)並べて行う(一度に送りすぎないように)
+                let done = 0;
+                for (let i = 0; i < tasks.length; i += 8) {
+                  await Promise.all(tasks.slice(i, i + 8).map((fn) => fn()));
+                  done = Math.min(tasks.length, i + 8);
+                  progress(done, tasks.length);
+                }
+              };
+
+              // 1) いいね・コメント(すべての写真を見て、自分のものを探す)
+              const allPhotos = await withTimeout(getDocs(query(collectionGroup(db, "photos"), limit(3000))));
+              const photoTasks = allPhotos.docs.map((p) => async () => {
+                const shopId = shopIdOf(p);
+                if (!/^[A-Za-z0-9_-]+$/.test(shopId)) return;
+                const mine = p.data().uid === uid;
+                const likeSnap = await withTimeout(getDoc(photoLikeRef(shopId, p.id, uid)));
+                if (likeSnap.exists()) {
+                  if (mine) await withTimeout(deleteDoc(likeSnap.ref)); // 自分の写真は、このあと消すので、人数は触らない
+                  else {
+                    const batch = writeBatch(db);
+                    batch.delete(likeSnap.ref);
+                    batch.update(p.ref, { likeCount: increment(-1) });
+                    await withTimeout(batch.commit());
+                  }
+                }
+                const comments = await withTimeout(getDocs(query(photoCommentsCollection(shopId, p.id), where("uid", "==", uid), limit(200))));
+                for (const c of comments.docs) await withTimeout(deleteDoc(c.ref));
+              });
+
+              // 2) Tips・チェックイン・レビュー(お店ごとに、自分の記録があるか見る)
+              //    地図のお店に加えて、uid で見つかったお店も対象にする(地図から外れたお店の分も消すため)
+              const ids = new Set((shopIds || []).filter((id) => /^[A-Za-z0-9_-]+$/.test(String(id))));
+              for (const name of ["reviews", "checkins"]) {
+                try {
+                  const snap = await withTimeout(getDocs(query(collectionGroup(db, name), where("uid", "==", uid), limit(500))));
+                  snap.docs.forEach((d) => ids.add(shopIdOf(d)));
+                } catch (error) {
+                  console.warn(`${name} の検索に失敗(お店ごとの確認で消します):`, error);
+                }
+              }
+              const shopTasks = [...ids]
+                .filter((id) => /^[A-Za-z0-9_-]+$/.test(id))
+                .map((shopId) => async () => {
+                  await window.tipsApi.deleteVote(shopId);
+                  await window.checkinApi.deleteCheckin(shopId);
+                  const r = await withTimeout(getDoc(reviewRef(shopId, uid)));
+                  if (r.exists()) await withTimeout(deleteDoc(r.ref));
+                });
+
+              // 3) 自分の写真
+              const myPhotos = allPhotos.docs.filter((p) => p.data().uid === uid);
+              const myPhotoTasks = myPhotos.map((p) => () => withTimeout(deleteDoc(p.ref)));
+
+              await runAll([...photoTasks, ...shopTasks, ...myPhotoTasks]);
+
+              // 4) スポットの情報提供・プロフィール・ニックネーム
+              const spots = await withTimeout(getDocs(query(collection(db, "spotRequests"), where("uid", "==", uid), limit(200))));
+              for (const s of spots.docs) await withTimeout(deleteDoc(s.ref));
+              await withTimeout(deleteDoc(profileRef(uid)));
+              await withTimeout(deleteDoc(doc(db, "users", uid)));
             },
           };
           window.dispatchEvent(new Event("profile-api-ready"));
