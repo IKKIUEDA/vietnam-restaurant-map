@@ -15,6 +15,10 @@ const HOME_TEXT = {
     searchPlaceholderShort: "店名・エリア・駅名で探す",
     searchButton: "探す",
     entriesLabel: "探し方",
+    entryRestaurant: "レストラン",
+    entryCafe: "カフェ",
+    entryGrocery: "食材店",
+    entryNear: "近くのお店",
     near: "近く",
     restaurant: "料理店",
     grocery: "食材店",
@@ -49,6 +53,10 @@ const HOME_TEXT = {
     searchPlaceholderShort: "Shop, area or station",
     searchButton: "Search",
     entriesLabel: "Ways to explore",
+    entryRestaurant: "Restaurants",
+    entryCafe: "Cafes",
+    entryGrocery: "Groceries",
+    entryNear: "Near me",
     near: "Nearby",
     restaurant: "Restaurants",
     grocery: "Groceries",
@@ -83,6 +91,10 @@ const HOME_TEXT = {
     searchPlaceholderShort: "Tên quán, khu vực, ga",
     searchButton: "Tìm",
     entriesLabel: "Cách tìm",
+    entryRestaurant: "Nhà hàng",
+    entryCafe: "Cà phê",
+    entryGrocery: "Tạp hóa",
+    entryNear: "Gần đây",
     near: "Gần đây",
     restaurant: "Nhà hàng",
     grocery: "Tạp hóa",
@@ -445,9 +457,11 @@ function renderHome() {
     `</form>` +
     `</div>` +
     `<nav class="home-entries" aria-label="${esc(h.entriesLabel)}">` +
-    // 入口は、いまは「近く」と「食品・飲料」の2つ(料理店・食材店・カフェは、食品・飲料の中の絞り込みで選ぶ)
-    entryButton("near", h.near) +
-    entryButton("fnb", h.fnb) +
+    // 入口は4つ: レストラン・カフェ・食材店(地図でその種類だけを出す)と、近くのお店(現在地のまわり)
+    entryButton("restaurant", h.entryRestaurant) +
+    (hasCafe ? entryButton("cafe", h.entryCafe) : "") +
+    entryButton("grocery", h.entryGrocery) +
+    entryButton("near", h.entryNear) +
     `</nav>` +
     `<p class="home-status" role="status" hidden></p>` +
     // エリアから探す(駅のまわりのお店。カードを押すと、地図で「○○駅」を検索)
@@ -571,6 +585,10 @@ homePage.addEventListener("click", (event) => {
     navigate(mapUrl());
     resetFilters();
     if (window.matchMedia("(max-width: 600px)").matches) openScanOverlay("list");
+  } else if (action.classList.contains("home-entry") && ["restaurant", "cafe", "grocery"].includes(key)) {
+    // 入口のボタン(レストラン・カフェ・食材店): 地図でその種類だけを出す。スマホは、一覧を開く
+    openMapWithType(key);
+    if (window.matchMedia("(max-width: 600px)").matches && typeof openScanOverlay === "function") openScanOverlay("list");
   } else if ((key === "cafe" || key === "grocery") && typeof renderFeaturePage === "function") {
     // 特集: その種類のお店の一覧(近く・エリアで絞り込める。js/feature.js)
     navigate(featureUrl(key));

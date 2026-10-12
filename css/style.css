@@ -5445,3 +5445,64 @@ a.user-link:hover {
   z-index: 1;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
+
+/* ---- ホームの入口: レストラン・カフェ・食材店・近くのお店(4つを横に並べた四角いボタン) ---- */
+.home-entries {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+  padding: 20px 16px 4px;
+}
+
+.home-entry {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 92px;
+  padding: 12px 4px;
+  font-size: 0.82rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.home-entry-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+
+@media (min-width: 900px) {
+  .home-entries {
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 16px;
+    padding: 24px 0 0;
+  }
+
+  .home-entry {
+    flex-direction: row;
+    min-height: 76px;
+    gap: 12px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-entries {
+    gap: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .home-entry {
+    padding: 10px 0;
+    font-size: 0.68rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .home-entry-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
