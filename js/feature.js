@@ -71,6 +71,8 @@ function renderFeaturePage(type) {
   if (!FEATURE_TYPES.includes(type)) type = "cafe";
   if (featureState.type !== type) {
     featureState.type = type;
+    // 特集を開いたことも、おすすめ(ホーム)の手がかりにする(端末の中だけの記録。js/home.js)
+    if (typeof recordTypePick === "function") recordTypePick(type);
     featureState.filter = "all";
     featureState.error = false;
   }

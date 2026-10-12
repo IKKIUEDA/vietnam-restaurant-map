@@ -12,6 +12,10 @@ const ACCOUNT_TEXT = {
     loginLead: "ログインすると、プロフィールの設定や、写真・レビューの投稿ができます",
     login: "ログイン・新規登録",
     saved: "♡ 保存した店",
+    clearHistory: "閲覧・検索の履歴を消す",
+    clearHistoryNote: "ホームの「あなたへのおすすめ」に使っている、この端末の中の記録(見たお店・検索した言葉・選んだ種類)を消します",
+    clearHistoryConfirm: "本当に消す",
+    clearHistoryDone: "履歴を消しました",
     savedCount: (n) => `${n}件`,
     editProfile: "プロフィールを編集",
     viewPublic: "公開プロフィールを見る",
@@ -57,6 +61,10 @@ const ACCOUNT_TEXT = {
     loginLead: "Log in to set up your profile and post photos and reviews",
     login: "Log in / Sign up",
     saved: "♡ Saved shops",
+    clearHistory: "Clear browsing and search history",
+    clearHistoryNote: "Deletes the records on this device used for ‘Picked for you’ on the home screen (shops you viewed, words you searched, kinds you chose)",
+    clearHistoryConfirm: "Really clear",
+    clearHistoryDone: "History cleared",
     savedCount: (n) => `${n}`,
     editProfile: "Edit profile",
     viewPublic: "View public profile",
@@ -102,6 +110,10 @@ const ACCOUNT_TEXT = {
     loginLead: "Đăng nhập để cài đặt hồ sơ và đăng ảnh, đánh giá",
     login: "Đăng nhập / Đăng ký",
     saved: "♡ Quán đã lưu",
+    clearHistory: "Xóa lịch sử xem và tìm kiếm",
+    clearHistoryNote: "Xóa dữ liệu trên thiết bị này dùng cho ‘Gợi ý cho bạn’ ở trang chủ (quán đã xem, từ khóa đã tìm, loại quán đã chọn)",
+    clearHistoryConfirm: "Xóa thật",
+    clearHistoryDone: "Đã xóa lịch sử",
     savedCount: (n) => `${n} quán`,
     editProfile: "Sửa hồ sơ",
     viewPublic: "Xem hồ sơ công khai",
@@ -328,6 +340,20 @@ function savedRowHtml() {
   );
 }
 
+// 「閲覧・検索の履歴を消す」(ホームの「あなたへのおすすめ」に使う、この端末の中の記録。js/home.js の clearActivity)
+//   ・ログインしていなくても使える(記録は、ブラウザの中にあるため)
+let accountClearConfirm = false;
+let accountClearDone = false;
+function clearHistoryHtml() {
+  const x = accountText();
+  return (
+    `<div class="acct-history">` +
+    `<button type="button" class="acct-text-btn acct-history-btn${accountClearConfirm ? " is-confirm" : ""}" data-acct-action="clear-history">` +
+    `${esc(accountClearConfirm ? x.clearHistoryConfirm : x.clearHistory)}</button>` +
+    `<p class="acct-small">${esc(accountClearDone ? x.clearHistoryDone : x.clearHistoryNote)}</p></div>`
+  );
+}
+
 // ---------------------------------------------------------------------
 // 「アカウント」(URL「?view=account」)
 // ---------------------------------------------------------------------
@@ -345,6 +371,7 @@ function renderAccountPage() {
       `<div class="acct-card acct-login">${accountAvatar("", "?", 64)}<p>${esc(x.loginLead)}</p>` +
       `<button type="button" class="todo-primary" data-acct-action="login">${esc(x.login)}</button></div>` +
       savedRowHtml() +
+      clearHistoryHtml() +
       `</section>`;
     return;
   }
@@ -372,6 +399,7 @@ function renderAccountPage() {
     `<a class="acct-link" href="${esc(userUrl(uid))}" data-acct-nav>${esc(x.viewPublic)} ›</a></div>` +
     savedRowHtml() +
     accountPostsHtml(data, ["photos", "reviews", "checkins"]) +
+    clearHistoryHtml() +
     `<div class="acct-bottom">` +
     `<button type="button" class="acct-logout" data-acct-action="logout">${esc(x.logout)}</button>` +
     (isAdminUser(authUser)
@@ -513,6 +541,18 @@ homePage.addEventListener("click", (event) => {
   if (!btn) return;
   const x = accountText();
   const action = btn.dataset.acctAction;
+  if (action === "clear-history") {
+    if (!accountClearConfirm) {
+      accountClearConfirm = true; // もう1回押すと、本当に消す(押し間違いで消えないように)
+      accountClearDone = false;
+    } else {
+      if (typeof clearActivity === "function") clearActivity();
+      accountClearConfirm = false;
+      accountClearDone = true;
+    }
+    renderHomeMode();
+    return;
+  }
   if (action === "login") openAuthModal();
   else if (action === "saved") {
     navigate(mapUrl());
