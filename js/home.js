@@ -227,6 +227,7 @@ function homeRecommendations() {
   //   ・選んだ種類(料理店・食材店・カフェ)、特集を開いた回数
   //   ・マイリストで選んだエリア(都道府県)と種類
   //   ・もう見たお店・保存したお店は出さない。同じエリアばかりにならないように、1エリア2件まで
+  //   ・出すのは、レストラン(料理店)とカフェだけ(食材店は出さない。食材店を見た記録は、近さ・エリアの手がかりには使う)
   const recent = loadRecentShops();
   const searches = loadRecentSearches();
   const picks = loadTypePicks();
@@ -250,8 +251,9 @@ function homeRecommendations() {
 
   const exclude = new Set([...recent, ...saved.map((e) => e.shop.id)]); // もう見た・保存したお店は出さない
   const near = (km) => Math.exp(-km / 1.5); // 近いほど 1 に近い(1.5km で約 0.37)
+  const REC_TYPES = ["restaurant", "cafe"];
   const scored = entries
-    .filter((e) => !exclude.has(e.shop.id))
+    .filter((e) => !exclude.has(e.shop.id) && REC_TYPES.includes(shopType(e.shop)))
     .map((e) => {
       const { lat, lng } = e.shop;
       const area = areaKey(e.shop);
