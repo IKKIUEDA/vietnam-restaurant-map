@@ -12,6 +12,7 @@ const HOME_TEXT = {
     catch: "日本のベトナムを探そう。",
     searchLabel: "店名・エリア・駅名で探す",
     searchPlaceholder: "店名・エリア・駅名で探す(例: 千葉駅)",
+    searchPlaceholderShort: "店名・エリア・駅名で探す",
     searchButton: "探す",
     entriesLabel: "探し方",
     near: "近く",
@@ -45,6 +46,7 @@ const HOME_TEXT = {
     catch: "Find Vietnam in Japan.",
     searchLabel: "Search by shop, area or station",
     searchPlaceholder: "Shop, area or station (e.g. Chiba Station)",
+    searchPlaceholderShort: "Shop, area or station",
     searchButton: "Search",
     entriesLabel: "Ways to explore",
     near: "Nearby",
@@ -78,6 +80,7 @@ const HOME_TEXT = {
     catch: "Tìm Việt Nam tại Nhật Bản.",
     searchLabel: "Tìm theo tên quán, khu vực, ga",
     searchPlaceholder: "Tên quán, khu vực, ga (VD: ga Chiba)",
+    searchPlaceholderShort: "Tên quán, khu vực, ga",
     searchButton: "Tìm",
     entriesLabel: "Cách tìm",
     near: "Gần đây",
@@ -385,6 +388,8 @@ function openMapWithSearch(q) {
 // ホームの中身
 // ---------------------------------------------------------------------
 function renderHome() {
+  // スマホ(幅が狭い画面)では、検索窓の案内文を短くする(「(例: 千葉駅)」まで入れると、途中で切れてしまうため)
+  const narrowScreen = window.matchMedia("(max-width: 480px)").matches;
   const h = homeText();
   const t = ui[currentLang];
   const count = (type) => restaurants.filter((s) => shopType(s) === type).length;
@@ -435,7 +440,7 @@ function renderHome() {
     `<form class="home-search" role="search">` +
     `<label class="visually-hidden" for="home-search-input">${esc(h.searchLabel)}</label>` +
     `<span class="home-search-box">${homeIcon("search", 20)}` +
-    `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search">` +
+    `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(narrowScreen ? h.searchPlaceholderShort : h.searchPlaceholder)}" enterkeyhint="search">` +
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
     `</div>` +
