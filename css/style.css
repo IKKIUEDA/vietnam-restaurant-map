@@ -6002,3 +6002,31 @@ body > *:not(#content),
 .scan-overlay-header {
   touch-action: manipulation;
 }
+
+/* マイリストのエリアのカード(写真がある県): 左半分を写真にする。左の緑の線は付けない */
+.mylist-area.has-photo-card {
+  display: grid;
+  grid-template-columns: 50% minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  min-height: 112px;
+  border-left: 1px solid var(--c-border);
+  overflow: hidden;
+}
+.mylist-area.has-photo-card .mylist-area-icon.has-photo {
+  align-self: stretch;
+  width: auto;
+  height: 100%;
+  min-height: 112px;
+  border-radius: 0;
+}
+.mylist-area.has-photo-card .mylist-area-body {
+  padding: 14px 8px 14px 16px;
+}
+.mylist-area.has-photo-card .mylist-area-count {
+  padding-right: 14px;
+}
+.mylist-area.has-photo-card.is-muted {
+  border-left-color: var(--c-border);
+}
