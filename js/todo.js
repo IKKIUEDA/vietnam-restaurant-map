@@ -1,14 +1,16 @@
 // マイリスト(My List)
-//   ・最初に「どのエリア(東京・千葉・埼玉・神奈川)」と「何を探す(料理店・カフェ・食材店)」を選んで保存する
-//   ・保存したあとは、エリアごとのカード(そのエリアの、選んだ種類のお店の件数)を出す。
+//   ・エリア(都道府県)ごとに1つずつ追加する。1つのエリアにつき「何を探す(料理店・カフェ・食材店)」を選ぶ
+//       追加: URL「?view=todo&edit=1」(&pref=東京都 で、そのエリアを選んだ状態から始める)
+//       変更・外す: エリアのお店の一覧の右上の設定マーク(URL「?view=todo&edit=1&pref=東京都」)
+//   ・ホーム: 「マイリスト」のカードを横に並べる(横にスライド)。「すべて見る」で一覧(URL「?view=todo」)
 //     カードを押すと、そのエリアのお店の一覧(URL「?view=todo&area=東京都」)。お店のカードを押すと、お店のページ(?shop=ID)
 //   ・お店の一覧は「おすすめ順」= みんなのレビューの評価(★)が高い順(同じなら、レビューが多い順 → データの順)
-//   ・選んだ内容を変えるときは、右上の設定マーク(URL「?view=todo&edit=1」)から
 //   ・選んだ内容は、この端末(ブラウザの localStorage)の中だけに保存する。サーバーや第三者には送らない
 //   ・レビューの評価は、店舗ページのレビューと同じもの(Firestore)を読むだけ。選んだ内容は送らない
-//   ・「こちらもおすすめ」: 最近見たお店があるエリアのうち、まだ選んでいないエリア(計算は端末の中だけ)
+//   ・「最近見たお店から」: 最近見たお店があるエリアのうち、まだ追加していないエリア(計算は端末の中だけ)
 
-const MYLIST_KEY = "vf_mylist"; // { prefs: ["東京都", ...], types: ["restaurant", ...], savedAt }
+const MYLIST_KEY = "vf_mylist"; // { items: [{ pref: "東京都", types: ["restaurant", ...] }, ...], savedAt }
+//   (前の版は { prefs: [...], types: [...] }。読み込むときに、エリアごとの形に直す)
 const OLD_TODO_KEY = "vf_todo_lists"; // 前の版の「行きたいお店のリスト」。もう使わないので、見つけたら消す
 const MYLIST_TYPES = ["restaurant", "cafe", "grocery"];
 
@@ -17,13 +19,25 @@ const TODO_TEXT = {
     sectionTitle: "マイリスト",
     sectionSub: "行きたいエリアと、探したいお店を選んでおけます",
     start: "マイリストを作る",
-    startSub: "エリアと、探したいお店を選ぶだけ",
+    startSub: "行きたいエリアを追加するだけ",
     settings: "マイリストの設定",
     settingsOpen: "マイリストの設定を変える",
     close: "閉じる",
     count: (n) => `${n}件`,
     areaCount: (n) => `${n}つのエリア`,
-    alsoTitle: "こちらもおすすめ",
+    alsoTitle: "最近見たお店から",
+    seeAll: "すべて見る",
+    addArea: "エリアを追加",
+    addTitle: "マイリストに追加",
+    addThis: "追加する",
+    editTitle: (name) => `${name}の設定`,
+    stepArea: "どのエリアに行く?(1つ選ぶ)",
+    added: "追加済み",
+    addedToast: "マイリストに追加しました",
+    allAdded: "すべてのエリアを、マイリストに追加しています",
+    remove: "マイリストから外す",
+    removeConfirm: "本当に外す",
+    removed: "マイリストから外しました",
     backToList: "マイリストに戻る",
     backToHome: "ホームに戻る",
     all: "すべて",
@@ -32,9 +46,8 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n}件)`,
     detail: "お店のページを見る",
     empty: "このエリアには、選んだ種類のお店がまだありません",
-    step1: "どのエリアに行く?(いくつでも)",
     step2: "何を探す?(いくつでも)",
-    needArea: "エリアを1つ以上選んでください",
+    needArea: "エリアを選んでください",
     needType: "探したいお店を1つ以上選んでください",
     save: "この内容で保存",
     saved: "保存しました",
@@ -43,13 +56,25 @@ const TODO_TEXT = {
     sectionTitle: "My List",
     sectionSub: "Pick the areas you want to go and the shops you're looking for",
     start: "Make My List",
-    startSub: "Just choose areas and the kinds of shops",
+    startSub: "Just add the areas you want to go",
     settings: "My List settings",
     settingsOpen: "Change My List settings",
     close: "Close",
     count: (n) => `${n} shops`,
     areaCount: (n) => (n === 1 ? "1 area" : `${n} areas`),
-    alsoTitle: "You may also like",
+    alsoTitle: "Based on shops you viewed",
+    seeAll: "See all",
+    addArea: "Add an area",
+    addTitle: "Add to My List",
+    addThis: "Add",
+    editTitle: (name) => `${name} settings`,
+    stepArea: "Which area are you going to? (choose one)",
+    added: "Added",
+    addedToast: "Added to My List",
+    allAdded: "All areas are already in My List",
+    remove: "Remove from My List",
+    removeConfirm: "Really remove",
+    removed: "Removed from My List",
     backToList: "Back to My List",
     backToHome: "Back to home",
     all: "All",
@@ -58,9 +83,8 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "See shop page",
     empty: "There are no shops of the chosen kinds in this area yet",
-    step1: "Which areas are you going to? (any)",
     step2: "What are you looking for? (any)",
-    needArea: "Please choose at least one area",
+    needArea: "Please choose an area",
     needType: "Please choose at least one kind of shop",
     save: "Save",
     saved: "Saved",
@@ -69,13 +93,25 @@ const TODO_TEXT = {
     sectionTitle: "Danh sách của tôi",
     sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
     start: "Tạo danh sách của tôi",
-    startSub: "Chỉ cần chọn khu vực và loại quán",
+    startSub: "Chỉ cần thêm khu vực bạn muốn đến",
     settings: "Cài đặt danh sách",
     settingsOpen: "Thay đổi cài đặt danh sách",
     close: "Đóng",
     count: (n) => `${n} quán`,
     areaCount: (n) => `${n} khu vực`,
-    alsoTitle: "Có thể bạn cũng thích",
+    alsoTitle: "Dựa trên quán bạn đã xem",
+    seeAll: "Xem tất cả",
+    addArea: "Thêm khu vực",
+    addTitle: "Thêm vào danh sách",
+    addThis: "Thêm",
+    editTitle: (name) => `Cài đặt ${name}`,
+    stepArea: "Bạn sẽ đến khu vực nào? (chọn một)",
+    added: "Đã thêm",
+    addedToast: "Đã thêm vào danh sách",
+    allAdded: "Đã thêm tất cả khu vực vào danh sách",
+    remove: "Xóa khỏi danh sách",
+    removeConfirm: "Xóa thật",
+    removed: "Đã xóa khỏi danh sách",
     backToList: "Về danh sách của tôi",
     backToHome: "Về trang chủ",
     all: "Tất cả",
@@ -84,9 +120,8 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "Xem trang quán",
     empty: "Khu vực này chưa có quán thuộc loại đã chọn",
-    step1: "Bạn sẽ đến khu vực nào? (chọn nhiều)",
     step2: "Bạn đang tìm gì? (chọn nhiều)",
-    needArea: "Hãy chọn ít nhất một khu vực",
+    needArea: "Hãy chọn một khu vực",
     needType: "Hãy chọn ít nhất một loại quán",
     save: "Lưu",
     saved: "Đã lưu",
@@ -108,33 +143,42 @@ function myListTypeChoices() {
 // ---------------------------------------------------------------------
 // 保存(この端末の中だけ)
 // ---------------------------------------------------------------------
-function loadMyList() {
+// エリアごとの一覧 [{ pref, types }](地図にある都道府県の順)。まだ無ければ []
+function loadMyListItems() {
   try {
     if (localStorage.getItem(OLD_TODO_KEY) !== null) localStorage.removeItem(OLD_TODO_KEY); // 前の版のリストは消す
     const v = JSON.parse(localStorage.getItem(MYLIST_KEY) || "null");
-    if (!v || !Array.isArray(v.prefs) || !Array.isArray(v.types)) return null;
+    if (!v) return [];
     const prefKeys = prefectures.map((p) => p.key);
-    const prefs = v.prefs.filter((k) => prefKeys.includes(k));
-    const types = v.types.filter((t) => MYLIST_TYPES.includes(t));
-    return prefs.length && types.length ? { prefs, types } : null;
+    const cleanTypes = (types) => MYLIST_TYPES.filter((t) => Array.isArray(types) && types.includes(t));
+    let items = [];
+    if (Array.isArray(v.items)) items = v.items.map((it) => ({ pref: it && it.pref, types: cleanTypes(it && it.types) }));
+    else if (Array.isArray(v.prefs)) items = v.prefs.map((pref) => ({ pref, types: cleanTypes(v.types) })); // 前の版の形
+    const seen = new Set();
+    return items
+      .filter((it) => prefKeys.includes(it.pref) && it.types.length && !seen.has(it.pref) && seen.add(it.pref))
+      .sort((x, y) => prefKeys.indexOf(x.pref) - prefKeys.indexOf(y.pref));
   } catch (e) {
-    return null;
+    return [];
   }
 }
-function saveMyList(prefs, types) {
+function saveMyListItems(items) {
   try {
-    localStorage.setItem(MYLIST_KEY, JSON.stringify({ prefs, types, savedAt: new Date().toISOString() }));
+    localStorage.setItem(MYLIST_KEY, JSON.stringify({ items, savedAt: new Date().toISOString() }));
     return true;
   } catch (e) {
     return false;
   }
 }
-function resetMyList() {
-  try {
-    localStorage.removeItem(MYLIST_KEY);
-  } catch (e) {
-    // 消せない(プライベートブラウズなど)ときは、何もしない
-  }
+// まとめた形(ホームの「あなたへのおすすめ」でも使う): { items, prefs: [エリア], types: [どれかのエリアで選んだ種類] }。空なら null
+function loadMyList() {
+  const items = loadMyListItems();
+  if (!items.length) return null;
+  const types = MYLIST_TYPES.filter((t) => items.some((it) => it.types.includes(t)));
+  return { items, prefs: items.map((it) => it.pref), types };
+}
+function myListItem(prefKey) {
+  return loadMyListItems().find((it) => it.pref === prefKey) || null;
 }
 
 // そのエリアの、選んだ種類のお店
@@ -223,8 +267,11 @@ function myListPrefImage(prefKey) {
 function myListAreaUrl(prefKey) {
   return location.pathname + "?view=todo&area=" + encodeURIComponent(prefKey);
 }
-function myListEditUrl() {
-  return location.pathname + "?view=todo&edit=1";
+function myListEditUrl(prefKey) {
+  return location.pathname + "?view=todo&edit=1" + (prefKey ? "&pref=" + encodeURIComponent(prefKey) : "");
+}
+function myListUrl() {
+  return location.pathname + "?view=todo";
 }
 
 function todoStars(id) {
@@ -259,7 +306,8 @@ function todoShopCard(entry) {
 }
 
 // エリアのカード: エリア名と、種類ごとの件数(色の点つき)、合計の件数
-function myListAreaCard(pref, types, muted) {
+//   suggest = true … まだ追加していないエリア(押すと、そのエリアを追加する画面)
+function myListAreaCard(pref, types, suggest) {
   const x = todoText();
   const h = homeText();
   const shops = myListShops(pref.key, types);
@@ -269,19 +317,39 @@ function myListAreaCard(pref, types, muted) {
     .map((p) => `<span class="mylist-kind"><span class="mylist-kind-dot" style="background:${TODO_TYPE_COLORS[p.t]}"></span>${esc(h.typeLabel[p.t])} ${p.n}</span>`)
     .join("");
   return (
-    `<a class="mylist-area${muted ? " is-muted" : ""}${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
+    (suggest
+      ? `<a class="mylist-area is-muted${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListEditUrl(pref.key))}" data-mylist-edit data-pref="${esc(pref.key)}">`
+      : `<a class="mylist-area${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">`) +
     (myListPrefImage(pref.key)
       ? `<span class="mylist-area-icon has-photo"><img src="${esc(myListPrefImage(pref.key))}" alt="" loading="lazy" width="480" height="336"></span>`
       : `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>`) +
-    `<span class="mylist-area-body"><span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
+    `<span class="mylist-area-body">` +
+    (suggest ? `<span class="mylist-suggest-label">${esc(x.alsoTitle)}</span>` : "") +
+    `<span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
     `<span class="mylist-kinds">${parts}</span></span>` +
-    `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>` +
+    (suggest
+      ? `<span class="mylist-area-count mylist-add-pill">${homeIcon("plus", 16)}${esc(x.addThis)}</span>`
+      : `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>`) +
     `</a>`
   );
 }
 
+// 「エリアを追加」のカード(まだ追加していないエリアがあるときだけ)
+function myListAddCard() {
+  const x = todoText();
+  return (
+    `<a class="mylist-add-card" href="${esc(myListEditUrl())}" data-mylist-edit>` +
+    `<span class="mylist-add-icon">${homeIcon("plus", 24)}</span><span>${esc(x.addArea)}</span></a>`
+  );
+}
+function myListCanAdd(settings) {
+  const have = settings ? settings.prefs : [];
+  return myListPrefs().some((p) => !have.includes(p.key));
+}
+
 // 「こちらもおすすめ」: 最近見たお店があるエリアのうち、まだ選んでいないエリア(見た数が多い順、最大2つ)
 function myListAlsoPrefs(settings) {
+  settings = settings || { prefs: [], types: [] };
   const recent = typeof loadRecentShops === "function" ? loadRecentShops() : [];
   const score = new Map();
   recent.forEach((id, i) => {
@@ -290,21 +358,25 @@ function myListAlsoPrefs(settings) {
     score.set(e.shop.prefecture, (score.get(e.shop.prefecture) || 0) + Math.pow(0.8, i));
   });
   return myListPrefs()
-    .filter((p) => score.has(p.key) && myListShops(p.key, settings.types).length)
+    .filter((p) => score.has(p.key) && myListShops(p.key, myListTypeChoices()).length)
     .sort((a, b) => score.get(b.key) - score.get(a.key))
     .slice(0, 2);
 }
 
 function myListAreaCards(settings) {
-  return myListPrefs()
-    .filter((p) => settings.prefs.includes(p.key))
-    .map((p) => myListAreaCard(p, settings.types, false))
+  return settings.items
+    .map((it) => {
+      const p = myListPrefs().find((q) => q.key === it.pref);
+      return p ? myListAreaCard(p, it.types, false) : "";
+    })
     .join("");
 }
 
 // ホームの「マイリスト」の部分(js/home.js の renderHome が呼ぶ)
+//   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリア・「エリアを追加」も、うしろに続ける
 function renderTodoSection() {
   const x = todoText();
+  const h = homeText();
   const settings = loadMyList();
   if (!settings) {
     return (
@@ -317,28 +389,57 @@ function renderTodoSection() {
       `</a></section>`
     );
   }
+  const also = myListAlsoPrefs(settings);
+  const cards = [
+    ...settings.items.map((it) => {
+      const p = myListPrefs().find((q) => q.key === it.pref);
+      return p ? myListAreaCard(p, it.types, false) : "";
+    }),
+    ...also.map((p) => myListAreaCard(p, myListTypeChoices(), true)),
+    myListCanAdd(settings) ? myListAddCard() : "",
+  ].filter(Boolean);
   return (
     `<section class="home-section" id="home-todo">` +
-    `<div class="mylist-head"><h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
-    `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a></div>` +
-    `<div class="mylist-areas">${myListAreaCards(settings)}</div>` +
+    `<div class="home-area-head"><h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
+    `<span class="mylist-head-actions">` +
+    `<a class="mylist-see-all" href="${esc(myListUrl())}" data-mylist-nav>${esc(x.seeAll)}</a>` +
+    `<span class="home-area-arrows">` +
+    `<button type="button" class="home-area-arrow mylist-arrow" data-scroll-list=".mylist-carousel" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
+    `<button type="button" class="home-area-arrow mylist-arrow" data-scroll-list=".mylist-carousel" data-scroll-dir="1" aria-label="${esc(h.areaNext)}">${homeIcon("forward", 20)}</button>` +
+    `</span></span></div>` +
+    `<ul class="mylist-carousel">${cards.map((c) => `<li>${c}</li>`).join("")}</ul>` +
     `</section>`
   );
 }
 
 // 画面の上の部分(← 戻る / タイトル / 右上の設定マーク)
-function myListHeader(backUrl, backLabel, title, withGear) {
+//   right: { kind: "gear", pref } … そのエリアの設定 / { kind: "add" } … エリアを追加
+function myListHeader(backUrl, backLabel, title, right) {
   const x = todoText();
+  let btn = "";
+  if (right && right.kind === "gear")
+    btn = `<a class="mylist-gear" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit data-pref="${esc(right.pref)}" aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>`;
+  else if (right && right.kind === "add")
+    btn = `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.addArea)}" title="${esc(x.addArea)}">${homeIcon("plus", 24)}</a>`;
   return (
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(backUrl)}" data-mylist-nav aria-label="${esc(backLabel)}">${homeIcon("back", 24)}</a>` +
     `<h2 class="todo-create-title">${esc(title)}</h2>` +
-    (withGear ? `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>` : "") +
+    btn +
     `</div>`
   );
 }
 
-let myListToast = ""; // 保存した直後に、1回だけ出す「保存しました」
+let myListToast = ""; // 保存した直後に出す「保存しました」など(描き直しても消えないように、3秒間は出す)
+let myListToastUntil = 0;
+function takeMyListToast() {
+  if (myListToast && Date.now() > myListToastUntil) myListToast = "";
+  return myListToast;
+}
+function setMyListToast(text) {
+  myListToast = text;
+  myListToastUntil = Date.now() + 3000;
+}
 
 // ---------------------------------------------------------------------
 // マイリストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
@@ -351,18 +452,18 @@ function renderMyList() {
     return;
   }
   const also = myListAlsoPrefs(settings);
-  const toast = myListToast;
-  myListToast = "";
+  const toast = takeMyListToast();
   homePage.innerHTML =
-    myListHeader(homeUrl(), x.backToHome, x.sectionTitle, true) +
+    myListHeader(homeUrl(), x.backToHome, x.sectionTitle, myListCanAdd(settings) ? { kind: "add" } : null) +
     (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
     `<section class="home-section mylist-section">` +
     `<p class="mylist-summary">${esc(x.areaCount(settings.prefs.length))}</p>` +
     `<div class="mylist-areas">${myListAreaCards(settings)}</div>` +
+    (myListCanAdd(settings) ? `<div class="mylist-add-row">${myListAddCard()}</div>` : "") +
     `</section>` +
     (also.length
       ? `<section class="home-section mylist-section"><h3 class="mylist-also-title">${esc(x.alsoTitle)}</h3>` +
-        `<div class="mylist-areas">${also.map((p) => myListAreaCard(p, settings.types, true)).join("")}</div></section>`
+        `<div class="mylist-areas">${also.map((p) => myListAreaCard(p, myListTypeChoices(), true)).join("")}</div></section>`
       : "");
 }
 
@@ -374,7 +475,8 @@ function renderMyListArea(prefKey) {
   const x = todoText();
   const h = homeText();
   const pref = myListPrefs().find((p) => p.key === prefKey);
-  const settings = loadMyList() || { prefs: [], types: myListTypeChoices() };
+  const item = myListItem(prefKey);
+  const settings = { types: item ? item.types : myListTypeChoices() };
   if (!pref) {
     renderMyList();
     return;
@@ -386,8 +488,10 @@ function renderMyListArea(prefKey) {
   const chip = (key, label) =>
     `<button type="button" class="todo-chip${todoTypeFilter === key ? " is-on" : ""}" aria-pressed="${todoTypeFilter === key}" data-todo-filter="${key}">${esc(label)}</button>`;
   const shown = sortByRecommendation(all).filter((e) => todoTypeFilter === "all" || shopType(e.shop) === todoTypeFilter);
+  const toast = takeMyListToast();
   homePage.innerHTML =
-    myListHeader(location.pathname + "?view=todo", x.backToList, x.sectionTitle, true) +
+    myListHeader(myListUrl(), x.backToList, x.sectionTitle, item ? { kind: "gear", pref: pref.key } : null) +
+    (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
     // 上の帯: その都道府県の写真を、うしろに敷く(写真が無いときは、緑の帯)
     (myListPrefImage(pref.key)
       ? `<div class="todo-band has-photo"><img class="todo-band-photo" src="${esc(myListPrefImage(pref.key))}" alt="" width="480" height="336">` +
@@ -404,27 +508,40 @@ function renderMyListArea(prefKey) {
 }
 
 // ---------------------------------------------------------------------
-// 設定の画面(URL「?view=todo&edit=1」): エリアと、探したいお店を選ぶ
+// 追加・変更の画面(URL「?view=todo&edit=1」/「&pref=東京都」)
+//   ・まだ追加していないエリア → 「マイリストに追加」(エリアを1つ選ぶ + 探したいお店)
+//   ・追加済みのエリア → 「〇〇の設定」(探したいお店を変える / マイリストから外す)
 // ---------------------------------------------------------------------
-const myListDraft = { prefs: null, types: null, message: "", confirmReset: false };
-function startMyListDraft() {
-  const s = loadMyList();
-  myListDraft.prefs = s ? [...s.prefs] : [];
-  myListDraft.types = s ? [...s.types] : ["restaurant"];
+const myListDraft = { key: null, pref: null, types: null, message: "", confirmRemove: false };
+function myListEditPref() {
+  return new URLSearchParams(location.search).get("pref") || "";
+}
+function startMyListDraft(prefKey) {
+  const item = prefKey ? myListItem(prefKey) : null;
+  myListDraft.key = prefKey || "";
+  myListDraft.pref = prefKey || null;
+  myListDraft.types = item ? [...item.types] : ["restaurant"];
   myListDraft.message = "";
-  myListDraft.confirmReset = false;
+  myListDraft.confirmRemove = false;
 }
 
 function renderMyListSettings() {
   const x = todoText();
   const h = homeText();
-  if (!myListDraft.prefs) startMyListDraft();
-  const saved = loadMyList();
+  const urlPref = myListEditPref();
+  if (myListDraft.key !== urlPref || !myListDraft.types) startMyListDraft(urlPref);
+  const items = loadMyListItems();
+  const have = items.map((it) => it.pref);
+  const editing = !!(urlPref && have.includes(urlPref)); // 追加済みのエリアの設定
+  const editPref = editing ? myListPrefs().find((p) => p.key === urlPref) : null;
+  const choices = myListPrefs();
+  const allAdded = !editing && choices.every((p) => have.includes(p.key));
   const prefBtn = (p) => {
-    const on = myListDraft.prefs.includes(p.key);
+    const done = have.includes(p.key);
+    const on = !done && myListDraft.pref === p.key;
     return (
-      `<button type="button" class="mylist-pick${on ? " is-on" : ""}" aria-pressed="${on}" data-mylist-pref="${esc(p.key)}">` +
-      `<span>${esc(pick(p.label))}</span>${on ? homeIcon("check", 18) : ""}</button>`
+      `<button type="button" class="mylist-pick${on ? " is-on" : ""}${done ? " is-done" : ""}" aria-pressed="${on}" data-mylist-pref="${esc(p.key)}"${done ? " disabled" : ""}>` +
+      `<span>${esc(pick(p.label))}</span>${on ? homeIcon("check", 18) : ""}${done ? `<small>${esc(x.added)}</small>` : ""}</button>`
     );
   };
   const typeBtn = (t) => {
@@ -435,39 +552,63 @@ function renderMyListSettings() {
       `<span class="mylist-want-check">${on ? homeIcon("check", 16) : ""}</span></button>`
     );
   };
+  const closeUrl = editing ? myListAreaUrl(urlPref) : items.length ? myListUrl() : homeUrl();
+  const title = editing ? x.editTitle(pick(editPref.label)) : x.addTitle;
   homePage.innerHTML =
     `<div class="todo-create-head mylist-page-head">` +
-    `<a class="todo-back" href="${esc(saved ? location.pathname + "?view=todo" : homeUrl())}" data-mylist-nav aria-label="${esc(x.close)}">${homeIcon("close", 24)}</a>` +
-    `<h2 class="todo-create-title">${esc(x.settings)}</h2>` +
-    `<button type="button" class="mylist-save-round" data-mylist-save aria-label="${esc(x.save)}" title="${esc(x.save)}">${homeIcon("check", 22)}</button>` +
+    `<a class="todo-back" href="${esc(closeUrl)}" data-mylist-nav aria-label="${esc(x.close)}">${homeIcon("close", 24)}</a>` +
+    `<h2 class="todo-create-title">${esc(title)}</h2>` +
+    (allAdded ? "" : `<button type="button" class="mylist-save-round" data-mylist-save aria-label="${esc(x.save)}" title="${esc(x.save)}">${homeIcon("check", 22)}</button>`) +
     `</div>` +
     `<section class="home-section todo-form-section">` +
-    `<h3 class="todo-step-title"><span>1</span>${esc(x.step1)}</h3>` +
-    `<div class="mylist-picks">${myListPrefs().map(prefBtn).join("")}</div>` +
-    `<h3 class="todo-step-title"><span>2</span>${esc(x.step2)}</h3>` +
-    `<div class="todo-wants">${myListTypeChoices().map(typeBtn).join("")}</div>` +
-    `<p class="home-status" role="status"${myListDraft.message ? "" : " hidden"}>${esc(myListDraft.message)}</p>` +
-    `<button type="button" class="todo-primary todo-make" data-mylist-save>${homeIcon("check", 20)}<span>${esc(x.save)}</span></button>` +
+    (allAdded
+      ? `<p class="home-reason home-reason-plain">${esc(x.allAdded)}</p>`
+      : (editing ? "" : `<h3 class="todo-step-title"><span>1</span>${esc(x.stepArea)}</h3><div class="mylist-picks">${choices.map(prefBtn).join("")}</div>`) +
+        `<h3 class="todo-step-title"><span>${editing ? 1 : 2}</span>${esc(x.step2)}</h3>` +
+        `<div class="todo-wants">${myListTypeChoices().map(typeBtn).join("")}</div>` +
+        `<p class="home-status" role="status"${myListDraft.message ? "" : " hidden"}>${esc(myListDraft.message)}</p>` +
+        `<button type="button" class="todo-primary todo-make" data-mylist-save>${homeIcon("check", 20)}<span>${esc(x.save)}</span></button>` +
+        (editing
+          ? `<div class="todo-delete-row"><button type="button" class="todo-delete${myListDraft.confirmRemove ? " is-confirm" : ""}" data-mylist-remove>${esc(myListDraft.confirmRemove ? x.removeConfirm : x.remove)}</button></div>`
+          : "")) +
     `</section>`;
 }
 
 function myListSave() {
   const x = todoText();
-  if (!myListDraft.prefs.length) myListDraft.message = x.needArea;
+  const urlPref = myListEditPref();
+  const items = loadMyListItems();
+  const editing = !!(urlPref && items.some((it) => it.pref === urlPref));
+  const pref = editing ? urlPref : myListDraft.pref;
+  if (!pref) myListDraft.message = x.needArea;
   else if (!myListDraft.types.length) myListDraft.message = x.needType;
   else {
-    // 画面の並び順(data.js の prefectures・種類の順)にそろえて保存する
-    const prefs = myListPrefs().map((p) => p.key).filter((k) => myListDraft.prefs.includes(k));
     const types = MYLIST_TYPES.filter((t) => myListDraft.types.includes(t));
-    saveMyList(prefs, types);
-    myListDraft.prefs = null;
-    myListToast = x.saved;
-    navigate(location.pathname + "?view=todo");
+    const next = items.filter((it) => it.pref !== pref);
+    next.push({ pref, types });
+    saveMyListItems(next);
+    myListDraft.types = null;
+    setMyListToast(editing ? x.saved : x.addedToast);
+    navigate(editing ? myListAreaUrl(pref) : myListUrl());
     return;
   }
   renderMyListSettings();
   const status = homePage.querySelector(".home-status");
   if (status) status.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function myListRemove() {
+  const x = todoText();
+  if (!myListDraft.confirmRemove) {
+    myListDraft.confirmRemove = true; // もう1回押すと、本当に外す(押し間違いで消えないように)
+    renderMyListSettings();
+    return;
+  }
+  const pref = myListEditPref();
+  saveMyListItems(loadMyListItems().filter((it) => it.pref !== pref));
+  myListDraft.types = null;
+  setMyListToast(x.removed);
+  navigate(loadMyListItems().length ? myListUrl() : homeUrl());
 }
 
 // ---------------------------------------------------------------------
@@ -480,8 +621,8 @@ homePage.addEventListener("click", (event) => {
   if (edit) {
     if (!plain) return;
     event.preventDefault();
-    startMyListDraft();
-    navigate(myListEditUrl());
+    startMyListDraft(edit.dataset.pref || "");
+    navigate(myListEditUrl(edit.dataset.pref || ""));
     return;
   }
   const area = t.closest("[data-mylist-area]");
@@ -496,7 +637,7 @@ homePage.addEventListener("click", (event) => {
   if (nav) {
     if (!plain) return;
     event.preventDefault();
-    myListDraft.prefs = null; // 保存しないで閉じたときは、選びかけの内容を捨てる
+    myListDraft.types = null; // 保存しないで閉じたときは、選びかけの内容を捨てる
     navigate(nav.getAttribute("href"));
     return;
   }
@@ -508,8 +649,7 @@ homePage.addEventListener("click", (event) => {
   }
   const pref = t.closest("[data-mylist-pref]");
   if (pref) {
-    const k = pref.dataset.mylistPref;
-    myListDraft.prefs = myListDraft.prefs.includes(k) ? myListDraft.prefs.filter((v) => v !== k) : [...myListDraft.prefs, k];
+    myListDraft.pref = pref.dataset.mylistPref; // エリアは1つだけ選ぶ
     myListDraft.message = "";
     renderMyListSettings();
     return;
@@ -524,6 +664,10 @@ homePage.addEventListener("click", (event) => {
   }
   if (t.closest("[data-mylist-save]")) {
     myListSave();
+    return;
+  }
+  if (t.closest("[data-mylist-remove]")) {
+    myListRemove();
     return;
   }
 });
