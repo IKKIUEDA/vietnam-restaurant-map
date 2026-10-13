@@ -334,14 +334,6 @@ function myListAreaCard(pref, types, suggest) {
   );
 }
 
-// 「エリアを追加」のカード(まだ追加していないエリアがあるときだけ)
-function myListAddCard() {
-  const x = todoText();
-  return (
-    `<a class="mylist-add-card" href="${esc(myListEditUrl())}" data-mylist-edit>` +
-    `<span class="mylist-add-icon">${homeIcon("plus", 24)}</span><span>${esc(x.addArea)}</span></a>`
-  );
-}
 function myListCanAdd(settings) {
   const have = settings ? settings.prefs : [];
   return myListPrefs().some((p) => !have.includes(p.key));
@@ -373,7 +365,7 @@ function myListAreaCards(settings) {
 }
 
 // ホームの「マイリスト」の部分(js/home.js の renderHome が呼ぶ)
-//   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリア・「エリアを追加」も、うしろに続ける
+//   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリアも、うしろに続ける
 function renderTodoSection() {
   const x = todoText();
   const h = homeText();
@@ -395,8 +387,8 @@ function renderTodoSection() {
       const p = myListPrefs().find((q) => q.key === it.pref);
       return p ? myListAreaCard(p, it.types, false) : "";
     }),
-    ...also.map((p) => myListAreaCard(p, myListTypeChoices(), true)),
-    myListCanAdd(settings) ? myListAddCard() : "",
+    // 最近見たお店のエリア(まだ追加していない)も、同じカードで続ける。押すと、そのエリアのお店の一覧
+    ...also.map((p) => myListAreaCard(p, myListTypeChoices(), false)),
   ].filter(Boolean);
   return (
     `<section class="home-section" id="home-todo">` +
@@ -420,7 +412,7 @@ function myListHeader(backUrl, backLabel, title, right) {
   if (right && right.kind === "gear")
     btn = `<a class="mylist-gear" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit data-pref="${esc(right.pref)}" aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>`;
   else if (right && right.kind === "add")
-    btn = `<a class="mylist-add-btn" href="${esc(myListEditUrl())}" data-mylist-edit>${homeIcon("plus", 20)}<span>${esc(x.addArea)}</span></a>`;
+    btn = `<a class="mylist-add-btn" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit${right.pref ? ` data-pref="${esc(right.pref)}"` : ""}>${homeIcon("plus", 20)}<span>${esc(right.pref ? x.addTitle : x.addArea)}</span></a>`;
   return (
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(backUrl)}" data-mylist-nav aria-label="${esc(backLabel)}">${homeIcon("back", 24)}</a>` +
@@ -486,7 +478,7 @@ function renderMyListArea(prefKey) {
   const shown = sortByRecommendation(all).filter((e) => todoTypeFilter === "all" || shopType(e.shop) === todoTypeFilter);
   const toast = takeMyListToast();
   homePage.innerHTML =
-    myListHeader(myListUrl(), x.backToList, x.sectionTitle, item ? { kind: "gear", pref: pref.key } : null) +
+    myListHeader(myListUrl(), x.backToList, x.sectionTitle, item ? { kind: "gear", pref: pref.key } : { kind: "add", pref: pref.key }) +
     (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
     // 上の帯: その都道府県の写真を、うしろに敷く(写真が無いときは、緑の帯)
     (myListPrefImage(pref.key)
