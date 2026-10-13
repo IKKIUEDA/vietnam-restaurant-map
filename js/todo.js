@@ -24,7 +24,6 @@ const TODO_TEXT = {
     count: (n) => `${n}件`,
     areaCount: (n) => `${n}つのエリア`,
     alsoTitle: "こちらもおすすめ",
-    storedNote: "マイリストの設定は、この端末の中だけに保存しています",
     backToList: "マイリストに戻る",
     backToHome: "ホームに戻る",
     all: "すべて",
@@ -39,8 +38,6 @@ const TODO_TEXT = {
     needType: "探したいお店を1つ以上選んでください",
     save: "この内容で保存",
     saved: "保存しました",
-    reset: "マイリストをリセット",
-    resetConfirm: "本当にリセットする",
   },
   en: {
     sectionTitle: "My List",
@@ -53,7 +50,6 @@ const TODO_TEXT = {
     count: (n) => `${n} shops`,
     areaCount: (n) => (n === 1 ? "1 area" : `${n} areas`),
     alsoTitle: "You may also like",
-    storedNote: "My List settings are saved only on this device",
     backToList: "Back to My List",
     backToHome: "Back to home",
     all: "All",
@@ -68,8 +64,6 @@ const TODO_TEXT = {
     needType: "Please choose at least one kind of shop",
     save: "Save",
     saved: "Saved",
-    reset: "Reset My List",
-    resetConfirm: "Really reset",
   },
   vi: {
     sectionTitle: "Danh sách của tôi",
@@ -82,7 +76,6 @@ const TODO_TEXT = {
     count: (n) => `${n} quán`,
     areaCount: (n) => `${n} khu vực`,
     alsoTitle: "Có thể bạn cũng thích",
-    storedNote: "Cài đặt danh sách chỉ được lưu trên thiết bị này",
     backToList: "Về danh sách của tôi",
     backToHome: "Về trang chủ",
     all: "Tất cả",
@@ -97,8 +90,6 @@ const TODO_TEXT = {
     needType: "Hãy chọn ít nhất một loại quán",
     save: "Lưu",
     saved: "Đã lưu",
-    reset: "Đặt lại danh sách",
-    resetConfirm: "Đặt lại thật",
   },
 };
 function todoText() {
@@ -372,8 +363,7 @@ function renderMyList() {
     (also.length
       ? `<section class="home-section mylist-section"><h3 class="mylist-also-title">${esc(x.alsoTitle)}</h3>` +
         `<div class="mylist-areas">${also.map((p) => myListAreaCard(p, settings.types, true)).join("")}</div></section>`
-      : "") +
-    `<section class="home-section"><p class="home-history-note">${esc(x.storedNote)}</p></section>`;
+      : "");
 }
 
 // ---------------------------------------------------------------------
@@ -458,10 +448,6 @@ function renderMyListSettings() {
     `<div class="todo-wants">${myListTypeChoices().map(typeBtn).join("")}</div>` +
     `<p class="home-status" role="status"${myListDraft.message ? "" : " hidden"}>${esc(myListDraft.message)}</p>` +
     `<button type="button" class="todo-primary todo-make" data-mylist-save>${homeIcon("check", 20)}<span>${esc(x.save)}</span></button>` +
-    `<p class="home-history-note">${esc(x.storedNote)}</p>` +
-    (saved
-      ? `<div class="todo-delete-row"><button type="button" class="todo-delete${myListDraft.confirmReset ? " is-confirm" : ""}" data-mylist-reset>${esc(myListDraft.confirmReset ? x.resetConfirm : x.reset)}</button></div>`
-      : "") +
     `</section>`;
 }
 
@@ -539,15 +525,5 @@ homePage.addEventListener("click", (event) => {
   if (t.closest("[data-mylist-save]")) {
     myListSave();
     return;
-  }
-  if (t.closest("[data-mylist-reset]")) {
-    if (myListDraft.confirmReset) {
-      resetMyList();
-      myListDraft.prefs = null;
-      navigate(homeUrl());
-    } else {
-      myListDraft.confirmReset = true; // もう1回押すと、本当にリセットする(押し間違いで消えないように)
-      renderMyListSettings();
-    }
   }
 });
