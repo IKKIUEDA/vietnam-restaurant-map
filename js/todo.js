@@ -420,7 +420,7 @@ function myListHeader(backUrl, backLabel, title, right) {
   if (right && right.kind === "gear")
     btn = `<a class="mylist-gear" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit data-pref="${esc(right.pref)}" aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>`;
   else if (right && right.kind === "add")
-    btn = `<a class="mylist-gear" href="${esc(myListEditUrl())}" data-mylist-edit aria-label="${esc(x.addArea)}" title="${esc(x.addArea)}">${homeIcon("plus", 24)}</a>`;
+    btn = `<a class="mylist-add-btn" href="${esc(myListEditUrl())}" data-mylist-edit>${homeIcon("plus", 20)}<span>${esc(x.addArea)}</span></a>`;
   return (
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(backUrl)}" data-mylist-nav aria-label="${esc(backLabel)}">${homeIcon("back", 24)}</a>` +
@@ -458,13 +458,9 @@ function renderMyList() {
     (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
     `<section class="home-section mylist-section">` +
     `<p class="mylist-summary">${esc(x.areaCount(settings.prefs.length))}</p>` +
-    `<div class="mylist-areas">${myListAreaCards(settings)}</div>` +
-    (myListCanAdd(settings) ? `<div class="mylist-add-row">${myListAddCard()}</div>` : "") +
-    `</section>` +
-    (also.length
-      ? `<section class="home-section mylist-section"><h3 class="mylist-also-title">${esc(x.alsoTitle)}</h3>` +
-        `<div class="mylist-areas">${also.map((p) => myListAreaCard(p, myListTypeChoices(), true)).join("")}</div></section>`
-      : "");
+    // 追加したエリアのうしろに、最近見たお店のエリア(「＋ 追加する」)を同じ並びで続ける
+    `<div class="mylist-areas">${myListAreaCards(settings)}${also.map((p) => myListAreaCard(p, myListTypeChoices(), true)).join("")}</div>` +
+    `</section>`;
 }
 
 // ---------------------------------------------------------------------
