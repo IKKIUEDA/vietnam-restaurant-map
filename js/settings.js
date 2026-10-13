@@ -11,7 +11,6 @@
 
 const SETTINGS_TEXT = {
   ja: {
-    spotLead: "地図に載っていないお店を教えてください。運営者が内容を確認して、地図に追加します。",
     spotName: "店名(必須)",
     spotAddress: "住所(必須)",
     spotAddressPh: "例: 東京都新宿区百人町1-2-3",
@@ -105,7 +104,6 @@ const SETTINGS_TEXT = {
     },
   },
   en: {
-    spotLead: "Tell us about a place that isn't on the map. We'll review it and add it to the map.",
     spotName: "Name (required)",
     spotAddress: "Address (required)",
     spotAddressPh: "e.g. 1-2-3 Hyakunincho, Shinjuku-ku, Tokyo",
@@ -199,7 +197,6 @@ const SETTINGS_TEXT = {
     },
   },
   vi: {
-    spotLead: "Hãy cho chúng tôi biết quán chưa có trên bản đồ. Ban quản lý sẽ kiểm tra và thêm vào bản đồ.",
     spotName: "Tên quán (bắt buộc)",
     spotAddress: "Địa chỉ (bắt buộc)",
     spotAddressPh: "VD: 1-2-3 Hyakunincho, Shinjuku-ku, Tokyo",
@@ -369,7 +366,6 @@ function renderSettingsSub(sub, params, page) {
     page(
       title,
       acctSettingsUrl("spot"),
-      `<p class="acct-lead">${esc(s.spotLead)}</p>` +
         `<form class="acct-form" data-set-form="spot" data-type="${esc(type)}" novalidate>` +
         settingsInput({ name: "name", label: s.spotName, max: 80, required: true }) +
         settingsInput({ name: "address", label: s.spotAddress, max: 200, placeholder: s.spotAddressPh, required: true }) +
