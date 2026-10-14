@@ -6229,3 +6229,7 @@ body > *:not(#content),
 .mylist-section .mylist-kinds {
   gap: 2px 10px;
 }
+.acct-small.set-warn {
+  color: #b3261e;
+  font-weight: 600;
+}
