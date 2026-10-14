@@ -38,7 +38,9 @@ const SETTINGS_TEXT = {
     reqReset: "未対応に戻す",
     reqDelete: "削除",
     reqDeleteConfirm: "本当に削除",
-    googleEmail: "Google アカウントでログインしているため、メールアドレスは Google アカウントで管理されています。変更は Google アカウントの設定から行ってください。",
+    googleEmailNote: "Google でのログインは、これまで通り使えます。変わるのは、このサイトに登録しているメールアドレス(お知らせやパスワード再設定などのメールの送り先)です。",
+    googleReauthNote: "「確認メールを送る」を押すと、本人確認のため、Google のアカウント選択画面が開きます。",
+    adminEmailWarn: "このアカウントは管理者のメールアドレスで登録されています。変更すると、管理者の機能が使えなくなります。",
     setPwTitle: "このサイト用のパスワードを設定する",
     setPwLead: (email) => `Google のアカウントはそのままで、このサイト用のパスワードを追加できます。設定すると、Google でも、メールアドレス(${email})+パスワードでも、ログインできるようになります。`,
     setPwBtn: "パスワードを設定する",
@@ -131,7 +133,9 @@ const SETTINGS_TEXT = {
     reqReset: "Mark as new",
     reqDelete: "Delete",
     reqDeleteConfirm: "Really delete",
-    googleEmail: "You're logged in with Google, so your email address is managed by your Google Account. Please change it in your Google Account settings.",
+    googleEmailNote: "You can keep logging in with Google as before. What changes is the email address registered on this site (where emails such as notices and password resets are sent).",
+    googleReauthNote: "When you tap ‘Send confirmation email’, the Google account picker opens to confirm it's you.",
+    adminEmailWarn: "This account is registered with the administrator's email address. If you change it, you will lose access to the admin features.",
     setPwTitle: "Set a password for this site",
     setPwLead: (email) => `You can add a password for this site while keeping your Google login. After that, you can log in either with Google or with your email address (${email}) and password.`,
     setPwBtn: "Set password",
@@ -224,7 +228,9 @@ const SETTINGS_TEXT = {
     reqReset: "Đặt lại chưa xử lý",
     reqDelete: "Xóa",
     reqDeleteConfirm: "Xóa thật",
-    googleEmail: "Bạn đang đăng nhập bằng Google, nên địa chỉ email được quản lý bởi tài khoản Google. Vui lòng thay đổi trong phần cài đặt tài khoản Google.",
+    googleEmailNote: "Bạn vẫn có thể đăng nhập bằng Google như trước. Thứ thay đổi là địa chỉ email đăng ký trên trang này (nơi nhận email thông báo, đặt lại mật khẩu, v.v.).",
+    googleReauthNote: "Khi nhấn “Gửi email xác nhận”, màn hình chọn tài khoản Google sẽ mở ra để xác nhận danh tính.",
+    adminEmailWarn: "Tài khoản này được đăng ký bằng email của quản trị viên. Nếu thay đổi, bạn sẽ không dùng được các chức năng quản trị.",
     setPwTitle: "Đặt mật khẩu cho trang này",
     setPwLead: (email) => `Bạn có thể thêm mật khẩu cho trang này mà vẫn giữ đăng nhập bằng Google. Sau đó, bạn có thể đăng nhập bằng Google hoặc bằng email (${email}) và mật khẩu.`,
     setPwBtn: "Đặt mật khẩu",
@@ -419,11 +425,8 @@ function renderSettingsSub(sub, params, page) {
 
   if (sub === "email") {
     const st = settingsStateFor("email");
-    // Google でログインできる人のメールアドレスは、Google アカウントのもの(このサイトだけで変えると、ずれてしまう)
-    if (hasGoogle || !hasPassword) {
-      page(x.emailSetting, acctSettingsUrl("account"), `<p class="acct-soon">${esc(s.googleEmail)}</p>`);
-      return true;
-    }
+    // Google でログインしている人も、変えられる(Google のログインはそのまま。このサイトに登録しているメールアドレスが変わる)
+    //   本人確認: パスワードがある人はパスワード、無い人は Google のアカウント選択
     const user = api.currentUser();
     const verified = !!(user && user.emailVerified);
     page(
@@ -438,9 +441,13 @@ function renderSettingsSub(sub, params, page) {
             `<button type="button" class="acct-pill" data-set-action="verify-refresh">${esc(s.refreshVerify)}</button></div>`) +
         `</div>` +
         `<h3 class="set-heading">${esc(s.changeEmailTitle)}</h3>` +
+        (hasGoogle ? `<p class="acct-small">${esc(s.googleEmailNote)}</p>` : "") +
+        (isAdminUser(authUser) ? `<p class="acct-small set-warn">${esc(s.adminEmailWarn)}</p>` : "") +
         `<form class="acct-form" data-set-form="email" novalidate>` +
         settingsInput({ name: "newEmail", label: s.newEmail, type: "email", max: 254, autocomplete: "email", required: true }) +
-        settingsInput({ name: "password", label: s.currentPassword, type: "password", autocomplete: "current-password", required: true }) +
+        (hasPassword
+          ? settingsInput({ name: "password", label: s.currentPassword, type: "password", autocomplete: "current-password", required: true })
+          : `<p class="acct-small">${esc(s.googleReauthNote)}</p>`) +
         settingsMessageHtml(st) +
         `<div class="todo-actions"><button type="submit" class="todo-primary"${st.busy ? " disabled" : ""}>${esc(st.busy ? s.sending : s.changeEmailBtn)}</button></div>` +
         `</form>`
@@ -690,14 +697,14 @@ homePage.addEventListener(
 
     if (kind === "email") {
       const newEmail = val("newEmail");
+      const hasPassword = api.hasPassword();
       const password = form.elements.password ? form.elements.password.value : "";
       if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return fail(s.errors.invalidEmail);
       const user = api.currentUser();
       if (user && user.email && user.email.toLowerCase() === newEmail.toLowerCase()) return fail(s.sameEmail);
-      if (!password) return fail(s.deleteNeedPassword);
+      if (hasPassword && !password) return fail(s.deleteNeedPassword);
       start();
-      api
-        .reauthWithPassword(password)
+      (hasPassword ? api.reauthWithPassword(password) : api.reauthWithGoogle())
         .then(() => api.changeEmail(newEmail))
         .then(() => {
           st.busy = false;
