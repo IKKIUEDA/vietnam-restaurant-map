@@ -3029,8 +3029,10 @@ window.addEventListener("popstate", renderRoute);
 
 // 詳細ページのURLで、直接開かれたとき: 一覧の地図は隠れた状態で作られているので、一覧を最初に見せるときに合わせ直す
 //   (ホームから始まったときも、地図は隠れた状態で作られているので、同じように合わせ直す)
-listMapNeedsFit = ["shop", "home"].includes(routeFromLocation().name);
+listMapNeedsFit = ["shop", "home"].includes(routeFromLocation().name) || document.documentElement.classList.contains("boot-hide-map");
 renderRoute();
+// 最初の表示ができたので、開いたときだけ地図の画面を隠していたのを、やめる(index.html の boot-hide-map)
+document.documentElement.classList.remove("boot-hide-map");
 
 
 // 投稿者の名前: 押すと、その人のプロフィール(URL「?user=ユーザーID」。js/account.js)を開く
