@@ -306,8 +306,7 @@ function todoShopCard(entry) {
 }
 
 // エリアのカード: エリア名と、種類ごとの件数(色の点つき)、合計の件数
-//   suggest = true … まだ追加していないエリア(押すと、そのエリアを追加する画面)
-function myListAreaCard(pref, types, suggest) {
+function myListAreaCard(pref, types) {
   const x = todoText();
   const h = homeText();
   const shops = myListShops(pref.key, types);
@@ -317,19 +316,14 @@ function myListAreaCard(pref, types, suggest) {
     .map((p) => `<span class="mylist-kind"><span class="mylist-kind-dot" style="background:${TODO_TYPE_COLORS[p.t]}"></span>${esc(h.typeLabel[p.t])} ${p.n}</span>`)
     .join("");
   return (
-    (suggest
-      ? `<a class="mylist-area is-muted${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListEditUrl(pref.key))}" data-mylist-edit data-pref="${esc(pref.key)}">`
-      : `<a class="mylist-area${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">`) +
+    `<a class="mylist-area${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
     (myListPrefImage(pref.key)
       ? `<span class="mylist-area-icon has-photo"><img src="${esc(myListPrefImage(pref.key))}" alt="" loading="lazy" width="480" height="336"></span>`
       : `<span class="mylist-area-icon">${TODO_PIN_ICON}</span>`) +
     `<span class="mylist-area-body">` +
-    (suggest ? `<span class="mylist-suggest-label">${esc(x.alsoTitle)}</span>` : "") +
     `<span class="mylist-area-name">${esc(pick(pref.label))}</span>` +
     `<span class="mylist-kinds">${parts}</span></span>` +
-    (suggest
-      ? `<span class="mylist-area-count mylist-add-pill">${homeIcon("plus", 16)}${esc(x.addThis)}</span>`
-      : `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>`) +
+    `<span class="mylist-area-count">${esc(x.count(shops.length))}${homeIcon("forward", 18)}</span>` +
     `</a>`
   );
 }
@@ -359,7 +353,7 @@ function myListAreaCards(settings) {
   return settings.items
     .map((it) => {
       const p = myListPrefs().find((q) => q.key === it.pref);
-      return p ? myListAreaCard(p, it.types, false) : "";
+      return p ? myListAreaCard(p, it.types) : "";
     })
     .join("");
 }
@@ -385,10 +379,10 @@ function renderTodoSection() {
   const cards = [
     ...settings.items.map((it) => {
       const p = myListPrefs().find((q) => q.key === it.pref);
-      return p ? myListAreaCard(p, it.types, false) : "";
+      return p ? myListAreaCard(p, it.types) : "";
     }),
     // 最近見たお店のエリア(まだ追加していない)も、同じカードで続ける。押すと、そのエリアのお店の一覧
-    ...also.map((p) => myListAreaCard(p, myListTypeChoices(), false)),
+    ...also.map((p) => myListAreaCard(p, myListTypeChoices())),
   ].filter(Boolean);
   return (
     `<section class="home-section" id="home-todo">` +
@@ -450,8 +444,8 @@ function renderMyList() {
     (toast ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(toast)}</span></p>` : "") +
     `<section class="home-section mylist-section">` +
     `<p class="mylist-summary">${esc(x.areaCount(settings.prefs.length))}</p>` +
-    // 追加したエリアのうしろに、最近見たお店のエリア(「＋ 追加する」)を同じ並びで続ける
-    `<div class="mylist-areas">${myListAreaCards(settings)}${also.map((p) => myListAreaCard(p, myListTypeChoices(), true)).join("")}</div>` +
+    // 追加したエリアのうしろに、最近見たお店のエリアを同じ並びで続ける(押すと、そのエリアのお店の一覧。そこから追加できる)
+    `<div class="mylist-areas">${myListAreaCards(settings)}${also.map((p) => myListAreaCard(p, myListTypeChoices())).join("")}</div>` +
     `</section>`;
 }
 
