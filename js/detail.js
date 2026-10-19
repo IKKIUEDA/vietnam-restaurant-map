@@ -3182,6 +3182,13 @@ listMapNeedsFit = ["shop", "home"].includes(routeFromLocation().name) || documen
 renderRoute();
 // 最初の表示ができたので、開いたときだけ地図の画面を隠していたのを、やめる(index.html の boot-hide-map)
 document.documentElement.classList.remove("boot-hide-map");
+// 読み込み中の画面(ロゴ)を、ふわっと消す(index.html の #app-loading)
+(function hideAppLoading() {
+  const el = document.getElementById("app-loading");
+  if (!el) return;
+  el.classList.add("is-done");
+  setTimeout(() => el.remove(), 400);
+})();
 
 
 // 投稿者の名前: 押すと、その人のプロフィール(URL「?user=ユーザーID」。js/account.js)を開く
