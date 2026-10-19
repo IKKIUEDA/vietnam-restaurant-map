@@ -7002,3 +7002,48 @@ body.is-home-top .home-footer-block {
     padding-bottom: 44px;
   }
 }
+
+/* =====================================================================
+   横にスライドする並びの下のバー(js/home.js の attachSwipeBars)
+   ===================================================================== */
+.swipe-bar {
+  position: relative;
+  height: 3px;
+  margin: 6px 0 0;
+  border-radius: 3px;
+  background: #e2e5df;
+  overflow: hidden;
+}
+.swipe-bar[hidden] {
+  display: none;
+}
+.swipe-bar span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  background: var(--c-primary);
+  transition: left 0.12s linear, width 0.2s ease;
+}
+/* 特集も、ほかと同じく1枚ずつぴたっと止まるように */
+.home-features {
+  scroll-padding: 0 20px;
+  scrollbar-width: none;
+}
+.home-features::-webkit-scrollbar {
+  display: none;
+}
+.home-features > * {
+  scroll-snap-align: start;
+}
+@media (min-width: 900px) {
+  .home-features {
+    scroll-padding: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-bar span {
+    transition: none;
+  }
+}

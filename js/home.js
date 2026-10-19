@@ -520,7 +520,49 @@ function renderHome() {
     `</footer>`;
   homeEntriesRise = false;
   paintHomeBands();
+  attachSwipeBars();
 }
+
+// ---------------------------------------------------------------------
+// 横にスライドする並び(エリアから探す・マイリスト・あなたへのおすすめ・特集)の下に、
+// いまどのあたりを見ているかが分かる「バー」を出す
+//   ・バーの長さ = 見えている割合、位置 = スクロールした位置。スライドに合わせて動く
+//   ・全部が画面に収まっていて、スライドできないときは出さない
+// ---------------------------------------------------------------------
+const SWIPE_SELECTORS = [".home-areas", ".mylist-carousel", ".home-rec-cards", ".home-features"];
+function updateSwipeBar(list) {
+  const bar = list.nextElementSibling;
+  if (!bar || !bar.classList.contains("swipe-bar")) return;
+  const total = list.scrollWidth;
+  const view = list.clientWidth;
+  const can = total - view > 4;
+  bar.hidden = !can;
+  if (!can) return;
+  const thumb = bar.firstElementChild;
+  const ratio = view / total;
+  const pos = list.scrollLeft / (total - view); // 0〜1
+  thumb.style.width = `${ratio * 100}%`;
+  thumb.style.left = `${pos * (1 - ratio) * 100}%`;
+}
+function attachSwipeBars() {
+  homePage.querySelectorAll(SWIPE_SELECTORS.join(",")).forEach((list) => {
+    if (!list.nextElementSibling || !list.nextElementSibling.classList.contains("swipe-bar")) {
+      const bar = document.createElement("div");
+      bar.className = "swipe-bar";
+      bar.setAttribute("aria-hidden", "true");
+      bar.innerHTML = "<span></span>";
+      list.after(bar);
+    }
+    if (!list.dataset.swipeBar) {
+      list.dataset.swipeBar = "1";
+      list.addEventListener("scroll", () => updateSwipeBar(list), { passive: true });
+    }
+    updateSwipeBar(list);
+    // 画像の読み込みで幅が変わることがあるので、少しあとにも合わせ直す
+    setTimeout(() => updateSwipeBar(list), 400);
+  });
+}
+window.addEventListener("resize", () => homePage.querySelectorAll(SWIPE_SELECTORS.join(",")).forEach(updateSwipeBar));
 
 // ホームの各まとまり(エリアから探す・マイリスト・おすすめ・特集・シェア)の背景を、白と薄いグレーの交互にする
 //   ・いちばん下のお問い合わせ(グレー)から上へ、白・グレー・白…と決める(どのまとまりが出ていても、交互になるように)
