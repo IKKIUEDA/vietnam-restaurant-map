@@ -305,6 +305,9 @@ function renderDetail() {
         </div>
       </section>
 
+      <!-- 近くのスポット: このお店と違う種類のお店(5km以内。中身は nearbySpotsHtml が作る) -->
+      ${nearbySpotsHtml(shop)}
+
       <!-- ⑥ みんなの写真(Firebase Firestore + Storage。中身は renderPhotos が作る) -->
       <section class="detail-section" id="detail-photos">
         <h3>${esc(t.photosTitle)}</h3>
@@ -356,6 +359,7 @@ function renderDetail() {
 
   bindBackLinks();
   bindDetailButtons();
+  bindNearbySpots();
   if (tipsState.shopId !== shop.id) startTips(shop.id); // 別のお店になったときだけ、読み込み直す(言語の切り替えでは、そのまま表示する)
   else renderTips();
   if (reviewState.shopId !== shop.id) startReviewCount(shop.id);
@@ -370,6 +374,97 @@ function renderDetail() {
   updateDistanceUI();
   checkGeoPermission(shop.id);
   detailView.scrollTop = keepScroll;
+}
+
+// ---------------------------------------------------------------------
+// 近くのスポット(店舗ページ)
+//   ・このお店と同じ種類(競合)は出さず、ほかの2つの種類(料理店・カフェ・食材店のうち2つ)を出す
+//   ・地図に載っているお店のうち、直線距離で 5km 以内のものを、近い順に。種類ごとに3件(「もっと見る」で全部)
+//   ・距離は、お店どうしの直線距離(道のりではない)
+// ---------------------------------------------------------------------
+const NEARBY_KM = 5;
+const NEARBY_SHOW = 3;
+const NEARBY_TEXT = {
+  ja: { title: "近くのスポット", note: `直線距離で${NEARBY_KM}km以内`, more: (n) => `すべて見る(${n}件)`, less: "閉じる", none: `${NEARBY_KM}km以内にはありません` },
+  en: { title: "Nearby spots", note: `Within ${NEARBY_KM} km in a straight line`, more: (n) => `See all (${n})`, less: "Show less", none: `None within ${NEARBY_KM} km` },
+  vi: { title: "Địa điểm gần đây", note: `Trong vòng ${NEARBY_KM} km (đường chim bay)`, more: (n) => `Xem tất cả (${n})`, less: "Thu gọn", none: `Không có trong vòng ${NEARBY_KM} km` },
+};
+const nearbyOpen = new Set(); // 「もっと見る」を開いている種類(このページを開いている間だけ)
+let nearbyShopId = null;
+function nearbyDistanceText(km) {
+  if (km < 1) return `${Math.max(10, Math.round((km * 1000) / 10) * 10)}m`;
+  return `${km.toFixed(1)}km`;
+}
+function nearbySpotsHtml(shop) {
+  if (typeof shopType !== "function" || !Number.isFinite(shop.lat) || !Number.isFinite(shop.lng)) return "";
+  if (nearbyShopId !== shop.id) {
+    nearbyShopId = shop.id;
+    nearbyOpen.clear();
+  }
+  const x = NEARBY_TEXT[currentLang] || NEARBY_TEXT.ja;
+  const labels = typeof homeText === "function" ? homeText().typeLabel : {};
+  const myType = shopType(shop);
+  const types = ["restaurant", "cafe", "grocery"].filter((t) => t !== myType);
+  const groups = types.map((type) => {
+    const list = entries
+      .filter((e) => e.shop.id !== shop.id && shopType(e.shop) === type && Number.isFinite(e.shop.lat) && Number.isFinite(e.shop.lng))
+      .map((e) => ({ e, km: distanceKm(shop.lat, shop.lng, e.shop.lat, e.shop.lng) }))
+      .filter((v) => v.km <= NEARBY_KM)
+      .sort((a, b) => a.km - b.km);
+    const open = nearbyOpen.has(type);
+    const shown = open ? list : list.slice(0, NEARBY_SHOW);
+    return (
+      `<div class="nearby-group">` +
+      `<h4 class="nearby-type">${typeof homeIcon === "function" ? homeIcon(type, 20) : ""}<span>${esc(labels[type] || type)}</span></h4>` +
+      (list.length
+        ? `<ul class="nearby-list">${shown
+            .map(
+              (v) =>
+                `<li><a class="nearby-item" href="${esc(shopUrl(v.e.shop.id))}" data-nearby-shop="${esc(v.e.shop.id)}">` +
+                `<span class="nearby-name">${esc(pick(v.e.shop.name))}</span>` +
+                `<span class="nearby-km">${esc(nearbyDistanceText(v.km))}</span></a></li>`
+            )
+            .join("")}</ul>` +
+          (list.length > NEARBY_SHOW
+            ? `<button type="button" class="nearby-more" data-nearby-more="${type}" aria-expanded="${open}">${esc(open ? x.less : x.more(list.length))}${typeof homeIcon === "function" ? homeIcon(open ? "back" : "forward", 16) : ""}</button>`
+            : "")
+        : `<p class="nearby-none">${esc(x.none)}</p>`) +
+      `</div>`
+    );
+  });
+  return (
+    `<section class="detail-section" id="detail-nearby">` +
+    `<h3>${esc(x.title)}</h3><p class="nearby-note">${esc(x.note)}</p>` +
+    groups.join("") +
+    `</section>`
+  );
+}
+function bindNearbySpots() {
+  const section = detailPage.querySelector("#detail-nearby");
+  if (!section) return;
+  section.addEventListener("click", (event) => {
+    const more = event.target.closest("[data-nearby-more]");
+    if (more) {
+      const type = more.dataset.nearbyMore;
+      if (nearbyOpen.has(type)) nearbyOpen.delete(type);
+      else nearbyOpen.add(type);
+      const shop = entries.find((e) => e.shop.id === currentShopId);
+      if (shop) {
+        const wrap = document.createElement("div");
+        wrap.innerHTML = nearbySpotsHtml(shop.shop);
+        section.replaceWith(wrap.firstElementChild);
+        bindNearbySpots();
+        const again = detailPage.querySelector(`[data-nearby-more="${type}"]`);
+        if (again) again.focus({ preventScroll: true });
+      }
+      return;
+    }
+    const link = event.target.closest("[data-nearby-shop]");
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    event.preventDefault();
+    navigate(shopUrl(link.dataset.nearbyShop));
+    detailView.scrollTop = 0;
+  });
 }
 
 // 「← 一覧に戻る」: 普通のリンクとしても動く(新しいタブで開いたときなど)が、通常は、ページを移動せずに切り替える
