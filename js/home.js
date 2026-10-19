@@ -680,6 +680,8 @@ function showHome(mode, listId) {
 }
 // いまの画面(ホーム / マイリスト / マイリストの設定 / エリアのお店の一覧)を描き直す
 function renderHomeMode() {
+  // ホームのトップだけ、上の白い帯をなくして、左上にロゴ・右上に言語を浮かせる(CSS の body.is-home-top)
+  document.body.classList.toggle("is-home-top", homeMode === "home");
   if (homeMode === "todo") renderMyList();
   else if (homeMode === "todo-edit") renderMyListSettings();
   else if (homeMode === "todo-area") renderMyListArea(homeListId);
@@ -689,7 +691,7 @@ function renderHomeMode() {
   else renderHome();
 }
 function hideHome() {
-  document.body.classList.remove("view-home");
+  document.body.classList.remove("view-home", "is-home-top");
   homeView.hidden = true;
 }
 
