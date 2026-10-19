@@ -522,6 +522,7 @@ function renderHome() {
     `</footer>`;
   homeEntriesRise = false;
   paintHomeBands();
+  requestAnimationFrame(updateHomeTitleColor);
   attachSwipeBars();
 }
 
@@ -747,9 +748,27 @@ function showHome(mode, listId) {
   renderTabs();
 }
 // いまの画面(ホーム / マイリスト / マイリストの設定 / エリアのお店の一覧)を描き直す
+// ホームのトップ: ロゴの横のサイト名の色を、うしろが写真(暗い)なら白、それ以外なら黒にする
+function updateHomeTitleColor() {
+  const header = document.querySelector("header");
+  if (!header) return;
+  const hero = document.body.classList.contains("is-home-top") ? homePage.querySelector(".home-top") : null;
+  let onPhoto = false;
+  if (hero) {
+    const r = hero.getBoundingClientRect();
+    const h = header.getBoundingClientRect();
+    const mid = h.top + Math.min(h.height, 64) / 2; // サイト名のあたりの高さ
+    onPhoto = r.top <= mid && r.bottom >= mid;
+  }
+  header.classList.toggle("is-on-photo", onPhoto);
+}
+homeView.addEventListener("scroll", updateHomeTitleColor, { passive: true });
+window.addEventListener("resize", updateHomeTitleColor);
+
 function renderHomeMode() {
   // ホームのトップだけ、上の白い帯をなくして、左上にロゴ・右上に言語を浮かせる(CSS の body.is-home-top)
   document.body.classList.toggle("is-home-top", homeMode === "home");
+  if (homeMode !== "home") updateHomeTitleColor();
   if (homeMode === "todo") renderMyList();
   else if (homeMode === "todo-edit") renderMyListSettings();
   else if (homeMode === "todo-area") renderMyListArea(homeListId);
@@ -761,6 +780,8 @@ function renderHomeMode() {
 }
 function hideHome() {
   document.body.classList.remove("view-home", "is-home-top");
+  const header = document.querySelector("header");
+  if (header) header.classList.remove("is-on-photo");
   homeView.hidden = true;
 }
 

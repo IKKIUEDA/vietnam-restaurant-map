@@ -6682,8 +6682,17 @@ body.is-home-top header .header-brand,
 body.is-home-top header .header-actions {
   pointer-events: auto;
 }
+/* サイト名は、ロゴの横に出す(写真の上では白い文字、白い背景の上では黒い文字。js/home.js の updateHomeTitleColor) */
 body.is-home-top .header-titles {
-  display: none;
+  display: block;
+}
+body.is-home-top #app-title {
+  color: var(--c-text);
+  transition: color 0.2s ease;
+}
+body.is-home-top header.is-on-photo #app-title {
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
 }
 body.is-home-top .app-logo {
   height: 52px;
