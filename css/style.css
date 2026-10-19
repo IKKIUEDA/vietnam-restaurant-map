@@ -7142,3 +7142,12 @@ body.is-home-top .home-footer-block {
     font-size: 0.78rem;
   }
 }
+
+/* ホームのトップ: 下にスクロールしたら、サイト名はふわっと消えて、ロゴだけになる */
+body.is-home-top .header-titles {
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+body.is-home-top header.is-scrolled .header-titles {
+  opacity: 0;
+  visibility: hidden;
+}

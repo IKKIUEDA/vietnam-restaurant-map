@@ -761,6 +761,8 @@ function updateHomeTitleColor() {
     onPhoto = r.top <= mid && r.bottom >= mid;
   }
   header.classList.toggle("is-on-photo", onPhoto);
+  // 下にスクロールしたら、サイト名を隠して、ロゴだけにする(一番上に戻ると、また出す)
+  header.classList.toggle("is-scrolled", !!hero && homeView.scrollTop > 40);
 }
 homeView.addEventListener("scroll", updateHomeTitleColor, { passive: true });
 window.addEventListener("resize", updateHomeTitleColor);
@@ -781,7 +783,7 @@ function renderHomeMode() {
 function hideHome() {
   document.body.classList.remove("view-home", "is-home-top");
   const header = document.querySelector("header");
-  if (header) header.classList.remove("is-on-photo");
+  if (header) header.classList.remove("is-on-photo", "is-scrolled");
   homeView.hidden = true;
 }
 
