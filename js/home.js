@@ -498,12 +498,49 @@ function renderHome() {
     (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(count("cafe"))) : "") +
     feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
     `</div></section>` +
+    // このページをシェア(X・Facebook・LINE)
+    homeShareHtml() +
     // 利用規約などへのリンク(スマホのホームでは、画面の下のフッターの代わりに、ここに出す)
     `<nav class="home-footer" aria-label="Site pages">` +
     `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
     `<a href="${esc(privacyUrl())}" data-home-nav>${esc(t.privacyPageTitle)}</a>` +
     `<a href="${esc(aboutUrl())}" data-home-nav>${esc(t.aboutPageTitle)}</a>` +
     `</nav>`;
+}
+
+// ---------------------------------------------------------------------
+// このページをシェア(特集の下)
+//   ・各サービスが用意している「シェア用のURL」を、新しいタブで開くだけ(このサイトから何かを送ったり、記録したりはしない)
+//   ・ボタンはサービス名の文字だけ(各社のロゴ画像は使っていない。ロゴを使うときは、各社の公式素材とガイドラインに従う)
+// ---------------------------------------------------------------------
+const SHARE_URL = "https://vietnamfoodie.compass-story.net/";
+const SHARE_TEXT = {
+  ja: { title: "このページをシェア", text: "ベトナムフーディー｜日本の中にある、ベトナムを探そう。", via: (name) => `${name}でシェア(新しいタブで開きます)` },
+  en: { title: "Share this page", text: "Vietnam Foodie – Discover Vietnam-related shops in Japan", via: (name) => `Share on ${name} (opens in a new tab)` },
+  vi: { title: "Chia sẻ trang này", text: "Foodie Việt Nam – Tìm Việt Nam tại Nhật Bản", via: (name) => `Chia sẻ qua ${name} (mở trong tab mới)` },
+};
+function homeShareHtml() {
+  const x = SHARE_TEXT[currentLang] || SHARE_TEXT.ja;
+  const url = encodeURIComponent(SHARE_URL);
+  const text = encodeURIComponent(x.text);
+  const links = [
+    { key: "x", name: "X", href: `https://twitter.com/intent/tweet?text=${text}&url=${url}` },
+    { key: "facebook", name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
+    { key: "line", name: "LINE", href: `https://social-plugins.line.me/lineit/share?url=${url}` },
+  ];
+  return (
+    `<section class="home-section home-share">` +
+    `<h2 class="home-share-title">${esc(x.title)}</h2>` +
+    `<div class="home-share-btns">` +
+    links
+      .map(
+        (l) =>
+          `<a class="home-share-btn is-${l.key}" href="${esc(l.href)}" target="_blank" rel="noopener noreferrer" ` +
+          `aria-label="${esc(x.via(l.name))}" title="${esc(x.via(l.name))}">${esc(l.name)}</a>`
+      )
+      .join("") +
+    `</div></section>`
+  );
 }
 
 // ---------------------------------------------------------------------

@@ -6574,3 +6574,60 @@ header h1 {
     height: 48px;
   }
 }
+
+/* =====================================================================
+   ホーム: このページをシェア(特集の下)
+   ===================================================================== */
+.home-share {
+  text-align: center;
+}
+.home-share-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.home-share-btns {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.home-share-btn {
+  min-width: 96px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.home-share-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+.home-share-btn.is-x {
+  background: #000000;
+}
+.home-share-btn.is-facebook {
+  background: #1877f2;
+}
+.home-share-btn.is-line {
+  background: #06c755;
+}
+/* 3つのボタンを、スマホでも1行に並べる */
+.home-share-btns {
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+.home-share-btn {
+  flex: 0 1 120px;
+  min-width: 0;
+  padding: 0 10px;
+}
