@@ -6919,3 +6919,40 @@ body.is-home-top .home-top {
     border-radius: var(--radius-card) var(--radius-card) 0 0;
   }
 }
+
+/* サイトの最下部: 運営会社のロゴと、権利の表示(ホームのいちばん下・各ページのフッター) */
+.site-copyright {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 34px 0 0;
+  color: #9aa29c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.site-copyright img {
+  display: block;
+  width: auto;
+  height: 30px;
+}
+#site-footer .site-copyright {
+  margin: 14px 0 4px;
+}
+#site-footer .site-copyright {
+  margin: 6px 0 2px;
+  font-size: 0.7rem;
+}
+#site-footer .site-copyright img {
+  height: 20px;
+}
+/* スマホでも、ロゴと文字が1行に並ぶ大きさに */
+.home-footer-block .site-copyright {
+  gap: 6px 10px;
+  font-size: 0.68rem;
+}
+.home-footer-block .site-copyright img {
+  height: 26px;
+}
