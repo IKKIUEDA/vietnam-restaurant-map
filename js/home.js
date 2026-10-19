@@ -407,6 +407,7 @@ function openMapWithSearch(q) {
 // ---------------------------------------------------------------------
 // ホームの中身
 // ---------------------------------------------------------------------
+let homeEntriesRise = true; // まだ一度も動かしていない(最初の1回だけ true)
 function renderHome() {
   // スマホ(幅が狭い画面)では、検索窓の案内文を短くする(「(例: 千葉駅)」まで入れると、途中で切れてしまうため)
   const narrowScreen = window.matchMedia("(max-width: 480px)").matches;
@@ -465,7 +466,8 @@ function renderHome() {
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
     `</div>` +
-    `<nav class="home-entries" aria-label="${esc(h.entriesLabel)}">` +
+    // カテゴリのボタン: ページを開いて最初にホームを出したときだけ、下からふわっと順番に出す(描き直しのたびには動かさない)
+    `<nav class="home-entries${homeEntriesRise ? " is-rise" : ""}" aria-label="${esc(h.entriesLabel)}">` +
     // 入口は4つ: レストラン・カフェ・食材店(地図でその種類だけを出す)と、近くのお店(現在地のまわり)
     entryButton("restaurant", h.entryRestaurant) +
     (hasCafe ? entryButton("cafe", h.entryCafe) : "") +
@@ -506,6 +508,7 @@ function renderHome() {
     `<a href="${esc(privacyUrl())}" data-home-nav>${esc(t.privacyPageTitle)}</a>` +
     `<a href="${esc(aboutUrl())}" data-home-nav>${esc(t.aboutPageTitle)}</a>` +
     `</nav>`;
+  homeEntriesRise = false;
 }
 
 // ---------------------------------------------------------------------
