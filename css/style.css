@@ -7047,3 +7047,57 @@ body.is-home-top .home-footer-block {
     transition: none;
   }
 }
+
+/* =====================================================================
+   保存(ブックマーク)ボタン: 地図の一覧・ポップアップ / ホームのカードの写真の右上
+   ===================================================================== */
+.fav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: #8a958c;
+}
+.fav-btn:hover,
+.fav-btn.active {
+  color: var(--c-primary);
+}
+.home-rec-cards li,
+.todo-shops li {
+  position: relative;
+}
+.card-save {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #3f4d44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+.card-save:hover {
+  background: #ffffff;
+}
+.card-save.is-on {
+  color: var(--c-primary);
+}
+/* お店の一覧(マイリストのエリア・特集)のカードは、写真が左にあるので、写真の左上に重ねる(名前と重ならないように) */
+.todo-shops .card-save {
+  top: 16px;
+  right: auto;
+  left: 16px;
+  width: 34px;
+  height: 34px;
+}
+.todo-shops .card-save svg {
+  width: 19px;
+  height: 19px;
+}
