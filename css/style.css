@@ -6528,3 +6528,45 @@ body.onboard-open {
   max-height: 3em;
   margin-top: 4px;
 }
+
+/* =====================================================================
+   上のヘッダー: 白い背景・黒い文字・ロゴを大きく(サブタイトルは出さない)
+   ===================================================================== */
+header {
+  background: #ffffff;
+  color: var(--c-text);
+  border-bottom: 1px solid var(--c-border);
+  box-shadow: none;
+  padding: 8px 16px;
+}
+header h1 {
+  color: var(--c-text);
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+#app-tagline {
+  display: none;
+}
+.app-logo {
+  height: 56px;
+}
+#lang-select {
+  border: 1px solid #c9cfc6;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231d2a22' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color: var(--c-text);
+}
+#lang-select:hover {
+  background-color: #f1f4ef;
+}
+@media (max-width: 480px) {
+  header {
+    padding: 6px 12px;
+  }
+  header h1 {
+    font-size: 1.2rem;
+  }
+  .app-logo {
+    height: 48px;
+  }
+}
