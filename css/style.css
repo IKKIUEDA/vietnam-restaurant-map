@@ -6245,7 +6245,7 @@ body.onboard-open {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: #0b0f0c;
+  background: #0a0e14;
   color: #ffffff;
   overflow-y: auto;
 }
@@ -6265,7 +6265,7 @@ body.onboard-open {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(11, 15, 12, 0.15) 0%, rgba(11, 15, 12, 0.35) 55%, #0b0f0c 100%);
+  background: linear-gradient(to bottom, rgba(10, 14, 20, 0.15) 0%, rgba(10, 14, 20, 0.35) 55%, #0a0e14 100%);
 }
 .onboard-close {
   position: absolute;
@@ -6297,7 +6297,7 @@ body.onboard-open {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: #b9c2bc;
+  color: #b8c2d0;
 }
 .onboard-title {
   margin: 0;
@@ -6306,11 +6306,11 @@ body.onboard-open {
   line-height: 1.25;
 }
 .onboard-title span {
-  color: #5ccf72;
+  color: #7cc0ff;
 }
 .onboard-sub {
   margin: 10px 0 20px;
-  color: #c9d1cb;
+  color: #c8d1de;
   font-weight: 600;
 }
 .onboard-choices {
@@ -6326,7 +6326,7 @@ body.onboard-open {
   padding: 8px 10px;
   border: 2px solid transparent;
   border-radius: 16px;
-  background: #242a26;
+  background: #222833;
   color: #ffffff;
   font-size: 1rem;
   font-weight: 700;
@@ -6347,8 +6347,8 @@ body.onboard-open {
   right: 8px;
 }
 .onboard-choice.is-on {
-  border-color: #5ccf72;
-  background: #163a20;
+  border-color: #7cc0ff;
+  background: #11294d;
 }
 .onboard-message {
   margin: 14px 0 0;
@@ -6363,7 +6363,7 @@ body.onboard-open {
 }
 .onboard-btn {
   min-height: 56px;
-  border: 2px solid #3a423c;
+  border: 2px solid #3a4250;
   border-radius: 16px;
   background: transparent;
   color: #ffffff;
@@ -6372,8 +6372,8 @@ body.onboard-open {
   cursor: pointer;
 }
 .onboard-btn.is-primary {
-  border-color: #2e9e48;
-  background: #2e9e48;
+  border-color: #1e63d6;
+  background: #1e63d6;
 }
 .onboard-btn.is-wide {
   grid-column: 1 / -1;
@@ -6391,13 +6391,13 @@ body.onboard-open {
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  border: 2px solid #2e9e48;
+  border: 2px solid #1e63d6;
   border-radius: 14px;
-  background: #102615;
+  background: #0e2242;
   font-weight: 700;
 }
 .onboard-tag svg {
-  color: #5ccf72;
+  color: #7cc0ff;
 }
 @media (min-width: 900px) {
   .onboard-photo {
