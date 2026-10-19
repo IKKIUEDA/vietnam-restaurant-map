@@ -275,7 +275,11 @@ function renderDetail() {
       <div class="detail-hero"><img class="detail-hero-img" alt=""><span class="detail-credit" hidden></span></div>
 
       <div class="detail-head">
-        <h2 class="detail-name">${esc(name)}</h2>
+        <div class="detail-title-row">
+          <h2 class="detail-name">${esc(name)}</h2>
+          ${bookmarkButtonHtml(shop)}
+        </div>
+        <p class="detail-bookmark-toast" id="detail-bookmark-toast" role="status"></p>
         <p class="detail-sub">${[category, areaText].filter(Boolean).map(esc).join(" ・ ")}</p>
       </div>
 
@@ -360,6 +364,7 @@ function renderDetail() {
   bindBackLinks();
   bindDetailButtons();
   bindNearbySpots();
+  bindBookmark();
   if (tipsState.shopId !== shop.id) startTips(shop.id); // 別のお店になったときだけ、読み込み直す(言語の切り替えでは、そのまま表示する)
   else renderTips();
   if (reviewState.shopId !== shop.id) startReviewCount(shop.id);
@@ -374,6 +379,55 @@ function renderDetail() {
   updateDistanceUI();
   checkGeoPermission(shop.id);
   detailView.scrollTop = keepScroll;
+}
+
+// ---------------------------------------------------------------------
+// ブックマーク(店舗ページの名前の横)
+//   ・「保存した店」(js/app.js の favorites)と同じもの。この端末(ブラウザ)の中だけに保存する
+//   ・保存したお店は、地図の画面の「♡ 保存した店」で一覧できる
+// ---------------------------------------------------------------------
+const BOOKMARK_TEXT = {
+  ja: { add: "このお店を保存する", remove: "保存を外す", added: "保存しました。地図の「♡ 保存した店」から見られます", removed: "保存を外しました" },
+  en: { add: "Save this shop", remove: "Remove from saved", added: "Saved. You can find it under ‘♥ Favorites only’ on the map", removed: "Removed from saved" },
+  vi: { add: "Lưu quán này", remove: "Bỏ lưu", added: "Đã lưu. Xem trong mục ‘♥ Chỉ hiện quán yêu thích’ trên bản đồ", removed: "Đã bỏ lưu" },
+};
+const BOOKMARK_ICON_OFF =
+  '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M6 3h12v18l-6-4.5L6 21z"></path><path d="M12 7.5v5M9.5 10h5"></path></svg>';
+const BOOKMARK_ICON_ON =
+  '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M6 3h12v18l-6-4.5L6 21z"></path><path d="M9.3 10.2l1.9 1.9 3.5-3.7" fill="none" stroke="#ffffff"></path></svg>';
+function bookmarkButtonHtml(shop) {
+  const x = BOOKMARK_TEXT[currentLang] || BOOKMARK_TEXT.ja;
+  const on = typeof isFavorite === "function" && isFavorite(shop);
+  return (
+    `<button type="button" class="detail-bookmark${on ? " is-on" : ""}" data-bookmark aria-pressed="${on}" ` +
+    `aria-label="${esc(on ? x.remove : x.add)}" title="${esc(on ? x.remove : x.add)}">${on ? BOOKMARK_ICON_ON : BOOKMARK_ICON_OFF}</button>`
+  );
+}
+let bookmarkToastTimer = null;
+function bindBookmark() {
+  const btn = detailPage.querySelector("[data-bookmark]");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const entry = entries.find((e) => e.shop.id === currentShopId);
+    if (!entry || typeof toggleFavorite !== "function") return;
+    toggleFavorite(entry);
+    const x = BOOKMARK_TEXT[currentLang] || BOOKMARK_TEXT.ja;
+    const on = isFavorite(entry.shop);
+    btn.classList.toggle("is-on", on);
+    btn.setAttribute("aria-pressed", String(on));
+    btn.setAttribute("aria-label", on ? x.remove : x.add);
+    btn.title = on ? x.remove : x.add;
+    btn.innerHTML = on ? BOOKMARK_ICON_ON : BOOKMARK_ICON_OFF;
+    const toast = detailPage.querySelector("#detail-bookmark-toast");
+    if (toast) {
+      toast.textContent = on ? x.added : x.removed;
+      toast.classList.add("is-show");
+      clearTimeout(bookmarkToastTimer);
+      bookmarkToastTimer = setTimeout(() => toast.classList.remove("is-show"), 3000);
+    }
+  });
 }
 
 // ---------------------------------------------------------------------

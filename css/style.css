@@ -6482,3 +6482,49 @@ body.onboard-open {
   font-size: 0.85rem;
   color: var(--c-text-sub);
 }
+
+/* 店舗ページ: 名前の横のブックマーク */
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.detail-title-row .detail-name {
+  flex: 1;
+  min-width: 0;
+}
+.detail-bookmark {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin-top: -2px;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.detail-bookmark:hover {
+  background: #f3f6f2;
+}
+.detail-bookmark.is-on {
+  color: var(--c-primary);
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+.detail-bookmark-toast {
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  transition: max-height 0.2s ease;
+}
+.detail-bookmark-toast.is-show {
+  max-height: 3em;
+  margin-top: 4px;
+}
