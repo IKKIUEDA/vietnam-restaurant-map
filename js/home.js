@@ -419,7 +419,10 @@ function renderHome() {
 
   const entryButton = (key, label) =>
     `<button type="button" class="home-entry home-entry-${key}" data-home-action="${key}">` +
-    `<span class="home-entry-icon">${homeIcon(key, 26)}</span><span class="home-entry-label">${esc(label)}</span>` +
+    // アイコンは、運営者が用意したイラスト(images/entries/)。読み込めないときは、これまでの線のアイコン
+    `<span class="home-entry-icon has-illust"><img src="images/entries/${key}.png" alt="" width="192" height="192" ` +
+    `onerror="this.parentNode.classList.remove('has-illust');this.replaceWith(document.createRange().createContextualFragment(${esc(JSON.stringify(homeIcon(key, 26)))}))"></span>` +
+    `<span class="home-entry-label">${esc(label)}</span>` +
     `<span class="home-entry-arrow" aria-hidden="true">${homeIcon("forward", 18)}</span></button>`;
 
   const rec = homeRecommendations();
