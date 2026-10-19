@@ -6956,3 +6956,49 @@ body.is-home-top .home-top {
 .home-footer-block .site-copyright img {
   height: 26px;
 }
+
+/* =====================================================================
+   ホームのトップ: 背景は白。各まとまりを、白と薄いグレー(#f5f5f5)の交互の帯にする(js/home.js の paintHomeBands)
+   ・グレーの帯は、画面の左右いっぱいまで広げる
+   ===================================================================== */
+body.is-home-top #home-view {
+  background: #ffffff;
+}
+body.is-home-top .home-divider {
+  display: none;
+}
+body.is-home-top #home-page > .home-section {
+  padding-bottom: 32px;
+}
+body.is-home-top #home-page > .home-section.home-band-gray {
+  margin-top: 28px;
+  padding-top: 32px;
+  background: #f5f5f5;
+  box-shadow: 0 0 0 100vmax #f5f5f5;
+  clip-path: inset(0 -100vmax);
+}
+body.is-home-top #home-page > .home-band-gray + .home-section {
+  padding-top: 32px;
+}
+body.is-home-top .home-contact,
+body.is-home-top .home-footer-block {
+  background: #f5f5f5;
+}
+body.is-home-top .home-contact {
+  margin-top: 0;
+  box-shadow: 0 0 0 100vmax #f5f5f5;
+  clip-path: inset(0 -100vmax);
+  border-radius: 0;
+}
+body.is-home-top .home-footer-block {
+  box-shadow: 0 0 0 100vmax #f5f5f5;
+  clip-path: inset(0 -100vmax);
+  border-radius: 0;
+}
+@media (min-width: 900px) {
+  body.is-home-top #home-page > .home-section.home-band-gray {
+    margin-top: 44px;
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+}
