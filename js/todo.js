@@ -17,7 +17,7 @@ const MYLIST_TYPES = ["restaurant", "cafe", "grocery"];
 const TODO_TEXT = {
   ja: {
     sectionTitle: "マイリスト",
-    sectionSub: "行きたいエリアと、探したいお店を選んでおけます",
+    sectionSub: "行きたいエリアと探したいお店を選ぼう！",
     start: "マイリストを作る",
     startSub: "行きたいエリアを追加するだけ",
     settings: "マイリストの設定",
