@@ -7151,3 +7151,24 @@ body.is-home-top header.is-scrolled .header-titles {
   opacity: 0;
   visibility: hidden;
 }
+
+/* ホームのカテゴリのボタン: 運営者が用意したイラストのアイコン(images/entries/) */
+.home-entry-icon.has-illust {
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.home-entry-icon.has-illust img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .home-entry-icon.has-illust {
+    width: 52px;
+    height: 52px;
+  }
+}
