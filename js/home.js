@@ -519,6 +519,18 @@ function renderHome() {
     `<span>© Compass Story ALL RIGHTS RESERVED.</span></p>` +
     `</footer>`;
   homeEntriesRise = false;
+  paintHomeBands();
+}
+
+// ホームの各まとまり(エリアから探す・マイリスト・おすすめ・特集・シェア)の背景を、白と薄いグレーの交互にする
+//   ・いちばん下のお問い合わせ(グレー)から上へ、白・グレー・白…と決める(どのまとまりが出ていても、交互になるように)
+function paintHomeBands() {
+  const sections = [...homePage.querySelectorAll(":scope > .home-section")].filter((el) => !el.classList.contains("home-top"));
+  sections.forEach((el) => el.classList.remove("home-band-gray"));
+  // お問い合わせのすぐ上(シェア)は白、その上はグレー、…
+  for (let i = sections.length - 2, n = 0; i >= 0; i -= 1, n += 1) {
+    if (n % 2 === 0) sections[i].classList.add("home-band-gray");
+  }
 }
 
 // ---------------------------------------------------------------------
