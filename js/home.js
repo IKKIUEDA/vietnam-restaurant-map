@@ -504,12 +504,18 @@ function renderHome() {
     homeShareHtml() +
     // お問い合わせ(js/contact.js)
     (typeof homeContactHtml === "function" ? homeContactHtml() : "") +
-    // 利用規約などへのリンク(スマホのホームでは、画面の下のフッターの代わりに、ここに出す)
+    // いちばん下: ロゴ・サイト名、利用規約などへのリンク(縦に並べる)、著作権の表示
+    `<footer class="home-footer-block">` +
+    `<a class="home-footer-brand" href="${esc(homeUrl())}" data-home-nav>` +
+    `<img src="images/logo.png" alt="" width="158" height="208" loading="lazy">` +
+    `<span>${esc(t.title)}</span></a>` +
     `<nav class="home-footer" aria-label="Site pages">` +
     `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
     `<a href="${esc(privacyUrl())}" data-home-nav>${esc(t.privacyPageTitle)}</a>` +
     `<a href="${esc(aboutUrl())}" data-home-nav>${esc(t.aboutPageTitle)}</a>` +
-    `</nav>`;
+    `</nav>` +
+    `<p class="home-footer-copy">© Compass Story. All rights reserved.</p>` +
+    `</footer>`;
   homeEntriesRise = false;
 }
 

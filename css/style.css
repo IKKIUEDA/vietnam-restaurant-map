@@ -6853,3 +6853,69 @@ body.is-home-top .home-top {
   justify-content: center;
   text-decoration: none;
 }
+
+/* =====================================================================
+   ホームのいちばん下: ロゴ・サイト名 → リンク(縦に並べる)→ 著作権
+   ===================================================================== */
+.home-footer-block {
+  padding: 44px 20px calc(28px + env(safe-area-inset-bottom));
+  background: #f1f2ee;
+  border-top: 1px solid #e3e5df;
+  text-align: center;
+}
+.home-contact + .home-footer-block {
+  border-top: 1px solid #e3e5df;
+}
+.home-footer-brand {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--c-text);
+  text-decoration: none;
+}
+.home-footer-brand img {
+  width: 56px;
+  height: auto;
+}
+.home-footer-brand span {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.home-footer-block .home-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 30px 0 0;
+}
+.home-footer-block .home-footer a {
+  color: var(--c-text);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.home-footer-block .home-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.home-footer-copy {
+  margin: 34px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #9aa29c;
+  letter-spacing: 0.02em;
+}
+@media (min-width: 900px) {
+  .home-footer-block {
+    margin-top: 0;
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+  }
+}
+@media (min-width: 900px) {
+  .home-contact {
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+}
