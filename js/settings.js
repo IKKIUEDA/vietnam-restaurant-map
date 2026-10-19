@@ -381,6 +381,12 @@ function renderSettingsSub(sub, params, page) {
     return true;
   }
 
+  if (sub === "inquiries") {
+    if (!isAdminUser(authUser) || typeof renderContactAdmin !== "function") return false;
+    renderContactAdmin(page);
+    return true;
+  }
+
   if (sub === "requests") {
     if (!isAdminUser(authUser)) return false;
     const st = settingsStateFor("requests");

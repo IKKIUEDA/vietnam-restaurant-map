@@ -502,6 +502,8 @@ function renderHome() {
     `</div></section>` +
     // このページをシェア(X・Facebook・LINE)
     homeShareHtml() +
+    // お問い合わせ(js/contact.js)
+    (typeof homeContactHtml === "function" ? homeContactHtml() : "") +
     // 利用規約などへのリンク(スマホのホームでは、画面の下のフッターの代わりに、ここに出す)
     `<nav class="home-footer" aria-label="Site pages">` +
     `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
@@ -672,7 +674,9 @@ function showHome(mode, listId) {
   if (typeof renderMyList === "function") modes.push("todo", "todo-edit", "todo-area");
   if (typeof renderAccountPage === "function") modes.push("account", "user");
   if (typeof renderFeaturePage === "function") modes.push("feature");
+  if (typeof renderContactPage === "function") modes.push("contact");
   homeMode = modes.includes(mode) ? mode : "home";
+  if (homeMode === "contact" && typeof resetContactIfDone === "function") resetContactIfDone();
   homeListId = listId || null;
   renderHomeMode();
   homeView.scrollTop = 0;
@@ -688,6 +692,7 @@ function renderHomeMode() {
   else if (homeMode === "account") renderAccountPage();
   else if (homeMode === "user") renderUserPage(homeListId);
   else if (homeMode === "feature") renderFeaturePage(homeListId);
+  else if (homeMode === "contact") renderContactPage();
   else renderHome();
 }
 function hideHome() {

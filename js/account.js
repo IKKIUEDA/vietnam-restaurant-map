@@ -532,6 +532,7 @@ function renderAccountSettings() {
       (isAdminUser(authUser)
         ? `<ul class="acct-settings">` +
           acctRow({ icon: "spot", label: settingsText().adminRequests, href: acctSettingsUrl("requests") }) +
+          (typeof contactText === "function" ? acctRow({ icon: "mail", label: contactText().adminTitle, href: acctSettingsUrl("inquiries") }) : "") +
           `</ul>` +
           `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="backfill">${esc(x.adminBackfill)}</button>` +
           (accountAdminMessage ? `<p class="acct-note">${esc(accountAdminMessage)}</p>` : "") +
