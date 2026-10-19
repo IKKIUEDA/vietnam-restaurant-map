@@ -760,16 +760,45 @@ function mapButtonHtml(idx) {
   return `<button type="button" class="map-btn" data-idx="${idx}" aria-label="${esc(label)}" title="${esc(label)}">📍</button>`;
 }
 
-// ♡ / ♥ のボタンの HTML(idx は entries の番号)
+// 保存(ブックマーク)のアイコン: 枠だけ(+)= まだ保存していない / 塗りつぶし(✓)= 保存済み
+//   店舗ページ(js/detail.js)・地図の一覧・ホームのカードで、同じ形を使う
+const SAVE_ICON_OFF =
+  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M6 3h12v18l-6-4.5L6 21z"></path><path d="M12 7.5v5M9.5 10h5"></path></svg>';
+const SAVE_ICON_ON =
+  '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M6 3h12v18l-6-4.5L6 21z"></path><path d="M9.3 10.2l1.9 1.9 3.5-3.7" fill="none" stroke="#ffffff"></path></svg>';
+
+// 保存ボタンの HTML(idx は entries の番号。地図の一覧のカード・地図のポップアップで使う)
 function favButtonHtml(entry, idx) {
   const on = isFavorite(entry.shop);
   const t = ui[currentLang];
   return (
     `<button type="button" class="fav-btn${on ? " active" : ""}" data-idx="${idx}" ` +
     `aria-pressed="${on}" aria-label="${on ? t.favRemove : t.favAdd}" title="${on ? t.favRemove : t.favAdd}">` +
-    `${on ? "♥" : "♡"}</button>`
+    `${on ? SAVE_ICON_ON : SAVE_ICON_OFF}</button>`
   );
 }
+
+// ホームのカード(あなたへのおすすめ・マイリスト・特集のお店の一覧)の、写真の右上の保存ボタン
+//   カード(リンク)の中にボタンを入れられないので、カードの外(li の中)に置いて、写真の上に重ねる
+function cardSaveButtonHtml(shop) {
+  const on = isFavorite(shop);
+  const t = ui[currentLang];
+  return (
+    `<button type="button" class="card-save${on ? " is-on" : ""}" data-card-save="${esc(shop.id)}" ` +
+    `aria-pressed="${on}" aria-label="${esc(on ? t.favRemove : t.favAdd)}" title="${esc(on ? t.favRemove : t.favAdd)}">` +
+    `${on ? SAVE_ICON_ON : SAVE_ICON_OFF}</button>`
+  );
+}
+document.addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-card-save]");
+  if (!btn) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const entry = entries.find((e) => e.shop.id === btn.dataset.cardSave);
+  if (entry) toggleFavorite(entry);
+});
 
 // 画面にあるすべての ♡ / ♥(一覧のカード・開いているポップアップ)と、「お気に入りのみ表示」ボタンを、いまの状態に合わせる
 function renderFavorites() {
@@ -777,7 +806,18 @@ function renderFavorites() {
   document.querySelectorAll(".fav-btn").forEach((btn) => {
     const on = isFavorite(entries[Number(btn.dataset.idx)].shop);
     btn.classList.toggle("active", on);
-    btn.textContent = on ? "♥" : "♡";
+    btn.innerHTML = on ? SAVE_ICON_ON : SAVE_ICON_OFF;
+    btn.setAttribute("aria-pressed", String(on));
+    btn.setAttribute("aria-label", on ? t.favRemove : t.favAdd);
+    btn.title = on ? t.favRemove : t.favAdd;
+  });
+  // ホームのカードの保存ボタンも、いまの状態に合わせる
+  document.querySelectorAll("[data-card-save]").forEach((btn) => {
+    const entry = entries.find((e) => e.shop.id === btn.dataset.cardSave);
+    if (!entry) return;
+    const on = isFavorite(entry.shop);
+    btn.classList.toggle("is-on", on);
+    btn.innerHTML = on ? SAVE_ICON_ON : SAVE_ICON_OFF;
     btn.setAttribute("aria-pressed", String(on));
     btn.setAttribute("aria-label", on ? t.favRemove : t.favAdd);
     btn.title = on ? t.favRemove : t.favAdd;

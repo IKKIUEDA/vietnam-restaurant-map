@@ -301,7 +301,9 @@ function todoShopCard(entry) {
     (category ? `<span class="todo-tag">${esc(category)}</span>` : "") +
     `</span>` +
     `<span class="todo-shop-more">${esc(x.detail)} ›</span>` +
-    `</span></a></li>`
+    `</span></a>` +
+    cardSaveButtonHtml(shop) +
+    `</li>`
   );
 }
 

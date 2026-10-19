@@ -440,7 +440,9 @@ function renderHome() {
         `<span class="home-rec-area">📍 ${esc(pick(shop.area))}</span>` +
         `<span class="home-rec-tags"><span class="todo-tag" style="color:${(typeof TODO_TYPE_COLORS !== "undefined" && TODO_TYPE_COLORS[type]) || "#3f4d44"}">${esc(h.typeLabel[type])}</span>` +
         (category ? `<span class="todo-tag">${esc(category)}</span>` : "") +
-        `</span></span></a></li>`
+        `</span></span></a>` +
+        cardSaveButtonHtml(shop) +
+        `</li>`
       );
     })
     .join("");
