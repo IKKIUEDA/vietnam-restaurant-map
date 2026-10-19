@@ -223,7 +223,7 @@ const ui = {
           "マイリスト(選んだエリアと、探したいお店の種類): ホームの「あなたへのおすすめ」にも使います。お使いの端末(ブラウザ)の中だけに保存し、本サービスのサーバーや第三者に送ることはありません。ホームを開いたときに出る質問(行きたいエリア・探したいお店。はじめての時と、その後30日ごと)の答えも、マイリストとして保存します。質問を次に出す日を決めるため、前に質問を出した日時も、同じく端末の中だけに保存します。マイリストの画面から、いつでも追加・変更・削除でき、ブラウザの設定でこのサイトのデータを削除すると、まとめて消すことができます。",
           "プロフィール(ニックネーム・アイコン画像・自己紹介。任意で設定するもの): プロフィールページで、他の利用者も見られます。あわせて、その方が投稿した写真・レビューの一覧も、プロフィールページに表示されます。チェックインの一覧は、ご本人のアカウント画面にだけ表示し、他の利用者には公開しません。プロフィールは、アカウント画面からいつでも変更でき、アカウントを削除すると、あわせて削除されます。アイコン画像は、写真投稿と同じ画像保存サービス(Cloudinary)に保存します。",
           "Cookie・アクセスログ: サービスの利用状況の把握、不正利用の防止のために利用する場合があります(Firebase等のインフラが標準的に記録するものを含みます)。",
-          "お問い合わせ情報: いただいたお問い合わせへの回答のために利用します。",
+          "お問い合わせ情報(お問い合わせフォームで入力された、お問い合わせの種類・お名前・メールアドレス・内容と、送信日時。ログイン中に送った場合は、アカウントのID): いただいたお問い合わせへの確認・回答のために利用します。Firebase に保存し、運営者だけが見られます。対応が終わり、保存しておく必要がなくなったものは削除します。",
         ],
       },
       {
@@ -627,7 +627,7 @@ const ui = {
           "My List (the areas and kinds of shops you choose): also used for ‘Picked for you’ on the home screen. Stored only on your device (in your browser) and never sent to our servers or to third parties. Your answers to the questions shown when you open the home screen (the areas you want to visit and the shops you're looking for; shown the first time and then every 30 days) are also saved as My List. To decide when to show the questions next, the date and time they were last shown is also stored only on your device. You can add, change or remove areas at any time from the My List screen, and remove everything by deleting this site's data in your browser settings.",
           "Profile (nickname, profile picture and bio, if you set them): visible to other users on your profile page, together with a list of the photos and reviews you have posted. Your list of check-ins is shown only on your own Account screen and is not made public. You can change your profile at any time from the Account screen, and it is deleted together with your account if you delete your account. Profile pictures are stored with the same image service used for photo posts (Cloudinary).",
           "Cookies and access logs: may be used to understand how the Service is used and to prevent misuse (this includes what infrastructure such as Firebase records by default).",
-          "Contact information: used to respond to inquiries you send us.",
+          "Contact information (the type of inquiry, name, email address and message entered in the contact form, the date and time sent, and your account ID if you were logged in): used to review and respond to your inquiry. Stored in Firebase and visible only to the operator. Deleted once handled and no longer needed.",
         ],
       },
       {
@@ -1030,7 +1030,7 @@ const ui = {
           "Danh sách của tôi (khu vực và loại quán bạn chọn): cũng dùng cho ‘Gợi ý cho bạn’ ở trang chủ. Chỉ được lưu trên thiết bị (trình duyệt) của bạn, không gửi đến máy chủ của chúng tôi hay bên thứ ba. Câu trả lời cho các câu hỏi hiện ra khi mở trang chủ (khu vực muốn đến và loại quán muốn tìm; hiện lần đầu và sau đó mỗi 30 ngày) cũng được lưu thành Danh sách của tôi. Để quyết định lần hiện câu hỏi tiếp theo, thời điểm hiện câu hỏi lần trước cũng chỉ được lưu trên thiết bị của bạn. Bạn có thể thêm, thay đổi hoặc xóa khu vực bất cứ lúc nào trong màn hình Danh sách của tôi, và xóa toàn bộ bằng cách xóa dữ liệu của trang này trong cài đặt trình duyệt.",
           "Hồ sơ (biệt danh, ảnh đại diện, giới thiệu — nếu bạn cài đặt): người dùng khác có thể xem trên trang hồ sơ, cùng với danh sách ảnh và đánh giá bạn đã đăng. Danh sách check-in chỉ hiển thị trên màn hình Tài khoản của chính bạn và không được công khai. Bạn có thể thay đổi hồ sơ bất cứ lúc nào từ màn hình Tài khoản, và hồ sơ sẽ bị xóa cùng khi bạn xóa tài khoản. Ảnh đại diện được lưu trên cùng dịch vụ lưu ảnh với ảnh đăng (Cloudinary).",
           "Cookie và nhật ký truy cập: có thể được dùng để nắm tình hình sử dụng Dịch vụ và ngăn chặn hành vi lạm dụng (bao gồm cả những gì hạ tầng như Firebase ghi nhận theo mặc định).",
-          "Thông tin liên hệ: dùng để phản hồi các câu hỏi bạn gửi đến chúng tôi.",
+          "Thông tin liên hệ (loại câu hỏi, họ tên, địa chỉ email, nội dung nhập trong mẫu liên hệ, thời gian gửi, và ID tài khoản nếu bạn đã đăng nhập): dùng để kiểm tra và trả lời câu hỏi của bạn. Được lưu trên Firebase và chỉ đơn vị vận hành xem được. Sẽ được xóa khi đã xử lý xong và không cần lưu nữa.",
         ],
       },
       {

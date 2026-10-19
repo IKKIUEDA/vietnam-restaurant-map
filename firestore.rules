@@ -467,6 +467,37 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------
+    // ✉️ お問い合わせ(ホームの下の「お問い合わせ」→ フォーム。js/contact.js)
+    //
+    //   inquiries/{自動生成ID} … 種類・お名前・メールアドレス・内容・言語・送信日時・対応状況(・ログイン中なら uid)
+    //       ログインしていなくても送れる(作ることだけ)。読めるのは管理者だけ。
+    //       対応状況(status)を変える・削除するのも、管理者だけ。
+    // ---------------------------------------------------------------
+
+    match /inquiries/{inquiryId} {
+      allow get, list, delete: if isAdmin();
+
+      allow create: if request.resource.data.keys().hasOnly(["type", "name", "email", "message", "lang", "status", "createdAt", "uid"])
+        && request.resource.data.keys().hasAll(["type", "name", "email", "message", "status", "createdAt"])
+        && request.resource.data.type in ["general", "shop", "owner", "other"]
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 50
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.email.matches("^[^@ ]+@[^@ ]+[.][^@ ]+$")
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 2000
+        && (!("lang" in request.resource.data) || request.resource.data.lang in ["ja", "en", "vi"])
+        && (!("uid" in request.resource.data) || (signedIn() && request.resource.data.uid == request.auth.uid))
+        && request.resource.data.status == "new"
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"])
+        && request.resource.data.status in ["new", "done"];
+    }
+
+    // ---------------------------------------------------------------
     // 👤 プロフィール(アカウント画面。js/account.js)
     //
     //   profiles/{ユーザーID} … ニックネーム(displayName)・自己紹介(bio)・アイコン画像のURL(photoURL)・更新日時
