@@ -6412,3 +6412,73 @@ body.onboard-open {
     font-size: 1.7rem;
   }
 }
+
+/* =====================================================================
+   店舗ページ: 近くのスポット(js/detail.js の nearbySpotsHtml)
+   ===================================================================== */
+.nearby-note {
+  margin: -4px 0 8px;
+  font-size: 0.8rem;
+  color: var(--c-text-sub);
+}
+.nearby-group + .nearby-group {
+  margin-top: 14px;
+}
+.nearby-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  color: var(--c-text-sub);
+}
+.nearby-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nearby-list li + li {
+  border-top: 1px solid var(--c-border);
+}
+.nearby-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+  color: var(--c-text);
+  text-decoration: none;
+}
+.nearby-item:hover .nearby-name {
+  text-decoration: underline;
+}
+.nearby-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nearby-km {
+  flex: none;
+  font-size: 0.9rem;
+  color: var(--c-text-sub);
+}
+.nearby-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--c-primary-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.nearby-none {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--c-text-sub);
+}
