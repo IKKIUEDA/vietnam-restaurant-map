@@ -4173,12 +4173,16 @@ a.todo-card .todo-card-foot {
 
 .home-top .home-hero {
   padding: 8px 22px 0;
+  container-type: inline-size; /* 見出しの文字の大きさを、この枠の幅から決める */
 }
 
 /* 見出しは1行・すべて白文字。画面の幅に合わせて文字の大きさを変える(スマホでも1行に収まるように) */
 .home-top .home-catch {
   color: #ffffff;
-  font-size: clamp(1.25rem, 6.6vw, 2rem);
+  /* 「日本の中にある、ベトナムを探そう。」(17文字)が、スマホでも1行に収まる大きさ */
+  font-size: clamp(1rem, calc((100vw - 76px) / 17.5), 2rem);
+  font-size: clamp(1rem, calc(100cqi / 17.6), 2rem); /* 見出しの入る枠の幅に合わせる(対応しているブラウザ) */
+  white-space: nowrap;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 

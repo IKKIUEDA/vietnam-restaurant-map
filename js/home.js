@@ -9,7 +9,7 @@
 
 const HOME_TEXT = {
   ja: {
-    catch: "日本のベトナムを探そう。",
+    catch: "日本の中にある、ベトナムを探そう。",
     searchLabel: "店名・エリア・駅名で探す",
     searchPlaceholder: "店名・エリア・駅名で探す(例: 千葉駅)",
     searchPlaceholderShort: "店名・エリア・駅名で探す",
