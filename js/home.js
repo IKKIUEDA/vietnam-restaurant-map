@@ -458,7 +458,7 @@ function renderHome() {
     `<span class="home-feature-sub">${esc(sub)}</span></span></button>`;
 
   homePage.innerHTML =
-    // 上の写真の部分(写真: 運営者が撮影したホーチミンの夜景。images/hero-saigon-night.jpg)
+    // 上の画像の部分(画像: 運営者が用意したベトナムの街並みのイラスト。images/hero-vietnam-street.jpg)
     `<div class="home-top">` +
     `<section class="home-hero">` +
     `<h2 class="home-catch">${esc(h.catch)}</h2>` +

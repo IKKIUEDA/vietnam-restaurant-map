@@ -4141,7 +4141,7 @@ a.todo-card .todo-card-foot {
 }
 
 /* ---- ホームの上の写真(ヒーロー) ----
-   写真: 運営者が撮影したホーチミンの夜景(images/hero-saigon-night.jpg / スマホ用は -900)。
+   画像: 運営者が用意した、ベトナムの街並みのイラスト(images/hero-vietnam-street.jpg。AIで作成したもの)。
    文字が読めるように、上と下を暗くするグラデーションを重ねる */
 .home-page {
   padding-top: 0;
@@ -4154,9 +4154,9 @@ a.todo-card .todo-card-foot {
   background-color: #0f2318;
   background-image:
     linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
-    url("../images/hero-saigon-night-900.jpg");
+    url("../images/hero-vietnam-street.jpg");
   background-size: cover;
-  background-position: 42% 100%;
+  background-position: 50% 60%;
   color: #ffffff;
   overflow: hidden;
 }
@@ -4167,7 +4167,7 @@ a.todo-card .todo-card-foot {
     border-radius: 28px;
     background-image:
       linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
-      url("../images/hero-saigon-night.jpg");
+      url("../images/hero-vietnam-street.jpg");
   }
 }
 
