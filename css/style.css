@@ -6595,41 +6595,37 @@ header h1 {
   margin-top: 16px;
 }
 .home-share-btn {
-  min-width: 96px;
-  min-height: 48px;
-  padding: 0 20px;
+  min-width: 200px;
+  min-height: 52px;
+  padding: 0 28px;
+  border: 0;
   border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  background: #1a1a1a;
   color: #ffffff;
+  font: inherit;
   font-size: 1rem;
   font-weight: 800;
-  text-decoration: none;
+  cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .home-share-btn:hover {
   opacity: 0.88;
   transform: translateY(-1px);
 }
-.home-share-btn.is-x {
-  background: #000000;
+.home-share-btn:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: 3px;
 }
-.home-share-btn.is-facebook {
-  background: #1877f2;
-}
-.home-share-btn.is-line {
-  background: #06c755;
-}
-/* 3つのボタンを、スマホでも1行に並べる */
-.home-share-btns {
-  flex-wrap: nowrap;
-  gap: 10px;
-}
-.home-share-btn {
-  flex: 0 1 120px;
-  min-width: 0;
-  padding: 0 10px;
+.home-share-msg {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #555555;
+  word-break: break-all;
 }
 
 /* ホームのカテゴリ(レストラン・カフェ・食材店・近くのお店): 最初に出すとき、下から上へふわっと順番に出す */
