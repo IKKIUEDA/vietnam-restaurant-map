@@ -7399,3 +7399,38 @@ body.is-home-top header.is-scrolled .header-titles {
   color: var(--c-text-sub);
   line-height: 1.7;
 }
+
+/* =====================================================================
+   保存ボタンは、どの一覧でもカードの右上にそろえる
+   (店名がボタンの下にもぐらないよう、文字の右側に余白をとる)
+   ===================================================================== */
+.todo-shops .card-save {
+  top: 12px;
+  right: 12px;
+  left: auto;
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border: 1px solid #e3e6df;
+  box-shadow: none;
+}
+.todo-shops .card-save svg {
+  width: 19px;
+  height: 19px;
+}
+.todo-shops .todo-shop-body {
+  padding-right: 40px;
+}
+.scan-overlay-item .card-save {
+  top: 10px;
+  right: 12px;
+  left: auto;
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: 1px solid #e3e6df;
+  box-shadow: none;
+}
+.scan-overlay-item .scan-overlay-body {
+  padding-right: 40px;
+}
