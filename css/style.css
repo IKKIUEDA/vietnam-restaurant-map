@@ -7434,3 +7434,13 @@ body.is-home-top header.is-scrolled .header-titles {
 .scan-overlay-item .scan-overlay-body {
   padding-right: 40px;
 }
+
+/* マイリストのエリアカード: 料理店・カフェ・食材店の前に、ホームと同じイラストを小さく出す */
+.mylist-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mylist-kind .type-illust {
+  margin-left: -2px;
+}
