@@ -33,6 +33,10 @@ const HOME_TEXT = {
     areaTitle: "エリアから探す",
     areaPrev: "前のエリア",
     areaNext: "次のエリア",
+    areaMore: "もっと見る",
+    areaListTitle: "エリア一覧",
+    areaListLead: "エリアを選ぶと、その駅の近くのお店を地図で探せます",
+    back: "戻る",
     areaCount: (n) => `${n}件`,
     featureTitle: "特集",
     featureSub: "テーマ別・目的別でベトナムの魅力を発掘しよう",
@@ -73,6 +77,10 @@ const HOME_TEXT = {
     areaTitle: "Browse by area",
     areaPrev: "Previous areas",
     areaNext: "More areas",
+    areaMore: "See more",
+    areaListTitle: "All areas",
+    areaListLead: "Pick an area to find shops near that station on the map",
+    back: "Back",
     areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
     featureTitle: "Features",
     featureSub: "Discover Vietnam by theme and purpose",
@@ -113,6 +121,10 @@ const HOME_TEXT = {
     areaTitle: "Tìm theo khu vực",
     areaPrev: "Khu vực trước",
     areaNext: "Khu vực tiếp",
+    areaMore: "Xem thêm",
+    areaListTitle: "Tất cả khu vực",
+    areaListLead: "Chọn khu vực để tìm quán gần ga đó trên bản đồ",
+    back: "Quay lại",
     areaCount: (n) => `${n} quán`,
     featureTitle: "Chủ đề",
     featureSub: "Khám phá nét hấp dẫn của Việt Nam theo chủ đề và mục đích",
@@ -367,11 +379,12 @@ function homeAreaCount(area) {
     (shop) => getSearchText(shop).includes(word) || distanceMeters(area.lat, area.lng, shop.lat, shop.lng) <= SEARCH_NEAR_STATION_M
   ).length;
 }
-function renderHomeAreas() {
-  const cards = HOME_AREAS.map((a) => ({ a, n: homeAreaCount(a) }))
+// エリアのカード(ホームの横並びと、「もっと見る」の一覧で同じものを使う)
+function homeAreaCardsHtml() {
+  return HOME_AREAS.map((a) => ({ a, n: homeAreaCount(a) }))
     .filter((x) => x.n > 0)
     .map(({ a, n }) => {
-      // 写真は <img loading="lazy"> で出す(横にスクロールして見えたときに読み込むので、ホームの表示が重くならない)
+      // 写真は <img loading="lazy"> で出す(見えたときに読み込むので、表示が重くならない)
       return (
         `<li><button type="button" class="home-area${a.image ? " has-image" : ""}" style="background-color:${a.color}" data-home-area="${esc(a.station)}">` +
         (a.image ? `<img class="home-area-img" src="${esc(a.image)}" alt="" loading="lazy" width="480" height="336">` : "") +
@@ -382,18 +395,39 @@ function renderHomeAreas() {
       );
     })
     .join("");
+}
+function areaListUrl() {
+  return location.pathname + "?view=areas";
+}
+function renderHomeAreas() {
+  const cards = homeAreaCardsHtml();
   if (!cards) return "";
   return (
     `<section class="home-section home-area-section">` +
     `<div class="home-area-head"><h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
+    `<span class="mylist-head-actions">` +
+    // 「もっと見る」: エリアの一覧のページ(URL「?view=areas」)
+    `<a class="mylist-see-all" href="${esc(areaListUrl())}" data-home-nav>${esc(homeText().areaMore)}</a>` +
     // PC 用の「‹ ›」ボタン(マウスでも横に送れるように。スマホは指で横にスクロール)
     `<span class="home-area-arrows">` +
     `<button type="button" class="home-area-arrow" data-area-scroll="-1" aria-label="${esc(homeText().areaPrev)}">${homeIcon("back", 20)}</button>` +
     `<button type="button" class="home-area-arrow" data-area-scroll="1" aria-label="${esc(homeText().areaNext)}">${homeIcon("forward", 20)}</button>` +
-    `</span></div>` +
+    `</span></span></div>` +
     `<ul class="home-areas">${cards}</ul>` +
     `</section>`
   );
+}
+// エリアの一覧のページ(URL「?view=areas」): すべてのエリアを、たて・よこに並べて見せる
+function renderAreaListPage() {
+  const h = homeText();
+  homePage.innerHTML =
+    `<div class="todo-create-head mylist-page-head">` +
+    `<a class="todo-back" href="${esc(homeUrl())}" data-home-nav aria-label="${esc(h.back)}">${homeIcon("back", 24)}</a>` +
+    `<h2 class="todo-create-title">${esc(h.areaListTitle)}</h2></div>` +
+    `<section class="home-section area-list-section">` +
+    `<p class="area-list-lead">${esc(h.areaListLead)}</p>` +
+    `<ul class="area-list-grid">${homeAreaCardsHtml()}</ul>` +
+    `</section>`;
 }
 // 地図の画面に移って、「○○駅」で検索する(ホームの検索窓から探したときと同じ)
 function openMapWithSearch(q) {
@@ -765,6 +799,7 @@ function showHome(mode, listId) {
   if (typeof renderAccountPage === "function") modes.push("account", "user");
   if (typeof renderFeaturePage === "function") modes.push("feature");
   if (typeof renderContactPage === "function") modes.push("contact");
+  modes.push("areas");
   homeMode = modes.includes(mode) ? mode : "home";
   if (homeMode === "contact" && typeof resetContactIfDone === "function") resetContactIfDone();
   homeListId = listId || null;
@@ -803,6 +838,7 @@ function renderHomeMode() {
   else if (homeMode === "user") renderUserPage(homeListId);
   else if (homeMode === "feature") renderFeaturePage(homeListId);
   else if (homeMode === "contact") renderContactPage();
+  else if (homeMode === "areas") renderAreaListPage();
   else renderHome();
 }
 function hideHome() {
