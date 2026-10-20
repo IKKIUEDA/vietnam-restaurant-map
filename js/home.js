@@ -583,38 +583,61 @@ function paintHomeBands() {
 
 // ---------------------------------------------------------------------
 // このページをシェア(特集の下)
-//   ・各サービスが用意している「シェア用のURL」を、新しいタブで開くだけ(このサイトから何かを送ったり、記録したりはしない)
-//   ・ボタンはサービス名の文字だけ(各社のロゴ画像は使っていない。ロゴを使うときは、各社の公式素材とガイドラインに従う)
+//   ・「シェアする」ボタン1つだけ。押すと、スマホなどに最初から入っている「共有」画面(端末の機能)を開く
+//   ・どこへ送るか(LINE・メッセージ・AirDropなど)は利用者が端末の画面で選ぶ。このサイトから何かを送ったり、記録したりはしない
+//   ・共有画面が使えないブラウザ(多くのパソコン)では、ページのURLをコピーするだけ
 // ---------------------------------------------------------------------
 const SHARE_URL = "https://vietnamfoodie.compass-story.net/";
 const SHARE_TEXT = {
-  ja: { title: "このページをシェア", text: "ベトナムフーディー｜日本の中にある、ベトナムを探そう。", via: (name) => `${name}でシェア(新しいタブで開きます)` },
-  en: { title: "Share this page", text: "Vietnam Foodie – Discover Vietnam-related shops in Japan", via: (name) => `Share on ${name} (opens in a new tab)` },
-  vi: { title: "Chia sẻ trang này", text: "Foodie Việt Nam – Tìm Việt Nam tại Nhật Bản", via: (name) => `Chia sẻ qua ${name} (mở trong tab mới)` },
+  ja: { title: "このページをシェア", button: "シェアする", text: "ベトナムフーディー｜日本の中にある、ベトナムを探そう。", copied: "URLをコピーしました", failed: "コピーできませんでした。URL: " },
+  en: { title: "Share this page", button: "Share", text: "Vietnam Foodie – Discover Vietnam-related shops in Japan", copied: "Link copied", failed: "Could not copy. URL: " },
+  vi: { title: "Chia sẻ trang này", button: "Chia sẻ", text: "Foodie Việt Nam – Tìm Việt Nam tại Nhật Bản", copied: "Đã sao chép liên kết", failed: "Không thể sao chép. URL: " },
 };
+const SHARE_ICON =
+  `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2"/></svg>`;
 function homeShareHtml() {
   const x = SHARE_TEXT[currentLang] || SHARE_TEXT.ja;
-  const url = encodeURIComponent(SHARE_URL);
-  const text = encodeURIComponent(x.text);
-  const links = [
-    { key: "x", name: "X", href: `https://twitter.com/intent/tweet?text=${text}&url=${url}` },
-    { key: "facebook", name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
-    { key: "line", name: "LINE", href: `https://social-plugins.line.me/lineit/share?url=${url}` },
-  ];
   return (
     `<section class="home-section home-share">` +
     `<h2 class="home-share-title">${esc(x.title)}</h2>` +
     `<div class="home-share-btns">` +
-    links
-      .map(
-        (l) =>
-          `<a class="home-share-btn is-${l.key}" href="${esc(l.href)}" target="_blank" rel="noopener noreferrer" ` +
-          `aria-label="${esc(x.via(l.name))}" title="${esc(x.via(l.name))}">${esc(l.name)}</a>`
-      )
-      .join("") +
-    `</div></section>`
+    `<button type="button" class="home-share-btn" data-home-share>${SHARE_ICON}<span>${esc(x.button)}</span></button>` +
+    `</div>` +
+    `<p class="home-share-msg" role="status" aria-live="polite"></p>` +
+    `</section>`
   );
 }
+async function shareHomePage(btn) {
+  const x = SHARE_TEXT[currentLang] || SHARE_TEXT.ja;
+  const msg = btn.closest(".home-share")?.querySelector(".home-share-msg");
+  const say = (t) => {
+    if (!msg) return;
+    msg.textContent = t;
+    clearTimeout(shareHomePage.timer);
+    shareHomePage.timer = setTimeout(() => (msg.textContent = ""), 3000);
+  };
+  const data = { title: document.title, text: x.text, url: SHARE_URL };
+  if (navigator.share) {
+    try {
+      await navigator.share(data);
+    } catch (e) {
+      // 共有画面を閉じただけ(AbortError)のときは何もしない
+    }
+    return;
+  }
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("no clipboard");
+    await navigator.clipboard.writeText(SHARE_URL);
+    say(x.copied);
+  } catch (e) {
+    say(x.failed + SHARE_URL);
+  }
+}
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest && e.target.closest("[data-home-share]");
+  if (btn) shareHomePage(btn);
+});
 
 // ---------------------------------------------------------------------
 // ホームの操作
