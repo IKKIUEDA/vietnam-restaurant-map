@@ -375,7 +375,6 @@ function renderHomeAreas() {
       return (
         `<li><button type="button" class="home-area${a.image ? " has-image" : ""}" style="background-color:${a.color}" data-home-area="${esc(a.station)}">` +
         (a.image ? `<img class="home-area-img" src="${esc(a.image)}" alt="" loading="lazy" width="480" height="336">` : "") +
-        `<span class="home-area-pin" aria-hidden="true">${homeIcon("near", 18)}</span>` +
         `<span class="home-area-name">${esc(pick(a.name))}</span>` +
         `<span class="home-area-count">${esc(homeText().areaCount(n))}</span>` +
         (a.image && a.credit ? `<span class="home-area-credit">${esc(a.credit)}</span>` : "") +

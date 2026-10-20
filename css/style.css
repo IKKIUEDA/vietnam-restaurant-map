@@ -7196,3 +7196,51 @@ body.is-home-top header.is-scrolled .header-titles {
     font-size: 3.2rem;
   }
 }
+
+/* =====================================================================
+   ホーム「エリアから探す」: カードを大きくする(写真を主役に)
+   ・スマホ: 1枚が画面のほぼ8割。次のカードが少し見えるので、横にスワイプできると分かる
+   ・PC: 3枚とすこし見える大きさ
+   ・写真(横480×縦336)と同じ横長の形にして、写真が切れすぎないように
+   ===================================================================== */
+.home-areas {
+  gap: 12px;
+}
+.home-areas li {
+  flex: 0 0 85%;
+  max-width: 380px;
+}
+.home-area {
+  height: auto;
+  aspect-ratio: 10 / 7;
+  padding: 16px 18px;
+  border-radius: 20px;
+}
+.home-area-name {
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+.home-area-count {
+  font-size: 0.9rem;
+}
+@media (min-width: 600px) {
+  .home-areas li {
+    flex-basis: calc((100% - 12px) / 1.6);
+    max-width: none;
+  }
+}
+@media (min-width: 900px) {
+  .home-areas {
+    gap: 16px;
+  }
+  .home-areas li {
+    flex-basis: calc((100% - 48px) / 3.25);
+  }
+  .home-area {
+    height: auto;
+    padding: 20px 22px;
+  }
+  .home-area-name {
+    font-size: 1.8rem;
+  }
+}
