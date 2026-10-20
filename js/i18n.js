@@ -4,7 +4,7 @@
 const ui = {
   ja: {
     title: "ベトナムフーディー",
-    tagline: "日本のベトナムを探そう。",
+    tagline: "日本の中にある、ベトナムを探そう。",
     listTitle: "ベトナム料理・食材店・カフェ", // (見出しは、下の result〜 で「どこの・何が・何件」を作ります)
     mapLink: "Googleマップで見る",
     scanButton: "🔍スキャンする",
