@@ -315,7 +315,7 @@ function myListAreaCard(pref, types) {
   const parts = types
     .map((t) => ({ t, n: shops.filter((e) => shopType(e.shop) === t).length }))
     .filter((p) => p.n > 0)
-    .map((p) => `<span class="mylist-kind"><span class="mylist-kind-dot" style="background:${TODO_TYPE_COLORS[p.t]}"></span>${esc(h.typeLabel[p.t])} ${p.n}</span>`)
+    .map((p) => `<span class="mylist-kind">${typeIllustHtml(p.t, 22)}${esc(h.typeLabel[p.t])} ${p.n}</span>`)
     .join("");
   return (
     `<a class="mylist-area${myListPrefImage(pref.key) ? " has-photo-card" : ""}" href="${esc(myListAreaUrl(pref.key))}" data-mylist-area="${esc(pref.key)}">` +
