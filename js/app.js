@@ -1143,7 +1143,10 @@ function scanOverlayCardHtml(entry) {
     `<div class="scan-overlay-line scan-overlay-meta">` +
     `<span class="scan-overlay-tips">💡 ${esc(t.statTips)} <strong>${esc(tipsCountText(entry))}</strong></span>` +
     `<span class="scan-overlay-reviews">⭐ ${esc(t.reviewsTitle)} <strong>${esc(reviewCountText(entry))}</strong></span>` +
-    `</div></div></div></li>`
+    `</div></div></div>` +
+    // 保存ボタン(写真の左上に重ねる。押してもお店のページには移らない)
+    cardSaveButtonHtml(shop) +
+    `</li>`
   );
 }
 
@@ -1218,6 +1221,7 @@ function syncMobileListOverlay() {
 
 // カードをタップしたら、これまで通り店舗詳細ページへ移動する(♡・📍 のようなボタンは、このカードには無い)
 scanOverlayList.addEventListener("click", (event) => {
+  if (event.target.closest("[data-card-save]")) return; // 保存ボタンは、下の document の処理で保存する
   const li = event.target.closest(".scan-overlay-item[data-idx]");
   if (!li) return;
   const entry = entries[Number(li.dataset.idx)];
