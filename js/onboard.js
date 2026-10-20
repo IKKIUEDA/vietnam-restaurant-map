@@ -149,7 +149,7 @@ function renderOnboard() {
     const isArea = step === 0;
     const choices = isArea
       ? myListPrefs().map((p) => ({ key: p.key, label: pick(p.label), on: onboard.prefs.includes(p.key) }))
-      : myListTypeChoices().map((t) => ({ key: t, label: h.typeLabel[t], on: onboard.types.includes(t), icon: homeIcon(t, 22) }));
+      : myListTypeChoices().map((t) => ({ key: t, label: h.typeLabel[t], on: onboard.types.includes(t), icon: typeIllustHtml(t, 40) }));
     body =
       `<p class="onboard-step">${esc(x.question(step + 1, 2))}</p>` +
       `<h2 class="onboard-title" id="onboard-title">${esc(isArea ? x.q1a : x.q2a)} <span>${esc(isArea ? x.q1b : x.q2b)}</span></h2>` +

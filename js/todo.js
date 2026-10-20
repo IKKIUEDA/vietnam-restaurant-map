@@ -532,7 +532,7 @@ function renderMyListSettings() {
     const on = myListDraft.types.includes(t);
     return (
       `<button type="button" class="todo-want todo-want-${t}${on ? " is-on" : ""}" aria-pressed="${on}" data-mylist-type="${t}">` +
-      `${homeIcon(t, 26)}<span>${esc(h.typeLabel[t])}</span>` +
+      `${typeIllustHtml(t, 48)}<span>${esc(h.typeLabel[t])}</span>` +
       `<span class="mylist-want-check">${on ? homeIcon("check", 16) : ""}</span></button>`
     );
   };

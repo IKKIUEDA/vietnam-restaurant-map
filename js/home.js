@@ -373,6 +373,14 @@ const HOME_AREAS = [
   { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "images/areas/shinmatsudo.jpg", source: "写真AC" },
   { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "images/areas/omiya.jpg", source: "写真AC" },
 ];
+// お店の種類のイラスト(ホームのカテゴリと同じ images/entries/ の絵)。マイリスト・最初の質問でも使う
+//   読み込めないときは、これまでの線のアイコンに戻す
+function typeIllustHtml(key, px) {
+  return (
+    `<span class="type-illust" style="width:${px}px;height:${px}px"><img src="images/entries/${key}.png" alt="" width="${px}" height="${px}" ` +
+    `onerror="this.replaceWith(document.createRange().createContextualFragment(${esc(JSON.stringify(homeIcon(key, Math.round(px * 0.6))))}))"></span>`
+  );
+}
 function homeAreaCount(area) {
   const word = normalizeText(area.station + "駅");
   return restaurants.filter(

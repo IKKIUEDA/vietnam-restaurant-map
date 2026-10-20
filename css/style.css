@@ -7338,3 +7338,16 @@ body.is-home-top header.is-scrolled .header-titles {
     border-radius: 22px;
   }
 }
+
+/* お店の種類のイラスト(マイリストの「何を探す?」・最初の質問。ホームのカテゴリと同じ絵) */
+.type-illust {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.type-illust img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
