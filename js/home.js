@@ -805,7 +805,7 @@ function showHome(mode, listId) {
   homeView.hidden = false;
   const modes = [];
   if (typeof renderMyList === "function") modes.push("todo", "todo-edit", "todo-area");
-  if (typeof renderAccountPage === "function") modes.push("account", "user");
+  if (typeof renderAccountPage === "function") modes.push("account", "user", "saved");
   if (typeof renderFeaturePage === "function") modes.push("feature");
   if (typeof renderContactPage === "function") modes.push("contact");
   modes.push("areas");
@@ -844,6 +844,7 @@ function renderHomeMode() {
   else if (homeMode === "todo-edit") renderMyListSettings();
   else if (homeMode === "todo-area") renderMyListArea(homeListId);
   else if (homeMode === "account") renderAccountPage();
+  else if (homeMode === "saved") renderSavedPage();
   else if (homeMode === "user") renderUserPage(homeListId);
   else if (homeMode === "feature") renderFeaturePage(homeListId);
   else if (homeMode === "contact") renderContactPage();
@@ -861,7 +862,7 @@ function hideHome() {
 function renderTabs() {
   const h = homeText();
   const inHome = document.body.classList.contains("view-home");
-  const isAccount = inHome && (homeMode === "account" || homeMode === "user");
+  const isAccount = inHome && (homeMode === "account" || homeMode === "user" || homeMode === "saved");
   const isHome = inHome && !isAccount;
   const isMap = !inHome && !document.body.classList.contains("view-detail") && !document.body.classList.contains("view-content-page");
   const tab = (key, icon, label, current) =>

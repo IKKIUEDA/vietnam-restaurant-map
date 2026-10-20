@@ -7351,3 +7351,51 @@ body.is-home-top header.is-scrolled .header-titles {
   height: 100%;
   object-fit: contain;
 }
+
+/* 地図のお店の一覧(スマホの一覧): 写真の左上に保存ボタン */
+.scan-overlay-item {
+  position: relative;
+}
+.scan-overlay-item .card-save {
+  top: 14px;
+  right: auto;
+  left: 16px;
+  width: 30px;
+  height: 30px;
+}
+.scan-overlay-item .card-save svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* アカウント: 「保存したお店 ○件 ›」と、保存したお店の一覧 */
+.acct-saved-row {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+.acct-saved-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--c-text);
+}
+.acct-saved-label svg {
+  width: 20px;
+  height: 20px;
+  color: var(--c-primary);
+}
+.acct-guest-sub .acct-saved-row {
+  margin-top: 16px;
+}
+.saved-note {
+  margin: 0 0 12px;
+}
+.saved-empty {
+  margin: 24px 0;
+  padding: 24px 16px;
+  border: 1px dashed var(--c-border);
+  border-radius: 16px;
+  text-align: center;
+  color: var(--c-text-sub);
+  line-height: 1.7;
+}

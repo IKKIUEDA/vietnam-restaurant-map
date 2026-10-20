@@ -48,6 +48,9 @@ const ACCOUNT_TEXT = {
     logout: "ログアウト",
     notFound: "このプロフィールは見つかりませんでした",
     back: "戻る",
+    savedTitle: "保存したお店",
+    savedEmpty: "まだ保存したお店はありません。お店の保存マークを押すと、ここに集まります。",
+    savedNote: "保存したお店は、この端末(ブラウザ)の中に記録しています。",
     editTitle: "プロフィールを編集",
     nameLabel: "ニックネーム(30文字まで)",
     bioLabel: "自己紹介(160文字まで・任意)",
@@ -113,6 +116,9 @@ const ACCOUNT_TEXT = {
     logout: "Log out",
     notFound: "This profile couldn't be found",
     back: "Back",
+    savedTitle: "Saved shops",
+    savedEmpty: "No saved shops yet. Tap the save icon on a shop to collect it here.",
+    savedNote: "Saved shops are stored on this device (in this browser).",
     editTitle: "Edit profile",
     nameLabel: "Nickname (up to 30 characters)",
     bioLabel: "About you (up to 160 characters, optional)",
@@ -178,6 +184,9 @@ const ACCOUNT_TEXT = {
     logout: "Đăng xuất",
     notFound: "Không tìm thấy hồ sơ này",
     back: "Quay lại",
+    savedTitle: "Quán đã lưu",
+    savedEmpty: "Chưa có quán nào được lưu. Nhấn biểu tượng lưu ở quán để thêm vào đây.",
+    savedNote: "Quán đã lưu được ghi lại trên thiết bị này (trong trình duyệt).",
     editTitle: "Sửa hồ sơ",
     nameLabel: "Biệt danh (tối đa 30 ký tự)",
     bioLabel: "Giới thiệu (tối đa 160 ký tự, không bắt buộc)",
@@ -383,6 +392,44 @@ function accountHeader(title, backHref) {
 // ---------------------------------------------------------------------
 // 「アカウント」(URL「?view=account」)
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// 保存したお店(URL「?view=saved」)
+//   ・お店の保存マークで保存したお店の一覧。ログインしていなくても見られる
+//   ・保存先は、これまでと同じ この端末の中(localStorage「vietnamFoodie.favorites」。js/app.js)
+// ---------------------------------------------------------------------
+function savedUrl() {
+  return location.pathname + "?view=saved";
+}
+function savedEntries() {
+  // 新しく保存したお店を上に
+  const order = [...favorites];
+  return entries
+    .filter((e) => isFavorite(e.shop))
+    .sort((a, b) => order.indexOf(favoriteKey(b.shop)) - order.indexOf(favoriteKey(a.shop)));
+}
+function accountSavedRowHtml() {
+  const x = accountText();
+  const n = entries.filter((e) => isFavorite(e.shop)).length;
+  return (
+    `<a class="acct-row acct-saved-row" href="${esc(savedUrl())}" data-acct-nav>` +
+    `<span class="acct-saved-label">${SAVE_ICON_ON}<span>${esc(x.savedTitle)}</span></span>` +
+    `<span class="acct-row-value">${esc(x.savedCount(n))}${homeIcon("forward", 18)}</span></a>`
+  );
+}
+function renderSavedPage() {
+  const x = accountText();
+  const list = savedEntries();
+  if (typeof loadTodoRatings === "function") loadTodoRatings(list.map((e) => e.shop.id));
+  homePage.innerHTML =
+    accountHeader(x.savedTitle, accountUrl()) +
+    `<section class="home-section saved-section">` +
+    `<p class="acct-small saved-note">${esc(x.savedNote)}</p>` +
+    (list.length
+      ? `<ul class="todo-shops">${list.map(todoShopCard).join("")}</ul>`
+      : `<p class="saved-empty">${esc(x.savedEmpty)}</p>`) +
+    `</section>`;
+}
+
 function renderAccountPage() {
   const x = accountText();
   if (authUser === undefined) {
@@ -401,6 +448,7 @@ function renderAccountPage() {
       `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
       `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
       `</div></div>` +
+      `<div class="acct-guest-sub">${accountSavedRowHtml()}</div>` +
       `</section>`;
     return;
   }
@@ -434,6 +482,7 @@ function renderAccountPage() {
     `<button type="button" class="acct-pill" data-acct-action="share">${esc(x.shareProfile)}</button>` +
     `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
     `</div>` +
+    accountSavedRowHtml() +
     accountPostsHtml(data, ["photos", "reviews", "checkins"]) +
     `</section>`;
 }
