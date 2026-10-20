@@ -497,13 +497,14 @@ function renderHome() {
     `<h2 class="home-catch">${esc(h.catch)}</h2>` +
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
     `</section>` +
+    `</div>` +
+    // 検索窓は、画像の下に出す(スマホでは「探す」ボタンを隠し、キーボードの「検索」で探す)
     `<form class="home-search" role="search">` +
     `<label class="visually-hidden" for="home-search-input">${esc(h.searchLabel)}</label>` +
     `<span class="home-search-box">${homeIcon("search", 20)}` +
     `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(narrowScreen ? h.searchPlaceholderShort : h.searchPlaceholder)}" enterkeyhint="search">` +
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
-    `</div>` +
     // カテゴリのボタン: ページを開いて最初にホームを出したときだけ、下からふわっと順番に出す(描き直しのたびには動かさない)
     `<nav class="home-entries${homeEntriesRise ? " is-rise" : ""}" aria-label="${esc(h.entriesLabel)}">` +
     // 入口は4つ: レストラン・カフェ・食材店(地図でその種類だけを出す)と、近くのお店(現在地のまわり)

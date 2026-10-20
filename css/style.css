@@ -7290,3 +7290,51 @@ body.is-home-top header.is-scrolled .header-titles {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* =====================================================================
+   ホーム: 検索窓を画像の下に出す(画像の中には入れない)
+   ・窓の縁は緑
+   ・スマホ(横幅 600px 未満)では「探す」ボタンを出さない(キーボードの「検索」で探せる)
+   ===================================================================== */
+.home-top {
+  padding-bottom: 150px; /* 検索窓がなくなった分、画像が小さくならないように */
+}
+.home-search {
+  padding: 16px 20px 0;
+}
+.home-search-box {
+  height: 54px;
+  border: 2px solid #2e7d32;
+  border-radius: 27px;
+  background: #ffffff;
+  box-shadow: none;
+}
+.home-search-box:focus-within {
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.18);
+}
+@media (max-width: 599px) {
+  .home-search-btn {
+    display: none;
+  }
+  .home-search-box {
+    padding-right: 16px;
+  }
+}
+@media (min-width: 900px) {
+  .home-top {
+    padding-bottom: 200px;
+  }
+  .home-search {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 0 0;
+  }
+  .home-search-box {
+    height: 58px;
+    border-radius: 29px;
+  }
+  .home-search-btn {
+    height: 44px;
+    border-radius: 22px;
+  }
+}
