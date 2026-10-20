@@ -7168,3 +7168,31 @@ body.is-home-top header.is-scrolled .header-titles {
     height: 52px;
   }
 }
+
+/* =====================================================================
+   PC(広い画面): ホームの中身の幅を画面に合わせて広げ、左右の余白が空きすぎないようにする
+   ・ロゴ(左上)と言語の切り替え(右上)も、中身の左右の端にそろえる
+   ===================================================================== */
+@media (min-width: 900px) {
+  body.is-home-top header {
+    padding-left: max(14px, calc((100% - 1120px) / 2 + 32px));
+    padding-right: max(14px, calc((100% - 1120px) / 2 + 32px));
+  }
+}
+@media (min-width: 1280px) {
+  .home-page {
+    max-width: 1360px;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  body.is-home-top header {
+    padding-left: max(14px, calc((100% - 1360px) / 2 + 48px));
+    padding-right: max(14px, calc((100% - 1360px) / 2 + 48px));
+  }
+  .home-top {
+    padding-bottom: 64px;
+  }
+  .home-top .home-catch {
+    font-size: 3.2rem;
+  }
+}
