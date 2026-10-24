@@ -7708,3 +7708,115 @@ a.acct-stat:hover strong {
 .user-avatar .acct-avatar {
   flex: none;
 }
+
+/* =====================================================================
+   地図: 現在地(リアルタイムの青い点)と、右下のコンパス・現在地ボタン(js/live-location.js)
+   ===================================================================== */
+.live-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 16px;
+  z-index: 950; /* 地図の上。スキャンボタン(900)より手前、Leaflet のコントロール(1000)より奥 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.live-btn {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1d2a22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+.live-btn:hover {
+  background: #f5f7f4;
+}
+.live-btn:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: 2px;
+}
+.live-locate.is-on {
+  color: #1a73e8;
+}
+.live-compass.is-on {
+  box-shadow: 0 0 0 2px #1a73e8, 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+.live-needle {
+  transform-origin: 12px 12px;
+  transition: transform 0.15s linear;
+}
+.live-msg {
+  position: absolute;
+  right: 64px;
+  bottom: 0;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 100px));
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(29, 42, 34, 0.9);
+  color: #ffffff;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+/* 一覧のシートが地図の下を覆っているときは、ボタンを右上に置く(シートに隠れないように) */
+.scan-overlay-map-slot .live-controls {
+  top: 64px;
+  bottom: auto;
+}
+.scan-overlay-map-slot .live-msg {
+  top: 0;
+  bottom: auto;
+}
+/* スマホ: 下の真ん中の「リストで見る」ボタンと重ならないよう、少し上に */
+@media (max-width: 600px) {
+  .live-controls {
+    bottom: 70px;
+  }
+  .live-btn {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* 現在地の青い点と、向いている方向(扇形) */
+.live-location {
+  background: none;
+  border: none;
+  pointer-events: none;
+}
+.live-dot {
+  position: absolute;
+  left: 30px;
+  top: 30px;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1a73e8;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+.live-cone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 80px;
+  height: 80px;
+  display: none;
+  transform: rotate(var(--live-heading, 0deg));
+  background: conic-gradient(from -30deg at 50% 50%, rgba(26, 115, 232, 0.5) 0deg 60deg, transparent 60deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 8px, transparent 40px);
+  mask: radial-gradient(circle at 50% 50%, #000 8px, transparent 40px);
+  border-radius: 50%;
+}
+.live-location.has-heading .live-cone {
+  display: block;
+}
