@@ -1471,6 +1471,13 @@ async function submitCheckin(state) {
   doSubmitCheckin(state);
 }
 
+// プロフィールに出す「チェックインの数」を数え直す(失敗しても、チェックイン自体には影響しない)
+function syncPublicCheckinCount() {
+  if (window.profileApi && typeof window.profileApi.syncMyCheckinCount === "function") {
+    window.profileApi.syncMyCheckinCount().catch((e) => console.warn("チェックイン数の更新に失敗:", e));
+  }
+}
+
 function doSubmitCheckin(state) {
   getCheckinApi()
     .then((api) => api.checkIn(state.shopId))
@@ -1480,6 +1487,7 @@ function doSubmitCheckin(state) {
       state.mine = true;
       state.message = { key: "checkinSuccess", error: false };
       state.sending = false;
+      syncPublicCheckinCount(); // プロフィールに出すチェックインの数も、数え直す
       renderCheckin(); // 「Check In Success!」を、先に見せる(共有シートが閉じるまで、待たせないため)
       const entry = entries.find((e) => e.shop.id === state.shopId);
       if (entry) return shareCheckin(state, entry.shop); // 続けて、共有シート(または、コピー)を開く
@@ -1513,6 +1521,7 @@ function deleteMyCheckin(state) {
       state.mine = false;
       state.myStatus = "ready"; // チェックイン済みではない状態に戻す(ボタンが、また押せるようになる)
       state.message = { key: "checkinDeleted", error: false };
+      syncPublicCheckinCount();
       loadCheckinCount(state); // 合計人数を、Firestoreから読み込み直す
     })
     .catch((error) => {

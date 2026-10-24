@@ -47,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261024d" />
+    <link rel="stylesheet" href="css/style.css?v=20261024e" />
   </head>
   <body>
     <!-- 開いたときに、地図の画面が一瞬だけ見えないようにする
@@ -260,31 +260,31 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261024d"></script>
-    <script src="js/data.js?v=20261024d"></script>
-    <script src="js/app.js?v=20261024d"></script>
+    <script src="js/i18n.js?v=20261024e"></script>
+    <script src="js/data.js?v=20261024e"></script>
+    <script src="js/app.js?v=20261024e"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261024d"></script>
-    <script src="js/landmark-areas.js?v=20261024d"></script>
-    <script src="js/landmarks.js?v=20261024d"></script>
+    <script src="js/station-lines.js?v=20261024e"></script>
+    <script src="js/landmark-areas.js?v=20261024e"></script>
+    <script src="js/landmarks.js?v=20261024e"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261024d"></script>
+    <script src="js/auth.js?v=20261024e"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261024d"></script>
+    <script src="js/auth-modal.js?v=20261024e"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261024d"></script>
+    <script src="js/home.js?v=20261024e"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261024d"></script>
+    <script src="js/todo.js?v=20261024e"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/account.js?v=20261024d"></script>
-    <script src="js/settings.js?v=20261024d"></script>
+    <script src="js/account.js?v=20261024e"></script>
+    <script src="js/settings.js?v=20261024e"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261024d"></script>
-    <script src="js/contact.js?v=20261024d"></script>
-    <script src="js/detail.js?v=20261024d"></script>
-    <script src="js/onboard.js?v=20261024d"></script>
+    <script src="js/feature.js?v=20261024e"></script>
+    <script src="js/contact.js?v=20261024e"></script>
+    <script src="js/detail.js?v=20261024e"></script>
+    <script src="js/onboard.js?v=20261024e"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -480,6 +480,7 @@
           getDocs,
           collectionGroup,
           where,
+          getCountFromServer,
         } = loaded(firestoreModule);
         const db = getFirestore(app);
 
@@ -1044,6 +1045,64 @@
               const snapshot = await withTimeout(getDocs(q));
               return snapshot.docs.map((d) => ({ id: d.id, shopId: shopIdOf(d), ...d.data() }));
             },
+            // --- フォロー(follows/{フォローした人のID}_{フォローされた人のID})と、公開用の数(userStats/{ユーザーID}) ---
+            //   ・誰が誰をフォローしているかは、誰でも見られる(プロフィールの「フォロー」「フォロワー」の一覧)
+            //   ・チェックインの数は、本人が自分の記録を数えて userStats に書く(どのお店に行ったかは、公開しない)
+            async isFollowing(to) {
+              const uid = currentUid();
+              if (!uid || uid === to) return false;
+              const snap = await withTimeout(getDoc(doc(db, "follows", `${uid}_${checkUid(to)}`)));
+              return snap.exists();
+            },
+            async follow(to) {
+              const uid = currentUid();
+              if (!uid) {
+                const error = new Error("login required");
+                error.code = "app/login-required";
+                throw error;
+              }
+              if (uid === to) throw new Error("cannot follow yourself");
+              await withTimeout(setDoc(doc(db, "follows", `${uid}_${checkUid(to)}`), { from: uid, to, createdAt: serverTimestamp() }));
+            },
+            async unfollow(to) {
+              const uid = currentUid();
+              if (!uid) return;
+              await withTimeout(deleteDoc(doc(db, "follows", `${uid}_${checkUid(to)}`)));
+            },
+            // { following: その人がフォローしている人数, followers: その人をフォローしている人数, checkins: 公開用のチェックイン数 }
+            async fetchUserStats(uid) {
+              checkUid(uid);
+              const count = async (field) => (await withTimeout(getCountFromServer(query(collection(db, "follows"), where(field, "==", uid))))).data().count;
+              const [following, followers, stats] = await Promise.all([
+                count("from"),
+                count("to"),
+                withTimeout(getDoc(doc(db, "userStats", uid))).then((s) => (s.exists() ? s.data() : null)),
+              ]);
+              return { following, followers, checkins: stats && Number.isInteger(stats.checkinCount) ? stats.checkinCount : 0 };
+            },
+            // フォロー中("following")/ フォロワー("followers")の人のID(新しい順)
+            async fetchFollowList(uid, kind) {
+              checkUid(uid);
+              const field = kind === "followers" ? "to" : "from";
+              const snap = await withTimeout(getDocs(query(collection(db, "follows"), where(field, "==", uid), limit(300))));
+              const time = (x) => (x && typeof x.toMillis === "function" ? x.toMillis() : 0);
+              return snap.docs
+                .map((d) => d.data())
+                .sort((a, b) => time(b.createdAt) - time(a.createdAt))
+                .map((d) => (kind === "followers" ? d.from : d.to));
+            },
+            // 自分のチェックイン数を数え直して、公開用の数(userStats)に書く(変わっていなければ書かない)
+            async syncMyCheckinCount(known) {
+              const uid = currentUid();
+              if (!uid) return;
+              const n = Number.isInteger(known)
+                ? known
+                : (await withTimeout(getCountFromServer(query(collectionGroup(db, "checkins"), where("uid", "==", uid))))).data().count;
+              const ref = doc(db, "userStats", uid);
+              const cur = await withTimeout(getDoc(ref));
+              if (cur.exists() && cur.data().checkinCount === n) return;
+              await withTimeout(setDoc(ref, { checkinCount: Math.min(10000, Math.max(0, n)), updatedAt: serverTimestamp() }));
+            },
             // 【管理者だけ・1回だけ使う】uid が入っていない、前からあるレビュー・チェックインに、uid(= ドキュメント名)を入れる
             //   (プロフィールの一覧に、前からの投稿も出るようにするため)。戻り値: 書き足した件数
             async backfillUids() {
@@ -1164,6 +1223,13 @@
               // 4) スポットの情報提供・プロフィール・ニックネーム
               const spots = await withTimeout(getDocs(query(collection(db, "spotRequests"), where("uid", "==", uid), limit(200))));
               for (const s of spots.docs) await withTimeout(deleteDoc(s.ref));
+              // 5) フォロー(自分がフォローした記録・自分がフォローされた記録)と、公開用の数
+              for (const field of ["from", "to"]) {
+                const f = await withTimeout(getDocs(query(collection(db, "follows"), where(field, "==", uid), limit(500))));
+                for (const d of f.docs) await withTimeout(deleteDoc(d.ref));
+              }
+              const st = await withTimeout(getDoc(doc(db, "userStats", uid)));
+              if (st.exists()) await withTimeout(deleteDoc(st.ref));
               await withTimeout(deleteDoc(profileRef(uid)));
               await withTimeout(deleteDoc(doc(db, "users", uid)));
             },
