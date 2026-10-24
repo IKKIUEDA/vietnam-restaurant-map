@@ -1,7 +1,16 @@
 // 1. 地図を作る(最初は日本全体が見える位置に表示)
 // ※ maxZoom(いちばん拡大できる段階)は、ここで決めておく。ピンをまとめる部品(markercluster)が、これが無いと動かないため
 //   (前は、地図の画像の設定(maxZoom: 19)から自動で決まっていたが、データから描く地図ではそれが無い)
-const map = L.map("map", { maxZoom: 19 }).setView([36.0, 137.0], 5);
+// ※ MapLibre と WebGL が使える端末では、地図を回転・傾けられる MapLibre の地図にする(js/gl-map.js)。
+//   使えない古い端末では、これまでどおりの Leaflet の地図にする(どちらも、同じ呼び方で使える)
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a>' +
+  ' &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+const BASE_STYLE_URL = "https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json";
+const USE_GL_MAP = typeof canUseGLMap === "function" && canUseGLMap();
+const map = USE_GL_MAP
+  ? new GLMap("map", { style: BASE_STYLE_URL, center: [36.0, 137.0], zoom: 5, maxZoom: 19, attribution: MAP_ATTRIBUTION })
+  : L.map("map", { maxZoom: 19 }).setView([36.0, 137.0], 5);
 
 // スマホ(指で操作する画面): 地図を2回続けてタップすると、タップした場所を中心に1段階拡大する
 //   ・ブラウザによっては、2回タップを地図に伝えてくれないので、このアプリで自分で判定する
@@ -57,7 +66,8 @@ function enableDoubleTapZoom(targetMap) {
     }
   });
 }
-if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+// (MapLibre の地図は、指の画面でも2回タップで拡大できるので、この仕組みは Leaflet の地図のときだけ使う)
+if (!USE_GL_MAP && window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
   map.doubleClickZoom.disable();
   enableDoubleTapZoom(map);
 }
@@ -68,9 +78,6 @@ if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
 //     (customizeBaseMap で、丁目・埋立地などの細かい地名や番地を消し、区・市の名前を大きく・英語つきにしている)
 //   ・MapLibre を読み込めなかったとき・古い端末で使えないときは、これまでどおりの「画像」の地図にする
 //   ・無料・APIキー不要。出典の表示だけ必要
-const MAP_ATTRIBUTION =
-  '&copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">OpenMapTiles</a>' +
-  ' &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
 
 const vectorMaps = []; // ベクトル地図(一覧の地図・詳細ページの地図)。言語を切り替えたときに、地名の書き方を変えるため
 
@@ -79,7 +86,7 @@ function createBaseLayer() {
   if (canUseVectorMap()) {
     try {
       const layer = L.maplibreGL({
-        style: "https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json",
+        style: BASE_STYLE_URL,
         attribution: MAP_ATTRIBUTION,
         attributionControl: false, // 出典は、Leaflet の右下の表示に出す(上の attribution)
         // 描く細かさ: スマホの画面はきめが細かく(3倍など)、そのまま描くと重いので、パソコンと同じ2倍までにする
@@ -461,7 +468,15 @@ document.getElementById("lang-select").addEventListener("change", () => {
   }, 0);
 });
 
-createBaseLayer().addTo(map);
+if (USE_GL_MAP) {
+  // MapLibre の地図: 背景の地図は、地図を作ったときに読み込み始めている。読み込めたら、文字の出し方を整える
+  const gl = map.gl;
+  vectorMaps.push(gl);
+  if (gl.isStyleLoaded()) customizeBaseMap(gl);
+  else gl.once("load", () => customizeBaseMap(gl));
+} else {
+  createBaseLayer().addTo(map);
+}
 
 // お店のピン(しずく形。料理店 = 赤に 🍽️、食材店(type: "grocery")= 青に白い 🛒、カフェ(type: "cafe")= 茶色に白い ☕)。
 // 一覧の地図と、詳細ページの地図で、同じものを使う
@@ -488,6 +503,17 @@ function createShopIcon(shop) {
     iconAnchor: [18, 38], // ピンの先が、実際の場所に来るようにする
     popupAnchor: [0, -36], // ポップアップは、ピンの上に開く
   });
+}
+
+// 一覧の地図に出す、現在地の青い点(ホームの「近く」で使う)
+function createUserDotMarker(latlng) {
+  if (USE_GL_MAP) {
+    const el = document.createElement("div");
+    el.className = "user-location";
+    el.innerHTML = '<span class="user-dot"></span>';
+    return new GLMarker(latlng, { element: el, interactive: false });
+  }
+  return L.circleMarker(latlng, { radius: 8, color: "#ffffff", weight: 3, fillColor: "#1a73e8", fillOpacity: 1 });
 }
 
 // 詳細ページへのリンクを作るための部品(詳細ページの表示は、detail.js)
@@ -565,7 +591,7 @@ let currentShopId = null;
 // 近い場所のピンを、数字つきの丸い1つのアイコンにまとめる(Leaflet.markercluster)
 //   ・丸をクリックすると、その地域が拡大されて、個別のピンが出る
 //   ・お店のピンは、地図(map)ではなく、このグループ(clusterGroup)に出し入れする
-const clusterGroup = L.markerClusterGroup({
+const CLUSTER_OPTIONS = {
   maxClusterRadius: 60, // この距離(画面上のpx)より近いピンを、1つにまとめる
   showCoverageOnHover: false, // マウスを乗せたときの、範囲の線は出さない
   spiderfyOnMaxZoom: true, // それ以上ズームできないほど重なっているピンは、放射状に広げる
@@ -580,8 +606,9 @@ const clusterGroup = L.markerClusterGroup({
       iconSize: L.point(px, px),
     });
   },
-});
-map.addLayer(clusterGroup);
+};
+const clusterGroup = USE_GL_MAP ? new GLClusterGroup(map, CLUSTER_OPTIONS) : L.markerClusterGroup(CLUSTER_OPTIONS);
+if (!USE_GL_MAP) map.addLayer(clusterGroup);
 
 // 選択中のお店(地図のポップアップが開いているお店)。一覧の行を強調表示する
 let selectedEntry = null;
@@ -688,7 +715,10 @@ function markerLatLng(shop) {
 // ピンと一覧の行を、お店ごとにしまっておく(言語を切り替えたときに文字を差し替えるため)
 const entries = restaurants.map((shop) => {
   // 地図に出すピン(ポップアップの中身は、あとで showTexts が入れる)
-  const marker = L.marker(markerLatLng(shop), { icon: createShopIcon(shop) }).bindPopup("", POPUP_OPTIONS);
+  const marker = (USE_GL_MAP
+    ? new GLMarker(markerLatLng(shop), { icon: createShopIcon(shop) })
+    : L.marker(markerLatLng(shop), { icon: createShopIcon(shop) })
+  ).bindPopup("", POPUP_OPTIONS);
 
   // 一覧に1行追加する(中身は、あとで showTexts が入れる)
   //   shop-item: 店舗カードの目印(都道府県・エリアの見出しの <li> と、見た目のCSSを分けるため)

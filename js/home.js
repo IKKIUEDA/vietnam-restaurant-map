@@ -712,7 +712,7 @@ function openNearby() {
       resetFilters();
       map.setView(latlng, 15, { animate: false });
       if (homeUserMarker) map.removeLayer(homeUserMarker);
-      homeUserMarker = L.circleMarker(latlng, { radius: 8, color: "#ffffff", weight: 3, fillColor: "#1a73e8", fillOpacity: 1 }).addTo(map);
+      homeUserMarker = createUserDotMarker(latlng).addTo(map);
       setTimeout(runScan, 300); // 地図が動き終わってから、その範囲のお店を一覧にする
     },
     () => {
