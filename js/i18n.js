@@ -12,6 +12,7 @@ const ui = {
     scanOverlayBack: "← 戻る",
     scanOverlayTitle: "周辺のお店",
     scanOverlayEmpty: "この範囲には、お店がありませんでした",
+    sheetToggle: "お店の一覧を広げる・縮める",
     listOverlayButton: (n) => `📋 ${n}件をリストで見る`,
     // 一覧の見出し: 「何が、どこに、何件あるのか」(例: 東京のベトナム料理 128件 / 新宿のベトナム料理・食材店 24件)
     resultWhat: (type, saved) =>
@@ -422,6 +423,7 @@ const ui = {
     scanOverlayBack: "← Back",
     scanOverlayTitle: "Nearby",
     scanOverlayEmpty: "No shops found in this area",
+    sheetToggle: "Expand or shrink the shop list",
     listOverlayButton: (n) => `📋 View ${n} in a list`,
     resultWhat: (type, saved) =>
       (saved ? "Saved " : "") +
@@ -834,6 +836,7 @@ const ui = {
     scanOverlayBack: "← Quay lại",
     scanOverlayTitle: "Quán gần đây",
     scanOverlayEmpty: "Không có quán nào trong khu vực này",
+    sheetToggle: "Mở rộng hoặc thu nhỏ danh sách quán",
     listOverlayButton: (n) => `📋 Xem ${n} quán dạng danh sách`,
     resultWhat: (type, saved) =>
       ({ restaurant: "Quán ăn Việt", grocery: "Tiệm tạp hóa Việt", cafe: "Quán cà phê Việt" }[type] || "Quán ăn, tạp hóa & cà phê Việt") +

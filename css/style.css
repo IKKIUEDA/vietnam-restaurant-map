@@ -7515,3 +7515,76 @@ body.is-home-top header.is-scrolled .header-titles {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* =====================================================================
+   一覧オーバーレイ: 地図を大きく出し、お店の一覧は「下から引き出すシート」で重ねる
+   ・シートの高さは、js/app.js(setSheetState)が "mini" / "peek"(45%) / "full" で切り替える
+   ===================================================================== */
+.scan-overlay-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.scan-overlay-stage .scan-overlay-map-slot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  height: auto;
+  min-height: 0;
+}
+.scan-overlay-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001; /* 地図のピン・ボタン(Leaflet のコントロールは 1000)より手前 */
+  height: 45%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.16);
+  transition: height 0.28s ease;
+}
+.scan-overlay-sheet.is-instant {
+  transition: none;
+}
+.scan-sheet-handle {
+  flex: none;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none; /* 指で上下に動かしたとき、画面ごとスクロールしないように */
+}
+.scan-sheet-handle span {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: #c9cec7;
+}
+.scan-sheet-handle:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: -3px;
+  border-radius: 20px 20px 0 0;
+}
+.scan-overlay-sheet .scan-overlay-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.scan-overlay-sheet .scan-overlay-list {
+  padding-bottom: 12px;
+}
+/* PC など広い画面では、シートを中央に置き、横に広がりすぎないようにする */
+@media (min-width: 601px) {
+  .scan-overlay-sheet {
+    left: 50%;
+    right: auto;
+    width: min(720px, 100%);
+    transform: translateX(-50%);
+  }
+}
