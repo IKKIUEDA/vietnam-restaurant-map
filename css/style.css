@@ -7688,3 +7688,23 @@ a.acct-stat:hover strong {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* 投稿者の名前の左に、プロフィールのアイコン(レビュー・写真のコメント) */
+.has-avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.has-avatar > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-avatar {
+  flex: none;
+  display: inline-flex;
+}
+.user-avatar .acct-avatar {
+  flex: none;
+}
