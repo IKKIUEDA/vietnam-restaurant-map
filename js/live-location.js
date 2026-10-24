@@ -14,6 +14,7 @@
       denied: "位置情報がオフになっています。ブラウザの設定で、このサイトの位置情報を許可してください",
       failed: "現在地を取得できませんでした",
       noCompass: "この端末では、方角を取得できません",
+      resetNorth: "北を上・真上からに戻す",
     },
     en: {
       locate: "Show my location",
@@ -21,6 +22,7 @@
       denied: "Location is turned off. Please allow location for this site in your browser settings",
       failed: "Couldn't get your location",
       noCompass: "Direction isn't available on this device",
+      resetNorth: "Reset to north-up, top-down view",
     },
     vi: {
       locate: "Hiện vị trí của tôi",
@@ -28,6 +30,7 @@
       denied: "Vị trí đang tắt. Hãy cho phép vị trí cho trang này trong cài đặt trình duyệt",
       failed: "Không lấy được vị trí hiện tại",
       noCompass: "Thiết bị này không lấy được hướng",
+      resetNorth: "Trở về hướng bắc ở trên, nhìn từ trên xuống",
     },
   };
   const tx = () => T[typeof currentLang !== "undefined" && T[currentLang] ? currentLang : "ja"];
@@ -46,7 +49,7 @@
     `<p class="live-msg" role="status" hidden></p>`;
   wrap.appendChild(box);
   // ボタンの上で地図が動いたり、拡大したりしないように
-  L.DomEvent.disableClickPropagation(box);
+  if (!map.isGL) L.DomEvent.disableClickPropagation(box);
   const compassBtn = box.querySelector(".live-compass");
   const locateBtn = box.querySelector(".live-locate");
   const msg = box.querySelector(".live-msg");
@@ -72,9 +75,12 @@
 
   // --- 現在地 ---
   // 青い点は、お店のピンより手前に出す(専用の重なり順の層)
-  map.createPane("livePane");
-  map.getPane("livePane").style.zIndex = 650;
-  map.getPane("livePane").style.pointerEvents = "none";
+  const isGL = !!map.isGL; // 回転・傾けられる地図(MapLibre)か
+  if (!isGL) {
+    map.createPane("livePane");
+    map.getPane("livePane").style.zIndex = 650;
+    map.getPane("livePane").style.pointerEvents = "none";
+  }
   let watchId = null;
   let pos = null; // { lat, lng, acc, heading }
   let follow = false; // 地図が現在地について行くか
@@ -85,7 +91,18 @@
   function render() {
     if (!pos) return;
     const ll = [pos.lat, pos.lng];
-    if (!marker) {
+    if (!marker && isGL) {
+      const el = document.createElement("div");
+      el.className = "live-location";
+      el.style.width = "80px";
+      el.style.height = "80px";
+      el.innerHTML = '<span class="live-cone"></span><span class="live-dot"></span>';
+      marker = new GLMarker(ll, { element: el, interactive: false }).addTo(map);
+      setAccuracyGL(ll, pos.acc);
+    } else if (isGL) {
+      marker.setLatLng(ll);
+      setAccuracyGL(ll, pos.acc);
+    } else if (!marker) {
       marker = L.marker(ll, {
         icon: L.divIcon({
           className: "live-location",
@@ -109,7 +126,53 @@
     if (!el) return;
     const h = compassHeading !== null ? compassHeading : Number.isFinite(pos && pos.heading) ? pos.heading : null;
     el.classList.toggle("has-heading", h !== null);
-    if (h !== null) el.style.setProperty("--live-heading", h + "deg");
+    // 地図を回転しているときは、その分を引いて、地図の上で正しい向きにする
+    const bearing = isGL ? map.gl.getBearing() : 0;
+    if (h !== null) el.style.setProperty("--live-heading", h - bearing + "deg");
+  }
+
+  // 位置の誤差の範囲(薄い青の円)。MapLibre の地図では、地図の上に「円の形」を描く(傾けても地面に沿う)
+  function setAccuracyGL(ll, meters) {
+    const gl = map.gl;
+    const draw = () => {
+      const [lat, lng] = ll;
+      const pts = [];
+      for (let i = 0; i <= 48; i++) {
+        const a = (i / 48) * Math.PI * 2;
+        const dLat = (meters / 111320) * Math.sin(a);
+        const dLng = (meters / (111320 * Math.cos((lat * Math.PI) / 180))) * Math.cos(a);
+        pts.push([lng + dLng, lat + dLat]);
+      }
+      const data = { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [pts] } };
+      const src = gl.getSource("vf-live-acc");
+      if (src) src.setData(data);
+      else {
+        gl.addSource("vf-live-acc", { type: "geojson", data });
+        gl.addLayer({ id: "vf-live-acc", type: "fill", source: "vf-live-acc", paint: { "fill-color": "#1a73e8", "fill-opacity": 0.12 } });
+      }
+    };
+    if (gl.isStyleLoaded()) draw();
+    else gl.once("load", draw);
+  }
+
+  // MapLibre の地図: コンパスの針は「地図の上で北がどちらか」を指す(地図を回すと、針も回る)
+  function updateNeedle() {
+    if (!isGL) return;
+    const b = map.gl.getBearing();
+    needle.style.transform = `rotate(${-b}deg)`;
+    const tilted = Math.abs(b) > 0.5 || map.gl.getPitch() > 0.5;
+    compassBtn.classList.toggle("is-rotated", tilted);
+    const label = tilted ? tx().resetNorth : tx().compass;
+    compassBtn.setAttribute("aria-label", label);
+    compassBtn.title = label;
+  }
+  if (isGL) {
+    map.gl.on("rotate", () => {
+      updateNeedle();
+      updateCone();
+    });
+    map.gl.on("pitch", updateNeedle);
+    updateNeedle();
   }
 
   function start(fromButton) {
@@ -180,7 +243,7 @@
     if (h === null) return;
     const scr = (screen.orientation && screen.orientation.angle) || 0;
     compassHeading = (h + scr + 360) % 360;
-    needle.style.transform = `rotate(${-compassHeading}deg)`; // 針の赤い先が、いつも北を指す
+    if (!isGL) needle.style.transform = `rotate(${-compassHeading}deg)`; // 針の赤い先が、いつも北を指す
     updateCone();
   }
   // iPhone は deviceorientation(webkitCompassHeading)、Android は deviceorientationabsolute で方角が届く。両方を聞いておく
@@ -214,12 +277,19 @@
     } else {
       orientEvents.forEach((name) => window.removeEventListener(name, onOrientation));
       compassHeading = null;
-      needle.style.transform = "";
+      if (!isGL) needle.style.transform = "";
       updateCone();
     }
     compassOn = on;
     compassBtn.classList.toggle("is-on", on);
     compassBtn.setAttribute("aria-pressed", String(on));
   }
-  compassBtn.addEventListener("click", () => setCompass(!compassOn));
+  compassBtn.addEventListener("click", () => {
+    // MapLibre の地図で、回転・傾けているときは、まず「北を上・真上から」に戻す
+    if (isGL && (Math.abs(map.gl.getBearing()) > 0.5 || map.gl.getPitch() > 0.5)) {
+      map.gl.easeTo({ bearing: 0, pitch: 0, duration: 500 });
+      return;
+    }
+    setCompass(!compassOn);
+  });
 })();
