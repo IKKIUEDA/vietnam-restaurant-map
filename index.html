@@ -47,7 +47,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261024b" />
+    <link rel="stylesheet" href="css/style.css?v=20261024c" />
   </head>
   <body>
     <!-- 開いたときに、地図の画面が一瞬だけ見えないようにする
@@ -195,17 +195,23 @@
 
       <!-- スキャン結果のオーバーレイ(#content いっぱいに重ねて表示。中身・開閉は js/app.js が作ります)
            ・上部: 「← 戻る」ボタン + 見出し(固定。スクロールしても動かない)
-           ・その下: 店舗カードを、都道府県・エリアの階層を使わずフラットに並べた一覧
-           ・一覧の最後には、いま使っている本物の地図(#map-wrap)を、そのまま移動させて置く
+           ・その下: いま使っている本物の地図(#map-wrap)を、そのまま移動させて大きく置き、
+             店舗カードの一覧は、画面の下から引き出すシートとして、地図の上に重ねる
              (コピーではないので、そのまま操作でき、閉じると元の場所に戻ります) -->
       <div id="scan-overlay" hidden>
         <div class="scan-overlay-header">
           <button type="button" id="scan-overlay-back" class="scan-overlay-back"></button>
           <h2 id="scan-overlay-title"></h2>
         </div>
-        <div id="scan-overlay-scroll" class="scan-overlay-scroll">
-          <ul id="scan-overlay-list" class="scan-overlay-list"></ul>
+        <!-- 地図を大きく出し、お店の一覧は、下から引き出すシート(取っ手を上下に動かして、広げる・縮める)で重ねる -->
+        <div class="scan-overlay-stage">
           <div id="scan-overlay-map-slot" class="scan-overlay-map-slot"></div>
+          <div id="scan-overlay-sheet" class="scan-overlay-sheet">
+            <div id="scan-sheet-handle" class="scan-sheet-handle" role="button" tabindex="0"><span aria-hidden="true"></span></div>
+            <div id="scan-overlay-scroll" class="scan-overlay-scroll">
+              <ul id="scan-overlay-list" class="scan-overlay-list"></ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -254,31 +260,31 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261024b"></script>
-    <script src="js/data.js?v=20261024b"></script>
-    <script src="js/app.js?v=20261024b"></script>
+    <script src="js/i18n.js?v=20261024c"></script>
+    <script src="js/data.js?v=20261024c"></script>
+    <script src="js/app.js?v=20261024c"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261024b"></script>
-    <script src="js/landmark-areas.js?v=20261024b"></script>
-    <script src="js/landmarks.js?v=20261024b"></script>
+    <script src="js/station-lines.js?v=20261024c"></script>
+    <script src="js/landmark-areas.js?v=20261024c"></script>
+    <script src="js/landmarks.js?v=20261024c"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261024b"></script>
+    <script src="js/auth.js?v=20261024c"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261024b"></script>
+    <script src="js/auth-modal.js?v=20261024c"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261024b"></script>
+    <script src="js/home.js?v=20261024c"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261024b"></script>
+    <script src="js/todo.js?v=20261024c"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/account.js?v=20261024b"></script>
-    <script src="js/settings.js?v=20261024b"></script>
+    <script src="js/account.js?v=20261024c"></script>
+    <script src="js/settings.js?v=20261024c"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261024b"></script>
-    <script src="js/contact.js?v=20261024b"></script>
-    <script src="js/detail.js?v=20261024b"></script>
-    <script src="js/onboard.js?v=20261024b"></script>
+    <script src="js/feature.js?v=20261024c"></script>
+    <script src="js/contact.js?v=20261024c"></script>
+    <script src="js/detail.js?v=20261024c"></script>
+    <script src="js/onboard.js?v=20261024c"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。

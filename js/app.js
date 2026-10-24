@@ -1217,12 +1217,98 @@ function openScanOverlay(reason) {
     scanOverlayOpen = true;
     scanOverlay.hidden = false;
     listOverlayButton.hidden = true; // オーバーレイが開いている間は、「リストで見る」ボタンは要らない
-    scanOverlayMapSlot.appendChild(mapWrapEl); // 一覧の下に、本物の地図(#map-wrap)を、そのまま移動する
+    scanOverlayMapSlot.appendChild(mapWrapEl); // 本物の地図(#map-wrap)を、オーバーレイの中へ、そのまま移動する
     scanOverlayScrollEl.scrollTop = 0;
-    requestAnimationFrame(() => map.invalidateSize()); // 大きさが変わったので、地図に測り直させる
+    setSheetState("peek", false); // 一覧のシートは、画面の下に半分ほど出した状態から始める
+    requestAnimationFrame(() => {
+      map.invalidateSize(); // 大きさが変わったので、地図に測り直させる
+      fitShownAboveSheet(); // お店のピンが、シートに隠れない位置に来るように合わせ直す
+    });
   }
   renderScanOverlay();
 }
+
+// ---------------------------------------------------------------------
+// 一覧のシート(画面の下から引き出す)
+//   ・"mini"(取っ手だけ少し) / "peek"(半分ほど) / "full"(地図の上いっぱい) の3段階
+//   ・取っ手を上下にドラッグ、または、タップ(半分 ⇔ いっぱい)で切り替える
+//   ・半分の状態で一覧を上にスクロールしたら、自動でいっぱいに広げる
+// ---------------------------------------------------------------------
+const scanSheet = document.getElementById("scan-overlay-sheet");
+const scanSheetHandle = document.getElementById("scan-sheet-handle");
+let sheetState = "peek";
+function sheetHeights() {
+  const stageH = scanSheet.parentElement.clientHeight || window.innerHeight;
+  return { mini: Math.min(120, stageH * 0.25), peek: Math.round(stageH * 0.45), full: Math.max(0, stageH - 8) };
+}
+function setSheetState(state, animate = true) {
+  sheetState = state;
+  scanSheet.classList.toggle("is-instant", !animate);
+  scanSheet.dataset.state = state;
+  scanSheet.style.height = state === "full" ? "calc(100% - 8px)" : state === "mini" ? "120px" : "45%";
+  scanSheetHandle.setAttribute("aria-label", ui[currentLang].sheetToggle || "");
+  scanSheetHandle.setAttribute("aria-expanded", String(state === "full"));
+}
+// 表示中のお店が、シートより上(地図が見えている部分)に収まるように、地図を合わせる
+function fitShownAboveSheet() {
+  const shown = entries.filter((entry) => entry.visible);
+  if (!scanOverlayOpen || !shown.length || map.getContainer().offsetWidth === 0) return;
+  const sheetH = sheetState === "full" ? 0 : scanSheet.offsetHeight;
+  map.fitBounds(shown.map((entry) => [entry.shop.lat, entry.shop.lng]), {
+    paddingTopLeft: [40, 60],
+    paddingBottomRight: [40, sheetH + 30],
+    maxZoom: 15,
+  });
+}
+(function setupSheetDrag() {
+  let startY = 0;
+  let startH = 0;
+  let moved = false;
+  let dragging = false;
+  scanSheetHandle.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    moved = false;
+    startY = event.clientY;
+    startH = scanSheet.offsetHeight;
+    scanSheet.classList.add("is-instant");
+    scanSheetHandle.setPointerCapture(event.pointerId);
+  });
+  scanSheetHandle.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const dy = event.clientY - startY;
+    if (Math.abs(dy) > 4) moved = true;
+    const h = sheetHeights();
+    scanSheet.style.height = Math.max(h.mini, Math.min(h.full, startH - dy)) + "px";
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    if (!moved) {
+      setSheetState(sheetState === "full" ? "peek" : "full"); // タップ: 半分 ⇔ いっぱい
+      return;
+    }
+    // 離した位置に一番近い段階へ、吸い付くように合わせる
+    const h = sheetHeights();
+    const now = scanSheet.offsetHeight;
+    const nearest = ["mini", "peek", "full"].reduce((a, b) => (Math.abs(h[b] - now) < Math.abs(h[a] - now) ? b : a));
+    setSheetState(nearest);
+  };
+  scanSheetHandle.addEventListener("pointerup", end);
+  scanSheetHandle.addEventListener("pointercancel", end);
+  scanSheetHandle.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    setSheetState(sheetState === "full" ? "peek" : "full");
+  });
+  // 半分・小さい状態で、一覧を上にスクロールしたら、いっぱいに広げる(動画のように、指で上に送ると広がる)
+  scanOverlayScrollEl.addEventListener(
+    "scroll",
+    () => {
+      if (sheetState !== "full" && scanOverlayScrollEl.scrollTop > 8) setSheetState("full");
+    },
+    { passive: true }
+  );
+})();
 
 // オーバーレイを閉じて、地図を元の場所(#content の中、#shop-list の次)へ戻す
 function closeScanOverlay() {
