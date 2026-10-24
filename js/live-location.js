@@ -49,7 +49,7 @@
     `<p class="live-msg" role="status" hidden></p>`;
   wrap.appendChild(box);
   // ボタンの上で地図が動いたり、拡大したりしないように
-  if (!map.isGL) L.DomEvent.disableClickPropagation(box);
+  if ((map.isGL !== true)) L.DomEvent.disableClickPropagation(box);
   const compassBtn = box.querySelector(".live-compass");
   const locateBtn = box.querySelector(".live-locate");
   const msg = box.querySelector(".live-msg");
@@ -75,7 +75,7 @@
 
   // --- 現在地 ---
   // 青い点は、お店のピンより手前に出す(専用の重なり順の層)
-  const isGL = !!map.isGL; // 回転・傾けられる地図(MapLibre)か
+  const isGL = (map.isGL === true); // 回転・傾けられる地図(MapLibre)か
   if (!isGL) {
     map.createPane("livePane");
     map.getPane("livePane").style.zIndex = 650;

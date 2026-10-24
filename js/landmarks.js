@@ -108,14 +108,14 @@ const landmarks = [
 const LANDMARK_MIN_ZOOM = 11; // このズームより引いた地図(関東全体など)では、目印を1つも出さない
 
 // 目印は、お店のピンより下・地図の絵より上の、専用の重なり(pane)に置く
-if (!map.isGL) {
+if ((map.isGL !== true)) {
   map.createPane("landmarkPane");
   map.getPane("landmarkPane").style.zIndex = 450; // 地図の絵(200)より上、お店のピン(600)より下
   map.getPane("landmarkPane").style.pointerEvents = "none"; // クリックは、下の地図にそのまま通す
 }
 // お店のピン・数字の丸(重なりの判定に使う)
 function shopPinElements() {
-  return map.isGL
+  return map.isGL === true
     ? [...map.getContainer().querySelectorAll(".maplibregl-marker.shop-marker, .maplibregl-marker.shop-cluster")]
     : [...map.getPane("markerPane").querySelectorAll(".leaflet-marker-icon")];
 }
@@ -241,7 +241,7 @@ const landmarkEntries = landmarks
       bounds: area ? L.latLngBounds(area) : null, // 敷地の範囲(画面には描かない。大きさを測るためだけに使う)
       center: area ? ringCenter(area, [lm.lat, lm.lng]) : null,
       mode: "badge", // いまの表示("badge" = マーク+名前 / "big:文字の大きさ" = 敷地の真ん中に大きな名前)
-      marker: map.isGL
+      marker: map.isGL === true
         ? new GLMarker([lm.lat, lm.lng], { interactive: false, icon: landmarkIcon(lm) })
         : L.marker([lm.lat, lm.lng], {
             pane: "landmarkPane",
@@ -252,7 +252,7 @@ const landmarkEntries = landmarks
     };
   })
   .sort((a, b) => a.kind.priority - b.kind.priority || a.order - b.order);
-const landmarkLayer = map.isGL ? new GLLayerGroup(landmarkEntries.map((e) => e.marker)) : L.layerGroup(landmarkEntries.map((e) => e.marker));
+const landmarkLayer = map.isGL === true ? new GLLayerGroup(landmarkEntries.map((e) => e.marker)) : L.layerGroup(landmarkEntries.map((e) => e.marker));
 
 // その目印を、いまのズームでどちらの表示にするか決めて、必要なら切り替える
 //   戻り値: 大きな名前の表示なら true

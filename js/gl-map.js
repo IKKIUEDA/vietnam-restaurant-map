@@ -397,7 +397,8 @@
     constructor(map, opts = {}) {
       this.map = map;
       this.gl = map.gl;
-      this.radius = opts.maxClusterRadius || 60;
+      // MapLibre は、ズームの整数の段ごとにまとめるので、これまで(Leaflet)より少し小さい半径にして、まとまり方を近づける
+      this.radius = Math.round((opts.maxClusterRadius || 60) * 0.75);
       this.disableAt = opts.disableClusteringAtZoom || 12; // この(Leaflet の)ズーム以上は、まとめない
       this.iconCreate = opts.iconCreateFunction;
       this.markers = []; // 地図に出す(候補の)ピン

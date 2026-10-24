@@ -2,7 +2,7 @@
 //   ・2本指で上下 = 傾ける / 2本指でひねる = 回転 / コンパスのボタン = 北を上に戻す
 //   ・一度閉じたら、この端末では二度と出さない(localStorage「vf_map_guide」。日時などは記録しない)
 (function () {
-  if (typeof map === "undefined" || !map.isGL) return;
+  if (typeof map === "undefined" || (map.isGL !== true)) return;
   if (!window.matchMedia || !window.matchMedia("(pointer: coarse)").matches) return;
   const KEY = "vf_map_guide";
   try {

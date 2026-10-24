@@ -6,7 +6,7 @@
 
 const STATION_LINES_MIN_ZOOM = 15; // このズーム以上で、札を出す
 
-if (!map.isGL) {
+if ((map.isGL !== true)) {
   map.createPane("stationLinesPane");
   map.getPane("stationLinesPane").style.zIndex = 440; // 地図の絵より上、目印(450)とお店のピン(600)より下
   map.getPane("stationLinesPane").style.pointerEvents = "none";
@@ -47,7 +47,7 @@ function updateStationLines() {
       if (seen.has(key)) return;
       seen.add(key);
       if (!stationLineMarkers.has(key)) {
-        const m = map.isGL
+        const m = map.isGL === true
           ? new GLMarker([lat, lng], { interactive: false, icon: stationLinesIcon(ops) })
           : L.marker([lat, lng], { pane: "stationLinesPane", interactive: false, keyboard: false, icon: stationLinesIcon(ops) });
         m.addTo(map);
