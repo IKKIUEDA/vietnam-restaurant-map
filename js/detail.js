@@ -1568,6 +1568,7 @@ const PHOTOS_API_WAIT_MS = 8000; // Firebase の準備を待つ長さ
 const PHOTO_MAX_DIMENSION = 1600; // 圧縮後の、長辺の最大ピクセル数
 const PHOTO_MAX_BYTES = 5 * 1024 * 1024; // 圧縮後の、1枚あたりの最大バイト数(5MB。Storageのルールと合わせる)
 const PHOTO_JPEG_QUALITY_STEPS = [0.8, 0.6, 0.4]; // 大きすぎるときに、順番に下げていく圧縮率
+const PHOTO_MAX_PER_POST = 5; // 1回の投稿で選べる写真の枚数
 const PHOTO_DESCRIPTION_MAX = 200; // 説明文の、最大の文字数
 // 「この写真を報告」ボタンを表示するか(false = 非表示。機能自体は、そのまま残っている。
 //   また表示したくなったら、ここを true に戻すだけでよい)
@@ -1581,8 +1582,8 @@ function createPhotosState(shopId) {
     photos: [], // [{ id, uid, secure_url, public_id, authorName, createdAt, hidden, description, category, reportCount, likeCount }]、新しい順
     formOpen: false, // 投稿フォーム(写真の枠・説明文・カテゴリーなど)を、展開しているか
     compressing: false, // 選んだ画像を、圧縮している間
-    pendingBlob: null, // 圧縮済みで、アップロード待ちの画像
-    pendingPreviewUrl: null, // pendingBlob を画面に出すための、一時的なURL(URL.createObjectURL)
+    pending: [], // 圧縮済みで、アップロード待ちの画像(最大 PHOTO_MAX_PER_POST 枚)。[{ blob, url }]。url は画面に出すための一時URL
+    sendProgress: null, // 送信中の進み具合 { done, total }
     description: "", // 説明文(任意。投稿フォームの入力中の文字)
     category: null, // 選んでいるカテゴリーのキー(任意。null = 未選択)
     consentTerms: false, // 投稿前の必須チェック(利用規約を確認し、投稿ルールに同意します)
@@ -1627,7 +1628,7 @@ let photosState = createPhotosState(null);
 
 // アップロード待ちの画像があれば、一時URLを解放する(お店を切り替えるときなどに呼ぶ。メモリリークを防ぐため)
 function revokePendingPhotoPreview(state) {
-  if (state && state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+  if (state && state.pending) state.pending.forEach((p) => URL.revokeObjectURL(p.url));
 }
 
 // Firebase の準備ができたら api を返す(getTipsApi と、同じ仕組み)
@@ -1765,39 +1766,46 @@ function compressToSize(canvas, stepIndex, resolve, reject) {
   );
 }
 
-// ファイルが選ばれたときの処理: 画像形式を確認してから、圧縮して、投稿待ち(プレビュー)の状態にする
-function handleSelectedPhotoFile(state, file) {
+// ファイルが選ばれたときの処理: 画像形式を確認してから、1枚ずつ圧縮して、投稿待ち(プレビュー)に加える
+//   ・1回の投稿で選べるのは PHOTO_MAX_PER_POST 枚まで。それを超えた分は加えずに、お知らせを出す
+async function handleSelectedPhotoFiles(state, files) {
   state.selectError = null;
   state.message = null;
-  if (!file || !file.type || !file.type.startsWith("image/")) {
+  const room = PHOTO_MAX_PER_POST - state.pending.length;
+  let list = [...files];
+  if (list.some((f) => !f || !f.type || !f.type.startsWith("image/"))) {
     state.selectError = "photosFileTypeError";
+    list = list.filter((f) => f && f.type && f.type.startsWith("image/"));
+  }
+  if (list.length > room) {
+    state.selectError = "photosTooMany";
+    list = list.slice(0, Math.max(0, room));
+  }
+  if (!list.length) {
     renderPhotos();
     return;
   }
   state.compressing = true;
   renderPhotos();
-  compressPhotoFile(file)
-    .then((blob) => {
-      revokePendingPhotoPreview(state); // 前に選んでいた画像が残っていたら、先に片付ける
-      state.pendingBlob = blob;
-      state.pendingPreviewUrl = URL.createObjectURL(blob);
-      // 説明文・カテゴリー・同意チェックは、そのまま残す(先に書いていた内容を、消さないため)
-    })
-    .catch((error) => {
+  for (const file of list) {
+    try {
+      const blob = await compressPhotoFile(file);
+      if (photosState !== state) return; // ほかのお店に移ったら、やめる
+      state.pending.push({ blob, url: URL.createObjectURL(blob) });
+    } catch (error) {
       console.warn("画像の処理に失敗:", error);
       state.selectError = error && error.code === "app/photo-too-large" ? "photosFileTooLargeError" : "photosCompressError";
-    })
-    .then(() => {
-      state.compressing = false;
-      if (photosState === state) renderPhotos();
-    });
+    }
+  }
+  // 説明文・カテゴリー・同意チェックは、そのまま残す(先に書いていた内容を、消さないため)
+  state.compressing = false;
+  if (photosState === state) renderPhotos();
 }
 
 // 選んでいた画像を、投稿フォームごと取り消す(✕ボタン・投稿できたあと、の両方で使う)
 function clearPendingPhoto(state) {
   revokePendingPhotoPreview(state);
-  state.pendingBlob = null;
-  state.pendingPreviewUrl = null;
+  state.pending = [];
   state.description = "";
   state.category = null;
   state.consentTerms = false;
@@ -1818,19 +1826,31 @@ function renderPhotoComposerHtml(state, t) {
     return `<button type="button" class="btn btn-primary" id="photos-toggle">+ ${esc(t.photosAddButton)}</button>`;
   }
 
-  const canSubmit = !!state.pendingBlob && state.consentTerms && !state.sending;
+  const canSubmit = state.pending.length > 0 && !state.compressing && state.consentTerms && !state.sending;
 
-  const boxHtml = state.compressing
-    ? `<div class="photo-add-box is-busy"><p class="detail-note">${esc(t.photosCompressing)}</p></div>`
-    : state.pendingPreviewUrl
-    ? `<div class="photo-add-box has-preview">
-         <img class="photo-add-preview" src="${esc(state.pendingPreviewUrl)}" alt="">
-         <button type="button" class="photo-add-remove" id="photos-remove" aria-label="${esc(t.photosRemovePhoto)}">✕</button>
-       </div>`
-    : `<button type="button" class="photo-add-box" id="photos-add">
+  // 選んだ写真(最大5枚)。まだ選べるときは、最後に「+ 追加」の枠を出す
+  const n = state.pending.length;
+  const addTile = n < PHOTO_MAX_PER_POST && !state.sending
+    ? `<button type="button" class="photo-pick-add" id="photos-add">${state.compressing ? `<span class="photo-pick-busy">${esc(t.photosCompressing)}</span>` : `<span class="photo-add-icon">📷</span><span>+ ${esc(t.photosAddMore)}</span>`}</button>`
+    : "";
+  const boxHtml = n === 0 && !state.compressing
+    ? `<button type="button" class="photo-add-box" id="photos-add">
          <span class="photo-add-icon">📷</span>
          <span class="photo-add-text">+ ${esc(t.photosAddBoxText)}</span>
-       </button>`;
+         <span class="photo-add-sub">${esc(t.photosMaxNote(PHOTO_MAX_PER_POST))}</span>
+       </button>`
+    : `<div class="photo-picks-head"><span>${esc(t.photosPicked(n, PHOTO_MAX_PER_POST))}</span></div>
+       <ul class="photo-picks">` +
+      state.pending
+        .map(
+          (p, i) =>
+            `<li class="photo-pick"><img src="${esc(p.url)}" alt="">` +
+            (state.sending ? "" : `<button type="button" class="photo-add-remove" data-photo-remove="${i}" aria-label="${esc(t.photosRemovePhoto)}">✕</button>`) +
+            `</li>`
+        )
+        .join("") +
+      (addTile ? `<li class="photo-pick">${addTile}</li>` : "") +
+      `</ul>`;
 
   const selectErrorHtml = state.selectError ? `<p class="tips-error" role="alert">⚠️ ${esc(t[state.selectError])}</p>` : "";
 
@@ -1874,7 +1894,7 @@ function renderPhotoComposerHtml(state, t) {
     t.photosCancel
   )}</button>
     ${boxHtml}
-    <input type="file" id="photos-file-input" accept="image/*" hidden>
+    <input type="file" id="photos-file-input" accept="image/*" multiple hidden>
     ${selectErrorHtml}
     <label class="photo-description-label">
       <textarea class="photo-description-input" id="photos-description" maxlength="${PHOTO_DESCRIPTION_MAX}" placeholder="${esc(
@@ -1892,7 +1912,13 @@ function renderPhotoComposerHtml(state, t) {
     </div>
     ${consentHtml}
     <button type="button" class="btn btn-primary photo-submit-btn" id="photos-submit" ${canSubmit ? "" : "disabled"}>${esc(
-    state.sending ? t.photosUploading : t.photosSubmit
+    state.sending
+      ? state.sendProgress && state.sendProgress.total > 1
+        ? t.photosUploadingN(state.sendProgress.done + 1, state.sendProgress.total)
+        : t.photosUploading
+      : n > 1
+      ? t.photosSubmitN(n)
+      : t.photosSubmit
   )}</button>
   </div>`;
 }
@@ -2009,15 +2035,19 @@ function renderPhotos() {
   bind("#photos-add", () => fileInput && fileInput.click());
   if (fileInput) {
     fileInput.addEventListener("change", () => {
-      const file = fileInput.files && fileInput.files[0];
+      const files = fileInput.files ? [...fileInput.files] : [];
       fileInput.value = ""; // 同じファイルを、続けて選べるようにする
-      if (file) handleSelectedPhotoFile(state, file);
+      if (files.length) handleSelectedPhotoFiles(state, files);
     });
   }
-  bind("#photos-remove", () => {
-    clearPendingPhoto(state);
-    state.selectError = null;
-    renderPhotos();
+  box.querySelectorAll("[data-photo-remove]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = Number(btn.dataset.photoRemove);
+      const [removed] = state.pending.splice(i, 1);
+      if (removed) URL.revokeObjectURL(removed.url);
+      state.selectError = null;
+      renderPhotos();
+    });
   });
   bind("#photos-submit", () => submitPhoto(state));
   const descriptionInput = box.querySelector("#photos-description");
@@ -2145,7 +2175,7 @@ function renderPhotos() {
 //     ログインできたら、選んでいた画像を、そのまま送信する。
 //   ・ポップアップを閉じただけのときは、エラーにせず、選んでいた画像を残したまま、送信中をやめる(もう一度、押せる)
 async function submitPhoto(state) {
-  if (state.sending || !state.pendingBlob) return;
+  if (state.sending || !state.pending.length) return;
   if (!state.consentTerms) return; // 念のための確認(ボタン自体、押せないようになっているはず)
   state.sending = true;
   state.message = null;
@@ -2172,34 +2202,43 @@ async function submitPhoto(state) {
   doSubmitPhoto(state);
 }
 
-function doSubmitPhoto(state) {
-  const blob = state.pendingBlob;
+// 選んだ写真を、1枚ずつ順番にアップロードする(説明文・カテゴリーは、全部の写真に同じものを付ける)
+//   ・途中で失敗したら、そこで止めて、送れなかった写真はフォームに残す(もう一度「投稿する」で続きを送れる)
+async function doSubmitPhoto(state) {
   const description = state.description.trim().slice(0, PHOTO_DESCRIPTION_MAX);
   const category = state.category || "";
-  let authorName = "";
-  getPhotosApi()
-    .then((api) =>
-      resolvePostAuthorName(authUser).then((name) => {
-        authorName = name;
-        return api.uploadPhoto(state.shopId, blob, authorName, { description, category });
-      })
-    )
-    .then((photo) => {
-      // 送れたら、画面の一覧にも反映する(読み込み直さない)。フォームは閉じて、最初の状態に戻す
+  const total = state.pending.length;
+  state.sendProgress = { done: 0, total };
+  let posted = 0;
+  try {
+    const api = await getPhotosApi();
+    const authorName = await resolvePostAuthorName(authUser);
+    while (state.pending.length) {
+      const item = state.pending[0];
+      const photo = await api.uploadPhoto(state.shopId, item.blob, authorName, { description, category });
+      // 送れたら、画面の一覧にも反映する(読み込み直さない)
       state.photos = [photo, ...state.photos];
-      clearPendingPhoto(state);
-      state.formOpen = false;
-      state.message = { key: "photosThanks", error: false };
-    })
-    .catch((error) => {
-      console.warn("写真の送信に失敗:", error && error.code, error);
-      const code = error && error.code;
-      state.message = { key: code === "app/login-required" ? "photosLoginNeeded" : "photosUploadError", error: true };
-    })
-    .then(() => {
-      state.sending = false;
+      state.pending.shift();
+      URL.revokeObjectURL(item.url);
+      posted += 1;
+      state.sendProgress = { done: posted, total };
       if (photosState === state) renderPhotos();
-    });
+    }
+    // 全部送れたら、フォームを閉じて、最初の状態に戻す
+    clearPendingPhoto(state);
+    state.formOpen = false;
+    state.message = { key: "photosThanks", error: false };
+  } catch (error) {
+    console.warn("写真の送信に失敗:", error && error.code, error);
+    const code = error && error.code;
+    state.message = {
+      key: code === "app/login-required" ? "photosLoginNeeded" : posted > 0 ? "photosPartialError" : "photosUploadError",
+      error: true,
+    };
+  }
+  state.sending = false;
+  state.sendProgress = null;
+  if (photosState === state) renderPhotos();
 }
 
 // 自分の写真を1枚、削除する(押す前に、確認メッセージを出す)。Firestoreの記録と、Storageの画像ファイルの、両方を削除する
