@@ -2218,3 +2218,33 @@ window.addEventListener("shop-covers-ready", refreshShopImages);
     }, 150);
   });
 })();
+
+// スマホ: ホーム・アカウントなど(地図以外の、ホームの場所に出る画面)では、2本指で画面を拡大できないようにする
+//   ・地図の画面・お店のページは、これまで通り(地図は、地図の中で拡大・縮小する)
+//   ・iPhone は、ページの設定(viewport)だけでは指での拡大を止められないので、2本指の操作をここで止める
+(function blockPinchOnHome() {
+  const meta = document.querySelector('meta[name="viewport"]');
+  const base = meta ? meta.getAttribute("content") : "";
+  const inHome = () => document.body.classList.contains("view-home");
+  // Android など: ホームにいる間だけ、ページの設定で拡大を止める
+  const syncMeta = () => {
+    if (!meta) return;
+    const want = inHome() ? "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" : base;
+    if (meta.getAttribute("content") !== want) meta.setAttribute("content", want);
+  };
+  new MutationObserver(syncMeta).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  syncMeta();
+  // iPhone(Safari): 2本指のつまむ操作を止める
+  document.addEventListener(
+    "touchmove",
+    (event) => {
+      if (event.touches.length > 1 && inHome()) event.preventDefault();
+    },
+    { passive: false }
+  );
+  ["gesturestart", "gesturechange"].forEach((name) =>
+    document.addEventListener(name, (event) => {
+      if (inHome()) event.preventDefault();
+    })
+  );
+})();
