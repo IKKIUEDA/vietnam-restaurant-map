@@ -7893,3 +7893,10 @@ body.view-detail #site-footer .footer-nav {
 .detail-share-msg {
   margin-top: 10px !important;
 }
+
+/* スマホで文字を入力している間は、下のタブを隠す(js/app.js の hideTabsWhileTyping) */
+@media (max-width: 600px) {
+  body.is-typing .app-tabs {
+    display: none;
+  }
+}

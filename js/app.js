@@ -2198,3 +2198,23 @@ window.addEventListener("shop-covers-ready", refreshShopImages);
     setTimeout(() => (fixing = false), 0);
   });
 })();
+
+// 文字を入力している間(スマホでキーボードが出ている間)は、画面の下のタブ(ホーム・地図・アカウント)を隠す
+//   (キーボードの上にタブが浮いて出てきて、入力のじゃまにならないように)
+(function hideTabsWhileTyping() {
+  const isTextField = (el) =>
+    el && (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && !/^(checkbox|radio|button|submit|file|range|color)$/i.test(el.type)));
+  let timer = null;
+  document.addEventListener("focusin", (event) => {
+    if (!isTextField(event.target) || !window.matchMedia("(max-width: 600px)").matches) return;
+    clearTimeout(timer);
+    document.body.classList.add("is-typing");
+  });
+  document.addEventListener("focusout", () => {
+    clearTimeout(timer);
+    // 次の入力欄へ移るときに、タブが一瞬出てブレないよう、少し待ってから戻す
+    timer = setTimeout(() => {
+      if (!isTextField(document.activeElement)) document.body.classList.remove("is-typing");
+    }, 150);
+  });
+})();
