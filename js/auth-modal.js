@@ -123,22 +123,22 @@ function loginViewHtml(t) {
     <h3 id="auth-modal-title">${esc(t.authModalTitle)}</h3>
     <button type="button" class="btn auth-google-btn" id="auth-google-btn">${esc(t.authLogin)}</button>
     <div class="auth-modal-divider">${esc(t.authOrDivider)}</div>
-    <form id="auth-email-login-form">
+    <form id="auth-email-login-form" novalidate>
       <label>${esc(t.authEmailLabel)}<input type="email" name="email" autocomplete="email" required></label>
       <label>${esc(t.authPasswordLabel)}<input type="password" name="password" autocomplete="current-password" required></label>
+      ${errorBoxHtml()}
       <button type="submit" class="btn btn-primary" data-label="${esc(t.authEmailLoginSubmit)}">${esc(t.authEmailLoginSubmit)}</button>
     </form>
     <p class="auth-modal-links">
       <a href="#" id="auth-goto-register">${esc(t.authGoToRegister)}</a><br>
       <a href="#" id="auth-goto-reset">${esc(t.authForgotPassword)}</a>
-    </p>
-    ${errorBoxHtml()}`;
+    </p>`;
 }
 
 function registerViewHtml(t) {
   return `
     <h3 id="auth-modal-title">${esc(t.authRegisterTitle)}</h3>
-    <form id="auth-register-form">
+    <form id="auth-register-form" novalidate>
       <label>${esc(t.authNicknameLabel)}<input type="text" name="nickname" maxlength="40" required></label>
       <label>${esc(t.authEmailLabel)}<input type="email" name="email" autocomplete="email" required></label>
       <label>${esc(t.authPasswordLabel)}<input type="password" name="password" autocomplete="new-password" minlength="6" required></label>
@@ -151,7 +151,7 @@ function registerViewHtml(t) {
 function resetViewHtml(t) {
   const form = modalState.resetSent
     ? `<p class="detail-note">${esc(t.authResetSent)}</p>`
-    : `<form id="auth-reset-form">
+    : `<form id="auth-reset-form" novalidate>
          <label>${esc(t.authEmailLabel)}<input type="email" name="email" autocomplete="email" required></label>
          <button type="submit" class="btn btn-primary" data-label="${esc(t.authResetSubmit)}">${esc(t.authResetSubmit)}</button>
        </form>`;
@@ -254,6 +254,8 @@ async function handleEmailLogin(formData) {
   const email = (formData.get("email") || "").toString().trim();
   const password = (formData.get("password") || "").toString();
   if (!email || !password) return setModalError("authFillFields");
+  // ログインでは、メールアドレスの形式の誤りも「メールアドレスもしくはパスワードに誤りがあります」と出す
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setModalError("authErrWrongPassword");
   if (!window.authApi || typeof window.authApi.signInWithEmail !== "function") return setModalError("authUnavailable");
   setModalError(null);
   setModalBusy(true);
@@ -264,7 +266,8 @@ async function handleEmailLogin(formData) {
   } catch (error) {
     console.warn("メールログインに失敗:", error && error.code, error);
     if (modalState !== state) return;
-    setModalError(emailAuthErrorKey(error));
+    const key = emailAuthErrorKey(error);
+    setModalError(key === "authErrInvalidEmail" ? "authErrWrongPassword" : key);
   }
   if (modalState === state) setModalBusy(false);
 }
@@ -277,6 +280,7 @@ async function handleRegister(formData) {
   const password = (formData.get("password") || "").toString();
   if (!nickname) return setModalError("authMissingNickname");
   if (!email || !password) return setModalError("authFillFields");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setModalError("authErrInvalidEmail");
   if (!window.authApi || typeof window.authApi.registerWithEmail !== "function") return setModalError("authUnavailable");
   setModalError(null);
   setModalBusy(true);
@@ -297,6 +301,7 @@ async function handleReset(formData) {
   if (!state || state.busy) return;
   const email = (formData.get("email") || "").toString().trim();
   if (!email) return setModalError("authFillFields");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setModalError("authErrInvalidEmail");
   if (!window.authApi || typeof window.authApi.sendPasswordReset !== "function") return setModalError("authUnavailable");
   setModalError(null);
   setModalBusy(true);

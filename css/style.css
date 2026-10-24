@@ -7866,3 +7866,9 @@ header input,
   color: #b3261e;
   font-weight: 600;
 }
+
+/* ログイン: 誤りのお知らせは、パスワードの下に赤字で目立たせる */
+#auth-email-login-form .auth-modal-error {
+  margin: 4px 0 10px;
+  font-weight: 700;
+}
