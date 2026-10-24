@@ -510,7 +510,10 @@ service cloud.firestore {
       allow read: if true;
 
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["displayName", "bio", "photoURL", "updatedAt"])
+        && request.resource.data.keys().hasOnly(["displayName", "bio", "photoURL", "homeCountry", "liveCountry", "updatedAt"])
+        // 出身国・在住国(任意): 空、または2文字の国コード
+        && (!("homeCountry" in request.resource.data) || (request.resource.data.homeCountry is string && request.resource.data.homeCountry.matches("^([A-Z]{2})?$")))
+        && (!("liveCountry" in request.resource.data) || (request.resource.data.liveCountry is string && request.resource.data.liveCountry.matches("^([A-Z]{2})?$")))
         && request.resource.data.keys().hasAll(["displayName", "bio", "photoURL", "updatedAt"])
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() > 0 && request.resource.data.displayName.size() <= 30
