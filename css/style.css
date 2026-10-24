@@ -7602,3 +7602,89 @@ body.is-home-top header.is-scrolled .header-titles {
   margin: 0;
   color: var(--c-text);
 }
+
+/* =====================================================================
+   プロフィール上部: フォロー・フォロワー・チェックインの数と、フォローするボタン
+   ===================================================================== */
+.acct-stats {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.acct-stat {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 6px 4px 0;
+  color: var(--c-text);
+  text-decoration: none;
+  border-radius: 8px;
+}
+a.acct-stat:hover strong {
+  text-decoration: underline;
+}
+.acct-stat strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.acct-stat span {
+  font-size: 0.72rem;
+  color: var(--c-text-sub);
+  white-space: nowrap;
+}
+.acct-follow-row {
+  margin-top: 12px;
+}
+.acct-follow {
+  width: 100%;
+  min-height: 46px;
+  border: 2px solid var(--c-primary, #2e7d32);
+  border-radius: 999px;
+  background: var(--c-primary, #2e7d32);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.acct-follow.is-on {
+  background: #ffffff;
+  color: var(--c-primary, #2e7d32);
+}
+.acct-follow:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.acct-follow-error {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #c62828;
+}
+.follow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.follow-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-card);
+  color: var(--c-text);
+  text-decoration: none;
+}
+.follow-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

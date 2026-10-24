@@ -47,6 +47,17 @@ const ACCOUNT_TEXT = {
     loadError: "読み込めませんでした。時間をおいて、もう一度開いてください",
     logout: "ログアウト",
     notFound: "このプロフィールは見つかりませんでした",
+    statFollowing: "フォロー",
+    statFollowers: "フォロワー",
+    statCheckins: "チェックイン",
+    follow: "フォローする",
+    followingNow: "フォロー中",
+    followError: "フォローできませんでした。もう一度お試しください。",
+    followListFollowing: (name) => `${name}のフォロー`,
+    followListFollowers: (name) => `${name}のフォロワー`,
+    followEmptyFollowing: "まだ誰もフォローしていません",
+    followEmptyFollowers: "まだフォロワーはいません",
+    someone: "ユーザー",
     back: "戻る",
     savedTitle: "保存したお店",
     savedEmpty: "まだ保存したお店はありません。お店の保存マークを押すと、ここに集まります。",
@@ -115,6 +126,17 @@ const ACCOUNT_TEXT = {
     loadError: "Couldn't load. Please try again later",
     logout: "Log out",
     notFound: "This profile couldn't be found",
+    statFollowing: "Following",
+    statFollowers: "Followers",
+    statCheckins: "Check-ins",
+    follow: "Follow",
+    followingNow: "Following",
+    followError: "Couldn't follow. Please try again.",
+    followListFollowing: (name) => `Followed by ${name}`,
+    followListFollowers: (name) => `${name}'s followers`,
+    followEmptyFollowing: "Not following anyone yet",
+    followEmptyFollowers: "No followers yet",
+    someone: "User",
     back: "Back",
     savedTitle: "Saved shops",
     savedEmpty: "No saved shops yet. Tap the save icon on a shop to collect it here.",
@@ -183,6 +205,17 @@ const ACCOUNT_TEXT = {
     loadError: "Không tải được. Vui lòng thử lại sau",
     logout: "Đăng xuất",
     notFound: "Không tìm thấy hồ sơ này",
+    statFollowing: "Đang theo dõi",
+    statFollowers: "Người theo dõi",
+    statCheckins: "Check-in",
+    follow: "Theo dõi",
+    followingNow: "Đang theo dõi",
+    followError: "Không thể theo dõi. Vui lòng thử lại.",
+    followListFollowing: (name) => `${name} đang theo dõi`,
+    followListFollowers: (name) => `Người theo dõi ${name}`,
+    followEmptyFollowing: "Chưa theo dõi ai",
+    followEmptyFollowers: "Chưa có người theo dõi",
+    someone: "Người dùng",
     back: "Quay lại",
     savedTitle: "Quán đã lưu",
     savedEmpty: "Chưa có quán nào được lưu. Nhấn biểu tượng lưu ở quán để thêm vào đây.",
@@ -283,6 +316,12 @@ function loadAccountData(uid, withCheckins) {
       data.reviews = reviews.filter((r) => !r.hidden && known(r)).sort((a, b) => time(b.createdAt) - time(a.createdAt));
       data.checkins = checkins.filter((c) => !c.hidden && known(c)).sort((a, b) => time(b.checkedInAt) - time(a.checkedInAt));
       data.status = "ready";
+      // 自分のアカウント画面: 公開用のチェックイン数を、いまの数に合わせる(どのお店かは公開しない)
+      if (withCheckins && typeof getProfileApi === "function") {
+        getProfileApi()
+          .then((api) => api.syncMyCheckinCount(data.checkins.length))
+          .catch((e) => console.warn("チェックイン数の更新に失敗:", e));
+      }
     })
     .catch((error) => {
       console.warn("プロフィールを読めませんでした:", error);
@@ -473,7 +512,7 @@ function renderAccountPage() {
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3></div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${userStatsHtml(uid, data.checkins.length)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
@@ -685,10 +724,154 @@ function makeAvatarBlob(file) {
 // ---------------------------------------------------------------------
 // プロフィール(URL「?user=ユーザーID」)。誰でも見られる
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// フォロー・フォロワー・チェックインの数(プロフィールの上部)と、フォローするボタン
+// ---------------------------------------------------------------------
+const userStatsCache = new Map(); // uid → { status, following, followers, checkins, isFollowing, busy }
+function loadUserStats(uid, force) {
+  const cur = userStatsCache.get(uid);
+  if (cur && !force && cur.status !== "error") return cur;
+  const st = { status: "loading", following: 0, followers: 0, checkins: 0, isFollowing: false, busy: false };
+  userStatsCache.set(uid, st);
+  getProfileApi()
+    .then((api) =>
+      Promise.all([api.fetchUserStats(uid), authUser && authUser.uid !== uid ? api.isFollowing(uid).catch(() => false) : false])
+    )
+    .then(([stats, isFollowing]) => {
+      Object.assign(st, stats, { isFollowing, status: "ready" });
+    })
+    .catch((e) => {
+      console.warn("フォローの数を読めませんでした:", e);
+      st.status = "error";
+    })
+    .then(() => {
+      if (userStatsCache.get(uid) === st && document.body.classList.contains("view-home") && (homeMode === "account" || homeMode === "user")) renderHomeMode();
+    });
+  return st;
+}
+function followListUrl(uid, kind) {
+  return location.pathname + "?user=" + encodeURIComponent(uid) + "&list=" + kind;
+}
+//   myCheckins: 自分のアカウント画面では、読み込んだ自分のチェックインの数をそのまま出す
+function userStatsHtml(uid, myCheckins) {
+  const x = accountText();
+  const st = loadUserStats(uid);
+  const num = (n) => (st.status === "ready" ? String(n) : "–");
+  const checkins = Number.isInteger(myCheckins) && accountData && accountData.status === "ready" ? String(myCheckins) : num(st.checkins);
+  return (
+    `<div class="acct-stats">` +
+    `<a class="acct-stat" href="${esc(followListUrl(uid, "following"))}" data-acct-nav><strong>${esc(num(st.following))}</strong><span>${esc(x.statFollowing)}</span></a>` +
+    `<a class="acct-stat" href="${esc(followListUrl(uid, "followers"))}" data-acct-nav><strong>${esc(num(st.followers))}</strong><span>${esc(x.statFollowers)}</span></a>` +
+    `<span class="acct-stat"><strong>${esc(checkins)}</strong><span>${esc(x.statCheckins)}</span></span>` +
+    `</div>`
+  );
+}
+function followButtonHtml(uid) {
+  const x = accountText();
+  const st = loadUserStats(uid);
+  const on = !!st.isFollowing;
+  return (
+    `<div class="acct-follow-row"><button type="button" class="acct-follow${on ? " is-on" : ""}" data-acct-action="${on ? "unfollow" : "follow"}" data-uid="${esc(uid)}" aria-pressed="${on}"${st.busy ? " disabled" : ""}>` +
+    `${esc(on ? x.followingNow : x.follow)}</button>` +
+    (st.error ? `<p class="acct-follow-error" role="alert">${esc(x.followError)}</p>` : "") +
+    `</div>`
+  );
+}
+function toggleFollow(uid, on) {
+  const st = loadUserStats(uid);
+  if (st.busy) return;
+  if (!authUser) {
+    openAuthModal();
+    return;
+  }
+  st.busy = true;
+  st.error = false;
+  renderHomeMode();
+  getProfileApi()
+    .then((api) => (on ? api.follow(uid) : api.unfollow(uid)))
+    .then(() => {
+      st.isFollowing = on;
+      st.followers = Math.max(0, st.followers + (on ? 1 : -1));
+      const mine = authUser && userStatsCache.get(authUser.uid);
+      if (mine && mine.status === "ready") mine.following = Math.max(0, mine.following + (on ? 1 : -1));
+    })
+    .catch((e) => {
+      console.warn("フォローの変更に失敗:", e);
+      st.error = true;
+    })
+    .then(() => {
+      st.busy = false;
+      renderHomeMode();
+    });
+}
+
+// フォロー中・フォロワーの一覧(URL「?user=ID&list=following」/「&list=followers」)
+const followListCache = new Map(); // `${uid}:${kind}` → { status, items: [{ uid, name, photoURL }] }
+const followProfileCache = new Map(); // uid → profile | null
+function renderFollowListPage(uid, kind) {
+  const x = accountText();
+  const key = uid + ":" + kind;
+  let list = followListCache.get(key);
+  if (!list || list.status === "error") {
+    list = { status: "loading", items: [] };
+    followListCache.set(key, list);
+    getProfileApi()
+      .then(async (api) => {
+        const ids = await api.fetchFollowList(uid, kind);
+        const items = [];
+        for (let i = 0; i < ids.length; i += 10) {
+          const chunk = ids.slice(i, i + 10);
+          const profiles = await Promise.all(
+            chunk.map((id) =>
+              followProfileCache.has(id)
+                ? followProfileCache.get(id)
+                : api.fetchProfile(id).catch(() => null).then((p) => (followProfileCache.set(id, p), p))
+            )
+          );
+          chunk.forEach((id, j) => items.push({ uid: id, name: (profiles[j] && profiles[j].displayName) || x.someone, photoURL: profiles[j] && profiles[j].photoURL }));
+        }
+        list.items = items;
+        list.status = "ready";
+      })
+      .catch((e) => {
+        console.warn("一覧を読めませんでした:", e);
+        list.status = "error";
+      })
+      .then(() => {
+        if (followListCache.get(key) === list && homeMode === "user") renderHomeMode();
+      });
+  }
+  const isMe = !!(authUser && authUser.uid === uid);
+  const owner = isMe ? resolveAuthName(authUser) : (followProfileCache.get(uid) && followProfileCache.get(uid).displayName) || (accountData && accountData.uid === uid ? accountDisplayName(accountData, "") : "") || x.someone;
+  const title = kind === "followers" ? x.followListFollowers(owner) : x.followListFollowing(owner);
+  const backHref = history.length > 1 ? "back" : isMe ? accountUrl() : userUrl(uid);
+  let body;
+  if (list.status === "loading") body = `<p class="acct-note">${esc(x.loading)}</p>`;
+  else if (list.status === "error") body = `<p class="acct-note">${esc(x.loadError || x.notFound)}</p>`;
+  else if (!list.items.length) body = `<p class="acct-note">${esc(kind === "followers" ? x.followEmptyFollowers : x.followEmptyFollowing)}</p>`;
+  else
+    body =
+      `<ul class="follow-list">` +
+      list.items
+        .map(
+          (it) =>
+            `<li><a class="follow-item" href="${esc(userUrl(it.uid))}" data-acct-nav>${accountAvatar(it.photoURL, it.name, 48)}` +
+            `<span class="follow-name">${esc(it.name)}</span>${homeIcon("forward", 18)}</a></li>`
+        )
+        .join("") +
+      `</ul>`;
+  homePage.innerHTML = accountHeader(title, backHref) + `<section class="home-section acct-section">${body}</section>`;
+}
+
 function renderUserPage(uid) {
   const x = accountText();
   if (!uid || !/^[A-Za-z0-9_-]{1,128}$/.test(uid)) {
     homePage.innerHTML = accountHeader(x.title, homeUrl()) + `<section class="home-section"><p class="acct-note">${esc(x.notFound)}</p></section>`;
+    return;
+  }
+  const listKind = new URLSearchParams(location.search).get("list");
+  if (listKind === "following" || listKind === "followers") {
+    renderFollowListPage(uid, listKind);
     return;
   }
   loadAccountData(uid, false);
@@ -707,11 +890,11 @@ function renderUserPage(uid) {
     accountHeader(name || x.title, backHref) +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3></div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${userStatsHtml(uid)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
-    (isMe ? `<div class="acct-actions"><a class="acct-link" href="${esc(accountUrl())}" data-acct-nav>${esc(x.editProfile)} ›</a></div>` : "") +
+    (isMe ? `<div class="acct-actions"><a class="acct-link" href="${esc(accountUrl())}" data-acct-nav>${esc(x.editProfile)} ›</a></div>` : followButtonHtml(uid)) +
     accountPostsHtml(data, ["photos", "reviews"]) +
     (authUser && isAdminUser(authUser) && !isMe && data.profile
       ? `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="admin-delete" data-uid="${esc(uid)}">${esc(x.adminDelete)}</button></div>`
@@ -744,6 +927,10 @@ homePage.addEventListener("click", (event) => {
   const action = btn.dataset.acctAction;
   if (action === "share") {
     shareMyProfile();
+    return;
+  }
+  if (action === "follow" || action === "unfollow") {
+    toggleFollow(btn.dataset.uid, action === "follow");
     return;
   }
   if (action === "login") openAuthModal();

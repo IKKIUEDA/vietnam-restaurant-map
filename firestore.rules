@@ -526,6 +526,45 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------
+    // 👥 フォロー(follows/{フォローした人のID}_{フォローされた人のID})
+    //   ・誰が誰をフォローしているかは、プロフィールの一覧で見せるので、誰でも読める
+    //   ・作れるのは本人の分だけ(ドキュメント名・from が自分のID)。自分自身はフォローできない。書き換え(update)はできない
+    //   ・消せるのは、フォローした本人・フォローされた本人(アカウント削除のとき)・管理者
+    // ---------------------------------------------------------------
+    match /follows/{followId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(["from", "to", "createdAt"])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to.matches("^[A-Za-z0-9_-]{1,128}$")
+        && request.resource.data.to != request.auth.uid
+        && followId == request.auth.uid + "_" + request.resource.data.to
+        && request.resource.data.createdAt == request.time;
+
+      allow delete: if (signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid)) || isAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 📊 プロフィールに出す数(userStats/{ユーザーID})
+    //   ・チェックインの数だけ。どのお店に行ったかは書かない(チェックインの中身は、本人だけが見られるまま)
+    //   ・書けるのは本人だけ(自分のチェックインを数えた数を書く)
+    // ---------------------------------------------------------------
+    match /userStats/{uid} {
+      allow read: if true;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["checkinCount", "updatedAt"])
+        && request.resource.data.checkinCount is int
+        && request.resource.data.checkinCount >= 0
+        && request.resource.data.checkinCount <= 10000
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+    }
+
+    // ---------------------------------------------------------------
     // 🔎 お店をまたいだ検索(collectionGroup)。プロフィール画面で「その人の投稿一覧」を出すために使う
     //   ・写真・レビューは、もともと誰でも読める内容なので、お店をまたいで読めても、見える範囲は変わらない
     //   ・チェックインは、本人の記録だけ(uid が自分のもの)。管理者は、uid を書き足すために全件を読める
