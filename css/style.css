@@ -8224,3 +8224,75 @@ body:not(.view-home):not(.view-detail):not(.view-content-page) #search-bar {
   background: #2e7d32;
   color: #ffffff;
 }
+
+/* ===== お店のページの写真: 3列の正方形 + いいね数(写真を押すと、投稿者・コメントなどを拡大表示で見られる) ===== */
+.photo-grid.photo-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+.photo-grid-3 .photo-item { gap: 0; }
+.photo-grid-3 .photo-thumb-btn,
+.photo-grid-3 .photo-thumb { border-radius: 4px; width: 100%; }
+.photo-grid-3 .photo-category-label {
+  top: 5px;
+  left: 5px;
+  padding: 0 6px;
+  font-size: 0.62rem;
+}
+.photo-like-badge {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.photo-like-badge.is-liked span { color: #ff6b81; }
+.photo-grid-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 0 6px;
+  font-size: 0.6rem;
+  color: #fff;
+  background: rgba(198, 120, 0, 0.9);
+  border-radius: 999px;
+}
+.photo-grid-badge.is-hidden { top: auto; bottom: 5px; right: 5px; background: rgba(120, 120, 120, 0.9); }
+/* 拡大表示: 説明・コメントが長くても、下へスクロールして見られるようにする */
+.photo-lightbox {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-top: 56px;
+}
+.photo-lightbox-img { max-height: 62vh; flex-shrink: 0; }
+.photo-lightbox-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 8px;
+}
+.photo-lightbox-head .photo-lightbox-author { margin: 0; }
+.photo-lightbox-head .photo-lightbox-author a,
+.photo-lightbox-head .photo-lightbox-author .photo-author { color: #fff; }
+.photo-lightbox-head .photo-lightbox-like { margin: 0; }
+.photo-lightbox .photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.photo-lightbox .photo-actions:empty { display: none; }
