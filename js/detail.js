@@ -1963,50 +1963,54 @@ function renderPhotos() {
   // 管理者は、非表示の写真も、そのまま一覧に含めて見える(「非表示中」の印+元に戻すボタン付き)。管理者以外は、一覧から除く
   const visiblePhotos = isAdmin ? state.photos : state.photos.filter((p) => !p.hidden);
 
+  // 写真の一覧: 3列の正方形の写真だけを並べ、写真の上に「♡ いいねの数」を出す
+  //   (投稿者・説明・いいねボタン・コメント・削除などの操作は、写真を押して開く拡大表示の中に出す)
   const gridHtml = visiblePhotos.length
-    ? `<ul class="photo-grid">${visiblePhotos
+    ? `<ul class="photo-grid photo-grid-3">${visiblePhotos
         .map((p, index) => {
-          const isMine = myUid && p.uid === myUid;
           const categoryLabel = p.category ? photoCategoryLabel(t, p.category) : "";
+          const liked = !!state.myLikes[p.id];
           return (
-            `<li class="photo-item${p.hidden ? " is-hidden" : ""}${isAdmin && state.coverCheckId === p.id ? " is-cover-checking" : ""}">` +
+            `<li class="photo-item${p.hidden ? " is-hidden" : ""}">` +
             `<button type="button" class="photo-thumb-btn" data-index="${index}" aria-label="${esc(t.photosEnlarge)}">` +
             `<img class="photo-thumb" src="${esc(p.secure_url)}" alt="" loading="lazy">` +
             (categoryLabel ? `<span class="photo-category-label">${esc(categoryLabel)}</span>` : "") +
+            `<span class="photo-like-badge${liked ? " is-liked" : ""}">` +
+            `<span aria-hidden="true">${liked ? "♥" : "♡"}</span>${esc(String(p.likeCount || 0))}</span>` +
+            (isAdmin && p.isCover ? `<span class="photo-grid-badge">${esc(coverText().badge)}</span>` : "") +
+            (p.hidden ? `<span class="photo-grid-badge is-hidden">${esc(t.adminHiddenBadge)}</span>` : "") +
             `</button>` +
-            `<div class="photo-meta">${userLinkHtml(p.uid, p.authorName, "photo-author")}` +
-            (isAdmin && p.isCover ? `<span class="cover-badge">${esc(coverText().badge)}</span>` : "") +
-            (p.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
-            `</div>` +
-            (p.description ? `<p class="photo-caption">${esc(p.description)}</p>` : "") +
-            renderPhotoLikeHtml(state, p, t) +
-            renderPhotoGridCommentsHtml(state, p, t) +
-            `<div class="photo-actions">` +
-            (isMine
-              ? `<button type="button" class="btn btn-small btn-warn photo-delete-btn" data-id="${esc(p.id)}" ${
-                  state.deletingId === p.id ? "disabled" : ""
-                }>${esc(state.deletingId === p.id ? t.deleting : t.deleteButton)}</button>`
-              : "") +
-            (isAdmin
-              ? `<button type="button" class="btn btn-small admin-toggle-btn" data-id="${esc(p.id)}" ${
-                  state.adminBusy.has(p.id) ? "disabled" : ""
-                }>${esc(p.hidden ? t.adminRestore : t.adminHide)}</button>` + adminCoverButtonHtml(state, p)
-              : "") +
-            // 誰でも(ログインしていなくても)、この写真を報告できる(今は非表示。PHOTO_REPORT_BUTTON_VISIBLE を参照)
-            (PHOTO_REPORT_BUTTON_VISIBLE
-              ? `<button type="button" class="btn btn-small photo-report-btn" data-id="${esc(p.id)}">${esc(
-                  t.reportPhotoButton
-                )}</button>`
-              : "") +
-            `</div>` +
-            (PHOTO_REPORT_BUTTON_VISIBLE && state.reportFormPhotoId === p.id ? renderPhotoReportFormHtml(state, t) : "") +
-            (isAdmin && state.coverCheckId === p.id ? adminCoverCheckHtml() : "") +
-            (isAdmin ? renderAdminReportSummaryHtml(p, state, t) : "") +
             `</li>`
           );
         })
         .join("")}</ul>`
     : `<p class="detail-placeholder">${esc(t.photosEmpty)}</p>`;
+
+  // 拡大表示の中に出す操作(自分の写真の削除・管理者の操作)
+  const photoActionsHtml = (p) => {
+    const isMine = myUid && p.uid === myUid;
+    return (
+      `<div class="photo-actions">` +
+      (isMine
+        ? `<button type="button" class="btn btn-small btn-warn photo-delete-btn" data-id="${esc(p.id)}" ${
+            state.deletingId === p.id ? "disabled" : ""
+          }>${esc(state.deletingId === p.id ? t.deleting : t.deleteButton)}</button>`
+        : "") +
+      (isAdmin
+        ? `<button type="button" class="btn btn-small admin-toggle-btn" data-id="${esc(p.id)}" ${
+            state.adminBusy.has(p.id) ? "disabled" : ""
+          }>${esc(p.hidden ? t.adminRestore : t.adminHide)}</button>` + adminCoverButtonHtml(state, p)
+        : "") +
+      // 誰でも(ログインしていなくても)、この写真を報告できる(今は非表示。PHOTO_REPORT_BUTTON_VISIBLE を参照)
+      (PHOTO_REPORT_BUTTON_VISIBLE
+        ? `<button type="button" class="btn btn-small photo-report-btn" data-id="${esc(p.id)}">${esc(t.reportPhotoButton)}</button>`
+        : "") +
+      `</div>` +
+      (PHOTO_REPORT_BUTTON_VISIBLE && state.reportFormPhotoId === p.id ? renderPhotoReportFormHtml(state, t) : "") +
+      (isAdmin && state.coverCheckId === p.id ? adminCoverCheckHtml() : "") +
+      (isAdmin ? renderAdminReportSummaryHtml(p, state, t) : "")
+    );
+  };
 
   const composerHtml = renderPhotoComposerHtml(state, t);
 
@@ -2021,10 +2025,15 @@ function renderPhotos() {
          <button type="button" class="photo-lightbox-close" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">✕</button>
          <img class="photo-lightbox-img" src="${esc(lightboxPhoto.secure_url)}" alt="">
          ${lightboxCategoryLabel ? `<span class="photo-lightbox-category">${esc(lightboxCategoryLabel)}</span>` : ""}
-         <p class="photo-lightbox-author">${esc(lightboxPhoto.authorName || "")}</p>
+         <div class="photo-lightbox-head">
+           <p class="photo-lightbox-author">${userLinkHtml(lightboxPhoto.uid, lightboxPhoto.authorName, "photo-author", { avatar: 28 })}</p>
+           ${isAdmin && lightboxPhoto.isCover ? `<span class="cover-badge">${esc(coverText().badge)}</span>` : ""}
+           ${lightboxPhoto.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : ""}
+           <div class="photo-lightbox-like">${renderPhotoLikeHtml(state, lightboxPhoto, t)}</div>
+         </div>
          ${lightboxPhoto.description ? `<p class="photo-lightbox-caption">${esc(lightboxPhoto.description)}</p>` : ""}
-         <div class="photo-lightbox-like">${renderPhotoLikeHtml(state, lightboxPhoto, t)}</div>
          ${renderPhotoCommentsHtml(state, lightboxPhoto, t)}
+         ${photoActionsHtml(lightboxPhoto)}
        </div>`
     : "";
 
