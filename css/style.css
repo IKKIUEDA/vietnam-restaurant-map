@@ -8107,3 +8107,21 @@ body:not(.view-home):not(.view-detail):not(.view-content-page) #search-bar {
   font-weight: 800;
   cursor: pointer;
 }
+/* 重なりの順番: 地図の目印・駅の札 < お店のピン・数字の丸 < 現在地 < 吹き出し */
+.maplibregl-marker.landmark-icon,
+.maplibregl-marker.station-lines-icon {
+  z-index: 1;
+  pointer-events: none;
+}
+.maplibregl-marker.shop-marker,
+.maplibregl-marker.shop-cluster {
+  z-index: 3;
+}
+.maplibregl-marker.live-location,
+.maplibregl-marker.user-location {
+  z-index: 4;
+  pointer-events: none;
+}
+#map .maplibregl-popup.vf-popup {
+  z-index: 6;
+}

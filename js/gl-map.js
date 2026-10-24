@@ -209,8 +209,12 @@
       this._openPopup = null;
       return this;
     }
+    // "zoomend moveend" のように、空白で区切って、いくつかまとめて指定できる(Leaflet と同じ)
     on(name, fn) {
-      this.gl.on(name, fn);
+      String(name)
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((n) => this.gl.on(n, fn));
       return this;
     }
     once(name, fn) {
@@ -218,7 +222,10 @@
       return this;
     }
     off(name, fn) {
-      this.gl.off(name, fn);
+      String(name)
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((n) => this.gl.off(n, fn));
       return this;
     }
     addLayer(layer) {
@@ -250,17 +257,7 @@
       this._popupOffset = [0, 0];
       if (!el) {
         el = document.createElement("div");
-        el.className = (icon && icon.className) || "";
-        el.innerHTML = (icon && icon.html) || "";
-        const size = (icon && icon.iconSize) || [20, 20];
-        const sx = Array.isArray(size) ? size[0] : size.x;
-        const sy = Array.isArray(size) ? size[1] : size.y;
-        el.style.width = sx + "px";
-        el.style.height = sy + "px";
-        const anchor = (icon && icon.iconAnchor) || [sx / 2, sy / 2];
-        offset = [sx / 2 - anchor[0], sy / 2 - anchor[1]]; // 真ん中を基準に、ずらす
-        const pa = (icon && icon.popupAnchor) || [0, 0];
-        this._popupOffset = [pa[0], pa[1]];
+        offset = this._applyIcon(el, icon);
       }
       this._el = el;
       this.gl = new maplibregl.Marker({
@@ -277,6 +274,33 @@
         // 地図の「どこかをクリックしたら吹き出しを閉じる」処理と重ならないよう、少し後で開く
         setTimeout(() => this.openPopup(), 0);
       });
+    }
+    // L.divIcon の内容を、目印の要素に当てはめる(戻り値: 真ん中からのずれ)
+    //   iconSize が null のときは、大きさを CSS に任せる(真ん中 = その場所)
+    _applyIcon(el, icon) {
+      // MapLibre が付けた目印用のクラス(位置を決めるのに必要)は、残す
+      const keep = [...el.classList].filter((c) => c.startsWith("maplibregl-"));
+      el.className = [(icon && icon.className) || "", ...keep].join(" ").trim();
+      el.innerHTML = (icon && icon.html) || "";
+      if (icon && icon.iconSize === null) {
+        el.style.width = "";
+        el.style.height = "";
+        return [0, 0];
+      }
+      const size = (icon && icon.iconSize) || [20, 20];
+      const sx = Array.isArray(size) ? size[0] : size.x;
+      const sy = Array.isArray(size) ? size[1] : size.y;
+      el.style.width = sx + "px";
+      el.style.height = sy + "px";
+      const anchor = (icon && icon.iconAnchor) || [sx / 2, sy / 2];
+      const pa = (icon && icon.popupAnchor) || [0, 0];
+      this._popupOffset = [pa[0], pa[1]];
+      return [sx / 2 - anchor[0], sy / 2 - anchor[1]]; // 真ん中を基準に、ずらす
+    }
+    setIcon(icon) {
+      const offset = this._applyIcon(this._el, icon && icon.options);
+      this.gl.setOffset(offset);
+      return this;
     }
     addTo(map) {
       this._map = map;
@@ -463,6 +487,10 @@
     hasLayer(m) {
       return this.inGroup.has(m);
     }
+    on(name, fn) {
+      (this._handlers = this._handlers || {})[name] = (this._handlers[name] || []).concat(fn);
+      return this;
+    }
     // そのピンが見える(まとめられていない)ところまで寄せてから、cb を呼ぶ
     zoomToShowLayer(m, cb) {
       const need = this.disableAt; // Leaflet の数え方
@@ -526,6 +554,26 @@
         const mk = new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat(c.coords).addTo(this.gl);
         this.clusterEls.set(id, mk);
       });
+      // 並べ直しが終わったことを知らせる(目印の重なりの判定などに使う。Leaflet の animationend と同じ)
+      ((this._handlers && this._handlers.animationend) || []).forEach((fn) => fn());
+    }
+  }
+
+  // いくつかの目印を、まとめて出し入れする(Leaflet の L.layerGroup と同じ使い方)
+  class GLLayerGroup {
+    constructor(list) {
+      this.list = list || [];
+      this._map = null;
+    }
+    addTo(map) {
+      this._map = map;
+      this.list.forEach((m) => m.addTo(map));
+      return this;
+    }
+    remove() {
+      this.list.forEach((m) => m.remove());
+      this._map = null;
+      return this;
     }
   }
 
@@ -543,5 +591,6 @@
   window.GLMap = GLMap;
   window.GLMarker = GLMarker;
   window.GLClusterGroup = GLClusterGroup;
+  window.GLLayerGroup = GLLayerGroup;
   window.canUseGLMap = canUseGLMap;
 })();
