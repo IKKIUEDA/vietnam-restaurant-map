@@ -1075,18 +1075,22 @@ homePage.addEventListener("click", (event) => {
   }
 });
 
-// アイコン画像を選んだら、縮めてアップロードする
-homePage.addEventListener("change", (event) => {
+// アイコン画像を選んだら、丸い枠の中で位置・大きさを調整してもらい(js/avatar-crop.js)、決定したらアップロードする
+homePage.addEventListener("change", async (event) => {
   if (!event.target.matches("[data-acct-file]")) return;
-  const file = event.target.files && event.target.files[0];
+  const input = event.target;
+  const file = input.files && input.files[0];
+  input.value = ""; // 同じ画像を、もう一度選び直せるように
   if (!file || !accountDraft) return;
   const x = accountText();
   keepAccountDraftInputs();
+  const cropped = typeof openAvatarCropper === "function" ? await openAvatarCropper(file) : await makeAvatarBlob(file);
+  if (!cropped || !accountDraft) return; // キャンセルしたときは、何もしない
   accountDraft.busy = true;
   accountDraft.message = x.uploading;
   accountDraft.error = false;
   renderHomeMode();
-  makeAvatarBlob(file)
+  Promise.resolve(cropped)
     .then((blob) => getProfileApi().then((api) => api.uploadAvatar(blob)))
     .then((url) => {
       accountDraft.photoURL = url;
