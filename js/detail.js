@@ -2421,7 +2421,7 @@ function renderPhotoCommentListHtml(cState, t) {
       const isMine = myUid && c.uid === myUid;
       return (
         `<li class="photo-comment-item${c.hidden ? " is-hidden" : ""}">` +
-        `<div class="photo-comment-head">${userLinkHtml(c.uid, c.authorName, "photo-comment-author")}` +
+        `<div class="photo-comment-head">${userLinkHtml(c.uid, c.authorName, "photo-comment-author", { avatar: 26 })}` +
         (c.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
         `</div>` +
         `<p class="photo-comment-text">${esc(c.comment)}</p>` +
@@ -2879,7 +2879,7 @@ function renderReviews() {
           const isMine = myUid && r.id === myUid;
           return (
             `<li class="review-item${r.hidden ? " is-hidden" : ""}">` +
-            `<div class="review-head">${userLinkHtml(r.id, r.authorName, "review-author")}` +
+            `<div class="review-head">${userLinkHtml(r.id, r.authorName, "review-author", { avatar: 32 })}` +
             `<span class="review-head-right">` +
             `<span class="review-stars" aria-label="${esc(t.reviewRatingLabel)}: ${Number(r.rating) || 0}/5">${starsText(r.rating)}</span>` +
             (r.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
@@ -3246,19 +3246,59 @@ document.documentElement.classList.remove("boot-hide-map");
 
 
 // 投稿者の名前: 押すと、その人のプロフィール(URL「?user=ユーザーID」。js/account.js)を開く
-function userLinkHtml(uid, name, className) {
-  const label = esc(name || "");
-  if (!uid || !/^[A-Za-z0-9_-]{1,128}$/.test(String(uid)) || typeof renderUserPage !== "function") {
-    return `<span class="${className}">${label}</span>`;
+// 投稿者の名前(とアイコン)。名前は、投稿したときの名前ではなく、いまのプロフィールの名前を出す
+//   ・プロフィールは、あとから読み込む(読み込めたら、画面の名前・アイコンだけを差し替える)
+//   ・プロフィールが無い人は、投稿したときの名前のまま
+//   opts.avatar: 名前の左にアイコンを出す(大きさ px)
+const userProfileCache = new Map(); // uid → undefined(読み込み中)/ プロフィール / false(無い)
+function requestUserProfile(uid) {
+  if (userProfileCache.has(uid) || typeof getProfileApi !== "function") return;
+  userProfileCache.set(uid, undefined);
+  getProfileApi()
+    .then((api) => api.fetchProfile(uid))
+    .then((p) => {
+      userProfileCache.set(uid, p || false);
+      applyUserProfile(uid);
+    })
+    .catch(() => userProfileCache.set(uid, false));
+}
+function userAvatarHtml(photoURL, name, size) {
+  return typeof accountAvatar === "function" ? accountAvatar(photoURL, name, size) : "";
+}
+function applyUserProfile(uid) {
+  const p = userProfileCache.get(uid);
+  if (!p) return;
+  const sel = (attr) => `[${attr}="${CSS.escape(uid)}"]`;
+  document.querySelectorAll(sel("data-user-name")).forEach((el) => {
+    if (p.displayName) el.textContent = p.displayName;
+  });
+  document.querySelectorAll(sel("data-user-avatar")).forEach((el) => {
+    el.innerHTML = userAvatarHtml(p.photoURL, p.displayName || el.dataset.name || "", Number(el.dataset.size) || 32);
+  });
+}
+function userLinkHtml(uid, name, className, opts = {}) {
+  const valid = uid && /^[A-Za-z0-9_-]{1,128}$/.test(String(uid));
+  if (valid) requestUserProfile(uid);
+  const p = valid ? userProfileCache.get(uid) : null;
+  const shown = (p && p.displayName) || name || "";
+  const nameHtml = valid ? `<span data-user-name="${esc(uid)}">${esc(shown)}</span>` : esc(shown);
+  const size = opts.avatar || 0;
+  const avatarHtml = size
+    ? `<span class="user-avatar" ${valid ? `data-user-avatar="${esc(uid)}"` : ""} data-size="${size}" data-name="${esc(shown)}">${userAvatarHtml(p && p.photoURL, shown, size)}</span>`
+    : "";
+  const cls = className + (size ? " has-avatar" : "");
+  if (!valid || typeof renderUserPage !== "function") {
+    return `<span class="${cls}">${avatarHtml}${nameHtml}</span>`;
   }
-  return `<a class="${className} user-link" href="?user=${encodeURIComponent(uid)}" data-user-link="${esc(uid)}">${label}</a>`;
+  return `<a class="${cls} user-link" href="?user=${encodeURIComponent(uid)}" data-user-link="${esc(uid)}">${avatarHtml}${nameHtml}</a>`;
 }
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[data-user-link]");
   if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
   event.preventDefault();
   // 押した名前を控えておく(まだプロフィールを作っていない人でも、名前は出せるように。js/account.js)
-  window.lastUserLink = { uid: link.dataset.userLink, name: link.textContent };
+  const nameEl = link.querySelector("[data-user-name]");
+  window.lastUserLink = { uid: link.dataset.userLink, name: (nameEl || link).textContent };
   navigate(location.pathname + "?user=" + encodeURIComponent(link.dataset.userLink));
 });
 

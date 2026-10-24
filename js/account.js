@@ -730,7 +730,8 @@ function makeAvatarBlob(file) {
 const userStatsCache = new Map(); // uid → { status, following, followers, checkins, isFollowing, busy }
 function loadUserStats(uid, force) {
   const cur = userStatsCache.get(uid);
-  if (cur && !force && cur.status !== "error") return cur;
+  // 読み込めなかったときも、すぐには読み直さない(描き直すたびに読みに行き、止まらなくなるのを防ぐ)
+  if (cur && !force) return cur;
   const st = { status: "loading", following: 0, followers: 0, checkins: 0, isFollowing: false, busy: false };
   userStatsCache.set(uid, st);
   getProfileApi()
@@ -749,6 +750,11 @@ function loadUserStats(uid, force) {
     });
   return st;
 }
+// ログイン状態が変わったら(フォロー中かどうかが変わるので)、数と一覧を読み直せるようにする
+window.addEventListener("auth-changed", () => {
+  userStatsCache.clear();
+  followListCache.clear();
+});
 function followListUrl(uid, kind) {
   return location.pathname + "?user=" + encodeURIComponent(uid) + "&list=" + kind;
 }
@@ -812,7 +818,7 @@ function renderFollowListPage(uid, kind) {
   const x = accountText();
   const key = uid + ":" + kind;
   let list = followListCache.get(key);
-  if (!list || list.status === "error") {
+  if (!list) {
     list = { status: "loading", items: [] };
     followListCache.set(key, list);
     getProfileApi()
