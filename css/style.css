@@ -7820,3 +7820,31 @@ a.acct-stat:hover strong {
 .live-location.has-heading .live-cone {
   display: block;
 }
+
+/* =====================================================================
+   文字のコピー: 地図の吹き出しなどで文字を長押ししてコピーするとき、
+   選ぶ範囲が地図・ボタン・ヘッダーまで広がってしまわないようにする
+   ・地図の画面とヘッダー・下のタブは、文字を選べないようにし、
+     お店の名前・住所など(吹き出しの中・一覧のカードの文字)だけを選べるようにする
+   ===================================================================== */
+header,
+#app-tabs,
+#content {
+  -webkit-user-select: none;
+  user-select: none;
+}
+#content .leaflet-popup-content,
+#content .scan-overlay-body,
+#content .shop-body,
+header input,
+#content input,
+#content textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+#content .leaflet-popup-content button,
+#content .leaflet-popup-content .detail-link,
+#content .scan-overlay-body button {
+  -webkit-user-select: none;
+  user-select: none;
+}

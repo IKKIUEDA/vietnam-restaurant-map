@@ -2171,3 +2171,30 @@ function refreshShopImages() {
   if (currentShopId !== null && typeof refreshDetailHero === "function") refreshDetailHero();
 }
 window.addEventListener("shop-covers-ready", refreshShopImages);
+
+// 文字のコピー: 地図の吹き出し・一覧のカードの中で文字を選び始めたら、選ぶ範囲をその中だけにとどめる
+//   (選択の端を引っぱったとき、ヘッダーや地図・ボタンの文字までコピーされてしまわないように)
+(function keepSelectionInside() {
+  const BOX = ".leaflet-popup-content, .scan-overlay-body, .shop-body";
+  const boxOf = (node) => {
+    const el = node && (node.nodeType === 1 ? node : node.parentElement);
+    return el ? el.closest(BOX) : null;
+  };
+  let fixing = false;
+  document.addEventListener("selectionchange", () => {
+    if (fixing) return;
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+    const box = boxOf(sel.anchorNode);
+    if (!box || boxOf(sel.focusNode) === box) return;
+    // 選択の向き(前へ広げたか、後ろへ広げたか)に合わせて、箱の最初 / 最後で止める
+    const backward = sel.anchorNode.compareDocumentPosition(sel.focusNode) & Node.DOCUMENT_POSITION_PRECEDING;
+    fixing = true;
+    try {
+      sel.setBaseAndExtent(sel.anchorNode, sel.anchorOffset, box, backward ? 0 : box.childNodes.length);
+    } catch (e) {
+      // 選択を直せないときは、そのままにする
+    }
+    setTimeout(() => (fixing = false), 0);
+  });
+})();
