@@ -71,6 +71,10 @@
   }
 
   // --- 現在地 ---
+  // 青い点は、お店のピンより手前に出す(専用の重なり順の層)
+  map.createPane("livePane");
+  map.getPane("livePane").style.zIndex = 650;
+  map.getPane("livePane").style.pointerEvents = "none";
   let watchId = null;
   let pos = null; // { lat, lng, acc, heading }
   let follow = false; // 地図が現在地について行くか
@@ -91,7 +95,7 @@
         }),
         interactive: false,
         keyboard: false,
-        zIndexOffset: 2000,
+        pane: "livePane",
       }).addTo(map);
       accCircle = L.circle(ll, { radius: pos.acc, interactive: false, stroke: false, fillColor: "#1a73e8", fillOpacity: 0.12 }).addTo(map);
     } else {
@@ -179,7 +183,8 @@
     needle.style.transform = `rotate(${-compassHeading}deg)`; // 針の赤い先が、いつも北を指す
     updateCone();
   }
-  const orientEvent = "ondeviceorientationabsolute" in window ? "deviceorientationabsolute" : "deviceorientation";
+  // iPhone は deviceorientation(webkitCompassHeading)、Android は deviceorientationabsolute で方角が届く。両方を聞いておく
+  const orientEvents = ["deviceorientation"].concat("ondeviceorientationabsolute" in window ? ["deviceorientationabsolute"] : []);
   async function setCompass(on) {
     if (on) {
       if (typeof DeviceOrientationEvent === "undefined") {
@@ -198,7 +203,7 @@
         say(tx().noCompass);
         return;
       }
-      window.addEventListener(orientEvent, onOrientation);
+      orientEvents.forEach((name) => window.addEventListener(name, onOrientation));
       // しばらく待っても方角が届かなければ、使えない端末(パソコンなど)
       setTimeout(() => {
         if (compassOn && compassHeading === null) {
@@ -207,7 +212,7 @@
         }
       }, 2500);
     } else {
-      window.removeEventListener(orientEvent, onOrientation);
+      orientEvents.forEach((name) => window.removeEventListener(name, onOrientation));
       compassHeading = null;
       needle.style.transform = "";
       updateCone();
