@@ -7878,3 +7878,18 @@ header input,
 body.view-detail #site-footer .footer-nav {
   display: none;
 }
+
+/* お店のページ: あなたのレビューをシェアしよう */
+.detail-share .detail-note {
+  margin: 4px 0 14px;
+}
+.detail-share-btn {
+  display: flex;
+  margin: 0 auto;
+}
+.detail-share-msg {
+  text-align: center;
+}
+.detail-share-msg {
+  margin-top: 10px !important;
+}

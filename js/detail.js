@@ -336,28 +336,12 @@ function renderDetail() {
         <div id="checkin-body"></div>
       </section>
 
-      <!-- ⑧ 情報の問題を報告(準備中。入力内容は、送信も保存もしません) -->
-      <section class="detail-section" id="detail-report">
-        <button type="button" class="btn btn-warn" id="report-open" aria-expanded="false" aria-controls="report-panel">${esc(t.reportOpen)}</button>
-        <form class="report-panel" id="report-panel" hidden>
-          <fieldset>
-            <legend>${esc(t.reportTitle)}</legend>
-            ${t.reportOptions
-              .map(
-                (label, i) =>
-                  `<label class="report-option"><input type="radio" name="report-kind" value="${i}" ${i === 0 ? "required" : ""}> <span>${esc(label)}</span></label>`
-              )
-              .join("")}
-          </fieldset>
-          <label class="report-text">${esc(t.reportNote)}
-            <textarea rows="3" maxlength="500"></textarea>
-          </label>
-          <div class="report-actions">
-            <button type="submit" class="btn btn-primary">${esc(t.reportSubmit)}</button>
-            <button type="button" class="btn" id="report-close">${esc(t.reportClose)}</button>
-          </div>
-          <p class="detail-note" id="report-note" role="status" hidden>${esc(t.reportSoon)}</p>
-        </form>
+      <!-- ⑧ あなたのレビューをシェアしよう(押すと、端末の共有画面。使えないときは、リンクをコピー) -->
+      <section class="detail-section detail-share" id="detail-share">
+        <h3>${esc(t.shareReviewTitle)}</h3>
+        <p class="detail-note">${esc(t.shareReviewLead)}</p>
+        <button type="button" class="home-share-btn detail-share-btn" id="detail-share-btn">${typeof SHARE_ICON !== "undefined" ? SHARE_ICON : ""}<span>${esc(t.shareReviewButton)}</span></button>
+        <p class="detail-note detail-share-msg" id="detail-share-msg" role="status" hidden></p>
       </section>
     </article>`;
 
@@ -581,23 +565,47 @@ function renderContentPage() {
   bindBackLinksIn(contentPageEl);
 }
 
-// 情報の報告のボタン(いまは「準備中」。投稿・送信・保存はしない。レビューのボタンは、renderReviews が扱う)
+// 「あなたのレビューをシェアしよう」のボタン
+//   ・自分のレビューがあれば、その評価とコメントも、共有する文に入れる(無ければ、お店の名前とリンクだけ)
+//   ・スマホなどは端末の共有画面。使えないとき(多くのパソコン)は、共有する文をコピーする
 function bindDetailButtons() {
-  const openBtn = detailPage.querySelector("#report-open");
-  const panel = detailPage.querySelector("#report-panel");
-  const reportNote = detailPage.querySelector("#report-note");
-  openBtn.addEventListener("click", () => {
-    panel.hidden = !panel.hidden;
-    openBtn.setAttribute("aria-expanded", String(!panel.hidden));
-  });
-  detailPage.querySelector("#report-close").addEventListener("click", () => {
-    panel.hidden = true;
-    openBtn.setAttribute("aria-expanded", "false");
-  });
-  panel.addEventListener("submit", (event) => {
-    event.preventDefault(); // ページを移動しない。内容は、どこにも送らず、保存もしない
-    reportNote.hidden = false;
-  });
+  const btn = detailPage.querySelector("#detail-share-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => shareShopReview(btn));
+}
+async function shareShopReview(btn) {
+  const t = ui[currentLang];
+  const entry = entries.find((e) => e.shop.id === currentShopId);
+  if (!entry) return;
+  const name = pick(entry.shop.name);
+  const url = location.origin + location.pathname + shopUrl(entry.shop.id);
+  const myUid = authUser && authUser.uid;
+  const mine = myUid && reviewsState && reviewsState.shopId === entry.shop.id ? reviewsState.reviews.find((r) => r.id === myUid && !r.hidden) : null;
+  const stars = mine ? "★".repeat(Math.max(0, Math.min(5, Number(mine.rating) || 0))) : "";
+  const text = mine
+    ? `${name} ${stars}${mine.comment ? "\n" + mine.comment : ""}\n#ベトナムフーディー`
+    : t.shareReviewText(name);
+  const msg = detailPage.querySelector("#detail-share-msg");
+  const say = (m) => {
+    if (!msg) return;
+    msg.textContent = m;
+    msg.hidden = false;
+    setTimeout(() => (msg.hidden = true), 3500);
+  };
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: name, text, url });
+    } catch (e) {
+      // 共有画面を閉じただけのときは、何もしない
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    say(t.shareReviewCopied);
+  } catch (e) {
+    say(url);
+  }
 }
 
 // ---------------------------------------------------------------------
