@@ -7588,3 +7588,17 @@ body.is-home-top header.is-scrolled .header-titles {
     transform: translateX(-50%);
   }
 }
+
+/* プロフィールのカード: 上にアイコンと名前、その下に自己紹介(カードの幅いっぱい) */
+.acct-profile {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+.acct-profile .acct-profile-body {
+  flex: 1;
+}
+.acct-profile .acct-bio {
+  flex: 0 0 100%;
+  margin: 0;
+  color: var(--c-text);
+}
