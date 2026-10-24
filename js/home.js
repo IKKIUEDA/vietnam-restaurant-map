@@ -839,6 +839,8 @@ window.addEventListener("resize", updateHomeTitleColor);
 function renderHomeMode() {
   // ホームのトップだけ、上の白い帯をなくして、左上にロゴ・右上に言語を浮かせる(CSS の body.is-home-top)
   document.body.classList.toggle("is-home-top", homeMode === "home");
+  // アカウントの画面(自分のアカウント・設定・保存したお店・ほかの人のプロフィール)では、上の「ベトナムフーディー」の帯を出さない
+  document.body.classList.toggle("is-account-view", ["account", "user", "saved"].includes(homeMode));
   if (homeMode !== "home") updateHomeTitleColor();
   if (homeMode === "todo") renderMyList();
   else if (homeMode === "todo-edit") renderMyListSettings();
@@ -852,7 +854,7 @@ function renderHomeMode() {
   else renderHome();
 }
 function hideHome() {
-  document.body.classList.remove("view-home", "is-home-top");
+  document.body.classList.remove("view-home", "is-home-top", "is-account-view");
   const header = document.querySelector("header");
   if (header) header.classList.remove("is-on-photo", "is-scrolled");
   homeView.hidden = true;

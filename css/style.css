@@ -7979,3 +7979,16 @@ a.acct-tab {
   justify-content: center;
   color: var(--c-text-sub);
 }
+
+/* 地図の画面と、アカウントの画面では、上の「ベトナムフーディー」の帯(ロゴ・サイト名・言語の切り替え)を出さない
+   (地図を広く使うため。言語の切り替えは、ホームの右上から行える) */
+body:not(.view-home):not(.view-detail):not(.view-content-page) > header,
+body.view-home.is-account-view > header {
+  display: none;
+}
+body.view-home.is-account-view #home-page {
+  padding-top: calc(12px + env(safe-area-inset-top));
+}
+body:not(.view-home):not(.view-detail):not(.view-content-page) #search-bar {
+  padding-top: calc(10px + env(safe-area-inset-top));
+}
