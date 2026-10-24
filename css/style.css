@@ -7872,3 +7872,9 @@ header input,
   margin: 4px 0 10px;
   font-weight: 700;
 }
+
+/* 個別のお店のページでは、下の「利用規約・プライバシーポリシー・運営者情報」のリンクを出さない
+   (権利の表示は残す。3つのページへは、ホームの一番下とアカウントの設定から行ける) */
+body.view-detail #site-footer .footer-nav {
+  display: none;
+}
