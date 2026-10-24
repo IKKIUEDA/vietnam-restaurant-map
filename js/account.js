@@ -48,6 +48,7 @@ const ACCOUNT_TEXT = {
     logout: "ログアウト",
     notFound: "このプロフィールは見つかりませんでした",
     statFollowing: "フォロー",
+    savedTab: "保存",
     homeCountryLabel: "出身国(任意)",
     liveCountryLabel: "在住国(任意)",
     countryNone: "選択しない",
@@ -131,6 +132,7 @@ const ACCOUNT_TEXT = {
     logout: "Log out",
     notFound: "This profile couldn't be found",
     statFollowing: "Following",
+    savedTab: "Saved",
     homeCountryLabel: "Home country (optional)",
     liveCountryLabel: "Country of residence (optional)",
     countryNone: "Don't show",
@@ -214,6 +216,7 @@ const ACCOUNT_TEXT = {
     logout: "Đăng xuất",
     notFound: "Không tìm thấy hồ sơ này",
     statFollowing: "Đang theo dõi",
+    savedTab: "Đã lưu",
     homeCountryLabel: "Quê quán (không bắt buộc)",
     liveCountryLabel: "Quốc gia đang sống (không bắt buộc)",
     countryNone: "Không hiển thị",
@@ -376,7 +379,8 @@ function formatDate(ts) {
 }
 
 // 投稿の一覧(写真・レビュー・チェックイン)
-function accountPostsHtml(data, tabs) {
+//   opts.savedLink: 自分のアカウント画面だけ、最後に「保存」のタブを出す(押すと、保存したお店の一覧へ移る)
+function accountPostsHtml(data, tabs, opts = {}) {
   const x = accountText();
   if (data.status === "loading") return `<p class="acct-note">${esc(x.loading)}</p>`;
   if (data.status === "error") return `<p class="acct-note is-error">${esc(x.loadError)}</p>`;
@@ -387,6 +391,9 @@ function accountPostsHtml(data, tabs) {
   const head =
     `<div class="acct-tabs" role="tablist">` +
     tabs.map((k) => tabBtn(k, x[k], data[k].length)).join("") +
+    (opts.savedLink
+      ? `<a class="acct-tab acct-tab-link" href="${esc(savedUrl())}" data-acct-nav>${esc(x.savedTab)}<span>${entries.filter((e) => isFavorite(e.shop)).length}</span></a>`
+      : "") +
     `</div>`;
   let body = "";
   if (accountTab === "photos") {
@@ -467,6 +474,24 @@ function accountSavedRowHtml() {
     `<span class="acct-row-value">${esc(x.savedCount(n))}${homeIcon("forward", 18)}</span></a>`
   );
 }
+// 保存したお店の1行: 写真・名前・エリア、保存ボタン(押すと外せる)、→(お店のページへ)
+function savedRowHtml(entry) {
+  const shop = entry.shop;
+  const image = getShopImage(shop);
+  const name = pick(shop.name);
+  const area = pick(shop.area);
+  return (
+    `<li class="saved-row">` +
+    `<a class="saved-link" href="${esc(shopUrl(shop.id))}" data-shop-id="${esc(shop.id)}">` +
+    `<img class="saved-thumb" src="${esc(image.src)}" alt="" loading="lazy" width="64" height="64">` +
+    `<span class="saved-text"><span class="saved-name">${esc(name)}</span>` +
+    (area ? `<span class="saved-area">📍 ${esc(area)}</span>` : "") +
+    `</span></a>` +
+    cardSaveButtonHtml(shop) +
+    `<a class="saved-go" href="${esc(shopUrl(shop.id))}" data-shop-id="${esc(shop.id)}" aria-label="${esc(name)}">${homeIcon("forward", 20)}</a>` +
+    `</li>`
+  );
+}
 function renderSavedPage() {
   const x = accountText();
   const list = savedEntries();
@@ -476,7 +501,7 @@ function renderSavedPage() {
     `<section class="home-section saved-section">` +
     `<p class="acct-small saved-note">${esc(x.savedNote)}</p>` +
     (list.length
-      ? `<ul class="todo-shops">${list.map(todoShopCard).join("")}</ul>`
+      ? `<ul class="saved-list">${list.map(savedRowHtml).join("")}</ul>`
       : `<p class="saved-empty">${esc(x.savedEmpty)}</p>`) +
     `</section>`;
 }
@@ -535,7 +560,7 @@ function renderAccountPage() {
     `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
     `</div>` +
     accountSavedRowHtml() +
-    accountPostsHtml(data, ["photos", "reviews", "checkins"]) +
+    accountPostsHtml(data, ["photos", "reviews", "checkins"], { savedLink: true }) +
     `</section>`;
 }
 
