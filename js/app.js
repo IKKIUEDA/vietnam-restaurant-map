@@ -1160,13 +1160,42 @@ function updateScanOverlayCard(entry, kind) {
   if (kind === "photo") setScanOverlayImage(li.querySelector(".scan-overlay-thumb"), entry);
   else if (kind === "tips") li.querySelector(".scan-overlay-tips strong").textContent = tipsCountText(entry);
   else if (kind === "reviews") li.querySelector(".scan-overlay-reviews strong").textContent = reviewCountText(entry);
+  if (kind === "tips" || kind === "reviews") resortScanOverlay();
+}
+
+// 一覧の並び順: Tips とレビューの合計が多いお店を上に(同じ件数なら、これまでの順のまま)
+//   ・件数は、あとから1件ずつ読み込まれるので、届くたびに並べ直す(resortScanOverlay)
+function activityScore(entry) {
+  return (Number(entry.tipsCount) || 0) + (Number(entry.reviewCount) || 0);
+}
+function sortByActivity(list) {
+  return list
+    .map((entry, i) => ({ entry, i }))
+    .sort((a, b) => activityScore(b.entry) - activityScore(a.entry) || a.i - b.i)
+    .map((x) => x.entry);
+}
+// 件数が届いたら、いま出ているカードを並べ直す(カードは作り直さず、順番だけ入れ替える)
+let scanResortTimer = null;
+function resortScanOverlay() {
+  clearTimeout(scanResortTimer);
+  scanResortTimer = setTimeout(() => {
+    if (!scanOverlayOpen) return;
+    const items = [...scanOverlayList.querySelectorAll(".scan-overlay-item[data-idx]")];
+    if (items.length < 2) return;
+    const base = new Map(listOrder.map((e, i) => [e, i]));
+    const sorted = items
+      .map((li) => ({ li, e: entries[Number(li.dataset.idx)] }))
+      .sort((a, b) => activityScore(b.e) - activityScore(a.e) || base.get(a.e) - base.get(b.e));
+    if (sorted.every((x, i) => x.li === items[i])) return; // 順番が変わらなければ、何もしない
+    sorted.forEach((x) => scanOverlayList.appendChild(x.li));
+  }, 150);
 }
 
 // いまの表示条件(entry.visible)に合わせて、一覧オーバーレイの中身(カード一覧)を作り直す
 function renderScanOverlay() {
   const t = ui[currentLang];
   renderScanOverlayTexts();
-  const shown = listOrder.filter((entry) => entry.visible);
+  const shown = sortByActivity(listOrder.filter((entry) => entry.visible));
   scanOverlayList.innerHTML = shown.length
     ? shown.map((entry) => scanOverlayCardHtml(entry)).join("")
     : `<li class="scan-overlay-empty">${esc(t.scanOverlayEmpty)}</li>`;
