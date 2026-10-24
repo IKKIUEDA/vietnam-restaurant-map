@@ -473,9 +473,10 @@ function renderAccountPage() {
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3></div>` +
+    // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
-    `</div></div>` +
+    `</div>` +
     // プロフィールの編集 / シェア / アカウント設定(歯車)
     `<div class="acct-action-row">` +
     `<button type="button" class="acct-pill" data-acct-action="edit">${esc(x.editProfile)}</button>` +
@@ -706,9 +707,10 @@ function renderUserPage(uid) {
     accountHeader(name || x.title, backHref) +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3></div>` +
+    // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
-    `</div></div>` +
+    `</div>` +
     (isMe ? `<div class="acct-actions"><a class="acct-link" href="${esc(accountUrl())}" data-acct-nav>${esc(x.editProfile)} ›</a></div>` : "") +
     accountPostsHtml(data, ["photos", "reviews"]) +
     (authUser && isAdminUser(authUser) && !isMe && data.profile
