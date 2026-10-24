@@ -7848,3 +7848,17 @@ header input,
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* プロフィール: 出身国・在住国(名前の下) */
+.acct-countries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--c-text-sub);
+}
+.acct-select {
+  appearance: auto;
+  background: #ffffff;
+}

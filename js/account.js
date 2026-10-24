@@ -48,6 +48,11 @@ const ACCOUNT_TEXT = {
     logout: "ログアウト",
     notFound: "このプロフィールは見つかりませんでした",
     statFollowing: "フォロー",
+    homeCountryLabel: "出身国(任意)",
+    liveCountryLabel: "在住国(任意)",
+    countryNone: "選択しない",
+    countryFrom: (c) => `${c}出身`,
+    countryLive: (c) => `${c}在住`,
     statFollowers: "フォロワー",
     statCheckins: "チェックイン",
     follow: "フォローする",
@@ -69,7 +74,6 @@ const ACCOUNT_TEXT = {
     iconLabel: "アイコン画像(任意)",
     iconChoose: "画像を選ぶ",
     iconRemove: "画像を外す",
-    iconNote: "自分で撮った写真やイラストなど、使ってよい画像だけを選んでください。他の人の顔が写った写真や、有名人・キャラクターの画像は使えません。",
     save: "保存する",
     cancel: "閉じる",
     saved_ok: "保存しました",
@@ -127,6 +131,11 @@ const ACCOUNT_TEXT = {
     logout: "Log out",
     notFound: "This profile couldn't be found",
     statFollowing: "Following",
+    homeCountryLabel: "Home country (optional)",
+    liveCountryLabel: "Country of residence (optional)",
+    countryNone: "Don't show",
+    countryFrom: (c) => `From ${c}`,
+    countryLive: (c) => `Lives in ${c}`,
     statFollowers: "Followers",
     statCheckins: "Check-ins",
     follow: "Follow",
@@ -148,7 +157,6 @@ const ACCOUNT_TEXT = {
     iconLabel: "Profile picture (optional)",
     iconChoose: "Choose image",
     iconRemove: "Remove image",
-    iconNote: "Only use images you have the right to use, such as your own photos or drawings. Photos of other people's faces, celebrities or characters are not allowed.",
     save: "Save",
     cancel: "Close",
     saved_ok: "Saved",
@@ -206,6 +214,11 @@ const ACCOUNT_TEXT = {
     logout: "Đăng xuất",
     notFound: "Không tìm thấy hồ sơ này",
     statFollowing: "Đang theo dõi",
+    homeCountryLabel: "Quê quán (không bắt buộc)",
+    liveCountryLabel: "Quốc gia đang sống (không bắt buộc)",
+    countryNone: "Không hiển thị",
+    countryFrom: (c) => `Đến từ ${c}`,
+    countryLive: (c) => `Sống tại ${c}`,
     statFollowers: "Người theo dõi",
     statCheckins: "Check-in",
     follow: "Theo dõi",
@@ -227,7 +240,6 @@ const ACCOUNT_TEXT = {
     iconLabel: "Ảnh đại diện (không bắt buộc)",
     iconChoose: "Chọn ảnh",
     iconRemove: "Bỏ ảnh",
-    iconNote: "Chỉ dùng ảnh bạn có quyền sử dụng, như ảnh tự chụp hoặc tranh tự vẽ. Không dùng ảnh có mặt người khác, người nổi tiếng hay nhân vật.",
     save: "Lưu",
     cancel: "Đóng",
     saved_ok: "Đã lưu",
@@ -512,7 +524,7 @@ function renderAccountPage() {
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${userStatsHtml(uid, data.checkins.length)}</div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${countriesHtml(data.profile)}${userStatsHtml(uid, data.checkins.length)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
@@ -653,6 +665,54 @@ function shareMyProfile() {
 }
 
 // プロフィールの編集
+// ---------------------------------------------------------------------
+// 出身国・在住国(任意。プロフィールに表示する)
+//   ・国の一覧は ISO の2文字の国コード。名前は、表示している言語に合わせてブラウザが出す(Intl.DisplayNames)
+// ---------------------------------------------------------------------
+const COUNTRY_CODES = (
+  "JP VN AF AL DZ AD AO AG AR AM AU AT AZ BS BH BD BB BY BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ " +
+  "DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM GE DE GH GR GD GT GN GW GY HT HN HK HU IS IN ID IR IQ IE IL IT JM JO KZ KE KI KP KR KW KG LA " +
+  "LV LB LS LR LY LI LT LU MO MG MW MY MV ML MT MH MR MU MX FM MD MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PS PA PG PY PE PH PL PT " +
+  "PR QA RO RU RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TW TJ TZ TH TL TG TO TT TN TR TM TV UG UA AE GB US UY " +
+  "UZ VU VA VE YE ZM ZW"
+).split(" ");
+function validCountry(code) {
+  return COUNTRY_CODES.includes(code) ? code : "";
+}
+function countryName(code) {
+  try {
+    return new Intl.DisplayNames([currentLang || "ja"], { type: "region" }).of(code) || code;
+  } catch (e) {
+    return code;
+  }
+}
+function countryFlag(code) {
+  return /^[A-Z]{2}$/.test(code) ? String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)) : "";
+}
+function countrySelectHtml(id, value) {
+  const x = accountText();
+  // 日本・ベトナムを先頭に、残りは名前の順
+  const [first, rest] = [COUNTRY_CODES.slice(0, 2), COUNTRY_CODES.slice(2)];
+  const sorted = rest.map((c) => [c, countryName(c)]).sort((a, b) => a[1].localeCompare(b[1], currentLang || "ja"));
+  const opt = (c, label) => `<option value="${c}"${c === value ? " selected" : ""}>${esc(label)}</option>`;
+  return (
+    `<select id="${id}" class="acct-input acct-select">` +
+    opt("", x.countryNone) +
+    first.map((c) => opt(c, countryName(c))).join("") +
+    `<option disabled>──────────</option>` +
+    sorted.map(([c, n]) => opt(c, n)).join("") +
+    `</select>`
+  );
+}
+function countriesHtml(profile) {
+  const x = accountText();
+  const home = profile && validCountry(profile.homeCountry);
+  const live = profile && validCountry(profile.liveCountry);
+  if (!home && !live) return "";
+  const part = (c, fn) => `<span class="acct-country"><span aria-hidden="true">${countryFlag(c)}</span> ${esc(fn(countryName(c)))}</span>`;
+  return `<p class="acct-countries">${home ? part(home, x.countryFrom) : ""}${live ? part(live, x.countryLive) : ""}</p>`;
+}
+
 function renderAccountEdit() {
   const x = accountText();
   const data = accountData;
@@ -662,6 +722,8 @@ function renderAccountEdit() {
       displayName: p.displayName || resolveAuthName(authUser) || "",
       bio: p.bio || "",
       photoURL: p.photoURL || "",
+      homeCountry: p.homeCountry || "",
+      liveCountry: p.liveCountry || "",
       busy: false,
       message: "",
       confirmDelete: false,
@@ -677,11 +739,14 @@ function renderAccountEdit() {
     `<label class="todo-secondary acct-file"><input type="file" accept="image/*" data-acct-file hidden>${esc(x.iconChoose)}</label>` +
     (d.photoURL ? ` <button type="button" class="acct-text-btn" data-acct-action="icon-remove">${esc(x.iconRemove)}</button>` : "") +
     `</div></div>` +
-    `<p class="acct-small">${esc(x.iconNote)}</p>` +
     `<label class="acct-label" for="acct-name">${esc(x.nameLabel)}</label>` +
     `<input id="acct-name" class="acct-input" maxlength="30" value="${esc(d.displayName)}" autocomplete="nickname">` +
     `<label class="acct-label" for="acct-bio">${esc(x.bioLabel)}</label>` +
     `<textarea id="acct-bio" class="acct-input" maxlength="160" rows="4" placeholder="${esc(x.bioPlaceholder)}">${esc(d.bio)}</textarea>` +
+    `<label class="acct-label" for="acct-home-country">${esc(x.homeCountryLabel)}</label>` +
+    countrySelectHtml("acct-home-country", d.homeCountry) +
+    `<label class="acct-label" for="acct-live-country">${esc(x.liveCountryLabel)}</label>` +
+    countrySelectHtml("acct-live-country", d.liveCountry) +
     // 結果(エラーなど)は、目立つ枠で出す
     `<p class="acct-message${d.error ? " is-error" : ""}" role="status"${d.message ? "" : " hidden"}>${esc(d.message)}</p>` +
     `<div class="todo-actions">` +
@@ -697,6 +762,10 @@ function keepAccountDraftInputs() {
   const bio = homePage.querySelector("#acct-bio");
   if (name) accountDraft.displayName = name.value;
   if (bio) accountDraft.bio = bio.value;
+  const home = homePage.querySelector("#acct-home-country");
+  const live = homePage.querySelector("#acct-live-country");
+  if (home) accountDraft.homeCountry = home.value;
+  if (live) accountDraft.liveCountry = live.value;
 }
 
 // 画像を、中央の正方形に切り取って 256×256 の JPEG にする(写真の位置情報などのデータは、ここで消える)
@@ -896,7 +965,7 @@ function renderUserPage(uid) {
     accountHeader(name || x.title, backHref) +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${userStatsHtml(uid)}</div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${countriesHtml(data.profile)}${userStatsHtml(uid)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
@@ -1033,7 +1102,9 @@ homePage.addEventListener(
     d.error = false;
     renderHomeMode();
     getProfileApi()
-      .then((api) => api.saveProfile({ displayName, bio, photoURL: d.photoURL || "" }))
+      .then((api) =>
+        api.saveProfile({ displayName, bio, photoURL: d.photoURL || "", homeCountry: validCountry(d.homeCountry), liveCountry: validCountry(d.liveCountry) })
+      )
       .then(() => {
         accountEditing = false;
         accountDraft = null;
