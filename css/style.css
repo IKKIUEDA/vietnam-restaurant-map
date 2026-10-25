@@ -8523,3 +8523,74 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
 .pv-sheet-body .photo-comment-item { background: #f4f6f4; }
 .pv-sheet-body .photo-comment-list { max-height: none; }
 .pv-sheet-body .photo-comment-actions .btn { width: auto; padding: 4px 12px; font-size: 0.78rem; }
+
+/* ===== はじめての人向けの使い方の案内(js/tour.js) ===== */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+}
+.tour-hole {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(10, 20, 14, 0.62);
+  transition: left 0.25s, top 0.25s, width 0.25s, height 0.25s;
+  pointer-events: none;
+}
+.tour-hole::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 2px solid #8bd18f;
+  border-radius: 16px;
+}
+.tour-card {
+  position: fixed;
+  box-sizing: border-box;
+  padding: 18px 18px 14px;
+  color: #1d2a22;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: top 0.25s, left 0.25s;
+}
+.tour-arrow {
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.tour-card.is-above .tour-arrow { top: auto; bottom: -8px; }
+.tour-title { margin: 0 56px 6px 0; font-size: 1.05rem; color: #2e7d32; }
+.tour-text { margin: 0; font-size: 0.92rem; line-height: 1.6; }
+.tour-skip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: #6b756e;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.tour-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.tour-pos { font-size: 0.85rem; color: #6b756e; }
+.tour-back,
+.tour-next {
+  min-width: 88px;
+  padding: 9px 16px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.tour-back { color: #2e7d32; background: #eef4ee; border: none; }
+.tour-next { color: #fff; background: #2e7d32; border: none; }
