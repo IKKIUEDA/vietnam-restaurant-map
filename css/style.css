@@ -8714,3 +8714,120 @@ body.view-detail.is-review-writing { overflow: hidden; }
 .rv-textarea::placeholder { color: #9aa29c; }
 .rv-count { margin: 6px 0 0; font-size: 0.78rem; color: #8a928c; text-align: right; }
 .rv-submit { display: block; width: 100%; margin-top: 16px; padding: 14px; font-size: 1rem; }
+
+/* ===== ユーザー(ホームの「ユーザー」と「?view=people」。js/people.js) ===== */
+.people-row {
+  display: flex;
+  gap: 10px;
+  margin: 12px -16px 0;
+  padding: 2px 16px 8px;
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.people-row::-webkit-scrollbar { display: none; }
+.people-row .people-card { flex: 0 0 150px; scroll-snap-align: start; }
+.people-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 10px 12px;
+  background: #fff;
+  border: 1px solid #e6ebe5;
+  border-radius: 16px;
+}
+.people-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+}
+.people-link .acct-avatar { margin-bottom: 4px; }
+.people-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.people-sub {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: #6b756e;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.people-follow {
+  width: 100%;
+  padding: 7px 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2e7d32;
+  background: #fff;
+  border: 1.5px solid #2e7d32;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.people-follow.is-on { color: #fff; background: #2e7d32; }
+.people-follow:disabled { opacity: 0.6; cursor: default; }
+.people-empty { margin: 12px 0 0; font-size: 0.9rem; color: #6b756e; }
+.people-retry { margin-left: 6px; color: #2e7d32; background: none; border: none; text-decoration: underline; cursor: pointer; }
+.people-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: #6b756e;
+  background: #f3f5f2;
+  border-radius: 12px;
+}
+.people-search input { flex: 1; min-width: 0; font-size: 16px; color: #1d2a22; background: none; border: none; outline: none; }
+.people-invite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1d2a22;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #eef0ec;
+  cursor: pointer;
+}
+.people-invite > span:nth-child(2) { flex: 1; }
+.people-invite-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  background: #2e7d32;
+  border-radius: 9px;
+}
+.people-invite-icon svg { width: 18px; height: 18px; }
+.people-invite-msg { min-height: 1em; margin: 6px 0 0; font-size: 0.8rem; color: #2e7d32; }
+.people-h3 { margin: 14px 0 10px; font-size: 0.8rem; font-weight: 700; color: #6b756e; letter-spacing: 0.04em; }
+.people-grid-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 700px) {
+  .people-grid-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
