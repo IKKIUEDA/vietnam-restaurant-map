@@ -2018,24 +2018,64 @@ function renderPhotos() {
     ? `<p class="detail-note tips-message${state.message.error ? " is-error" : ""}" role="status">${esc(t[state.message.key])}</p>`
     : "";
 
+  // 写真の拡大表示(画面いっぱいに写真を出し、右側に いいね・コメント・シェア、左下に 投稿者・説明・お店の名前)
+  //   ・上下にスワイプ(パソコンは ↑↓ キー)で、前後の写真へ
+  //   ・コメントと、削除などの操作は、下から出てくるシートの中に出す
   const lightboxPhoto = state.lightboxIndex !== null ? visiblePhotos[state.lightboxIndex] : null;
-  const lightboxCategoryLabel = lightboxPhoto && lightboxPhoto.category ? photoCategoryLabel(t, lightboxPhoto.category) : "";
-  const lightboxHtml = lightboxPhoto
-    ? `<div class="photo-lightbox" id="photo-lightbox" role="dialog" aria-modal="true" aria-label="${esc(t.photosEnlarge)}">
-         <button type="button" class="photo-lightbox-close" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">✕</button>
-         <img class="photo-lightbox-img" src="${esc(lightboxPhoto.secure_url)}" alt="">
-         ${lightboxCategoryLabel ? `<span class="photo-lightbox-category">${esc(lightboxCategoryLabel)}</span>` : ""}
-         <div class="photo-lightbox-head">
-           <p class="photo-lightbox-author">${userLinkHtml(lightboxPhoto.uid, lightboxPhoto.authorName, "photo-author", { avatar: 28 })}</p>
-           ${isAdmin && lightboxPhoto.isCover ? `<span class="cover-badge">${esc(coverText().badge)}</span>` : ""}
-           ${lightboxPhoto.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : ""}
-           <div class="photo-lightbox-like">${renderPhotoLikeHtml(state, lightboxPhoto, t)}</div>
-         </div>
-         ${lightboxPhoto.description ? `<p class="photo-lightbox-caption">${esc(lightboxPhoto.description)}</p>` : ""}
-         ${renderPhotoCommentsHtml(state, lightboxPhoto, t)}
-         ${photoActionsHtml(lightboxPhoto)}
-       </div>`
-    : "";
+  let lightboxHtml = "";
+  if (lightboxPhoto) {
+    const v = photoViewerText();
+    const lp = lightboxPhoto;
+    const cState = getPhotoCommentsState(state, lp.id);
+    const commentCount = (isAdmin ? cState.list : cState.list.filter((c) => !c.hidden)).length;
+    const liked = !!state.myLikes[lp.id];
+    const categoryLabel = lp.category ? photoCategoryLabel(t, lp.category) : "";
+    const pvEntry = entries.find((e) => e.shop.id === state.shopId);
+    const pvShopName = pvEntry ? pick(pvEntry.shop.name) : "";
+    const actions = photoActionsHtml(lp);
+    const hasMore = (myUid && lp.uid === myUid) || isAdmin || PHOTO_REPORT_BUTTON_VISIBLE;
+    const sheet = state.viewerSheet;
+    const sheetHtml = sheet
+      ? `<div class="pv-sheet-backdrop" data-pv-sheet-close></div>
+         <div class="pv-sheet" role="dialog" aria-label="${esc(sheet === "comments" ? t.photoCommentsTitle : v.more)}">
+           <div class="pv-sheet-head"><span class="pv-sheet-title">${esc(
+             sheet === "comments" ? `${t.photoCommentsTitle} ${commentCount}` : v.more
+           )}</span><button type="button" class="pv-sheet-close" data-pv-sheet-close aria-label="${esc(t.tipsClose)}">✕</button></div>
+           <div class="pv-sheet-body">${sheet === "comments" ? renderPhotoCommentsHtml(state, lp, t) : actions}</div>
+         </div>`
+      : "";
+    lightboxHtml = `<div class="photo-lightbox pv" id="photo-lightbox" role="dialog" aria-modal="true" aria-label="${esc(t.photosEnlarge)}">
+      <div class="pv-bg" style="background-image:url('${esc(lp.secure_url)}')" aria-hidden="true"></div>
+      <img class="pv-img" src="${esc(lp.secure_url)}" alt="${esc(lp.description || categoryLabel || "")}">
+      <div class="pv-shade-top" aria-hidden="true"></div><div class="pv-shade-bottom" aria-hidden="true"></div>
+      <div class="pv-top">
+        <button type="button" class="pv-back" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">${PV_ICONS.back}</button>
+        <span class="pv-title">${esc(pvShopName)}</span>
+        <span class="pv-pos">${state.lightboxIndex + 1} / ${visiblePhotos.length}</span>
+      </div>
+      <div class="pv-rail">
+        <button type="button" class="pv-act photo-like-btn${liked ? " is-liked" : ""}" data-id="${esc(lp.id)}" ${
+          state.likeBusy.has(lp.id) ? "disabled" : ""
+        } aria-pressed="${liked}" aria-label="${esc(t.photoLikeButton)}">${liked ? PV_ICONS.heartOn : PV_ICONS.heart}<span>${esc(
+      String(lp.likeCount || 0)
+    )}</span></button>
+        <button type="button" class="pv-act" data-pv-sheet="comments" aria-label="${esc(t.photoCommentsTitle)}">${PV_ICONS.comment}<span>${commentCount}</span></button>
+        <button type="button" class="pv-act" data-pv-share aria-label="${esc(v.share)}">${PV_ICONS.share}<span>${esc(v.share)}</span></button>
+        ${hasMore ? `<button type="button" class="pv-act" data-pv-sheet="more" aria-label="${esc(v.more)}">${PV_ICONS.more}</button>` : ""}
+      </div>
+      <div class="pv-info">
+        <div class="pv-author">${userLinkHtml(lp.uid, lp.authorName, "photo-author", { avatar: 36 })}
+          ${categoryLabel ? `<span class="pv-chip">${esc(categoryLabel)}</span>` : ""}
+          ${isAdmin && lp.isCover ? `<span class="pv-chip is-cover">${esc(coverText().badge)}</span>` : ""}
+          ${lp.hidden ? `<span class="pv-chip is-hidden">${esc(t.adminHiddenBadge)}</span>` : ""}
+        </div>
+        ${lp.description ? `<p class="pv-caption${state.viewerCaptionOpen ? " is-open" : ""}" data-pv-caption>${esc(lp.description)}</p>` : ""}
+        ${pvShopName ? `<p class="pv-place">${PV_ICONS.pin}<span>${esc(pvShopName)}</span></p>` : ""}
+      </div>
+      <p class="pv-toast" role="status" aria-live="polite"></p>
+      ${sheetHtml}
+    </div>`;
+  }
 
   box.innerHTML = gridHtml + composerHtml + messageHtml + lightboxHtml;
 
@@ -2093,6 +2133,8 @@ function renderPhotos() {
   box.querySelectorAll(".photo-thumb-btn[data-index]").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.lightboxIndex = Number(btn.dataset.index);
+      state.viewerSheet = null;
+      state.viewerCaptionOpen = false;
       const photo = visiblePhotos[state.lightboxIndex];
       // コメントは、拡大表示を開いたときに、はじめて読み込む(まだ読み込んでいなければ)
       if (photo && !state.commentsByPhoto[photo.id]) loadPhotoComments(state, photo.id);
@@ -2188,13 +2230,16 @@ function renderPhotos() {
   });
   bind("#photo-lightbox-close", () => {
     state.lightboxIndex = null;
+    state.viewerSheet = null;
     renderPhotos();
   });
+  bindPhotoViewer(box, state, visiblePhotos);
   // 背景(写真やコメント欄の外の、暗いところ)を押したときだけ閉じる
   //   (中のコメント入力欄・ボタンを押したときに画面を作り直すと、入力や送信ができなくなるため、何もしない)
   bind("#photo-lightbox", (event) => {
     if (event.target.id !== "photo-lightbox") return;
     state.lightboxIndex = null;
+    state.viewerSheet = null;
     renderPhotos();
   });
   // 拡大表示を開いている間は、後ろのページが一緒に動かないようにする
@@ -3500,3 +3545,129 @@ function setPhotoCover(state, photoId, on) {
       if (photosState === state) renderPhotos();
     });
 }
+
+// ---------------------------------------------------------------------
+// 写真の拡大表示(画面いっぱい)の部品
+// ---------------------------------------------------------------------
+const PHOTO_VIEWER_TEXT = {
+  ja: { share: "シェア", more: "その他", shareText: (n) => `${n} の写真 #ベトナムフーディー`, copied: "リンクをコピーしました" },
+  en: { share: "Share", more: "More", shareText: (n) => `Photo at ${n} #VietnamFoodie`, copied: "Link copied" },
+  vi: { share: "Chia sẻ", more: "Khác", shareText: (n) => `Ảnh tại ${n} #VietnamFoodie`, copied: "Đã sao chép liên kết" },
+};
+function photoViewerText() {
+  return PHOTO_VIEWER_TEXT[currentLang] || PHOTO_VIEWER_TEXT.ja;
+}
+// 自分で描いた、シンプルな線のアイコン
+const PV_SVG = (d, fill) =>
+  `<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="${fill || "none"}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const PV_ICONS = {
+  back: PV_SVG('<path d="M15 5l-7 7 7 7"/>'),
+  heart: PV_SVG('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+  heartOn: PV_SVG('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>', "currentColor"),
+  comment: PV_SVG('<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>'),
+  share: PV_SVG('<path d="M12 4v11"/><path d="M8 8l4-4 4 4"/><path d="M6 13v6h12v-6"/>'),
+  more: PV_SVG('<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>'),
+  pin: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
+};
+function bindPhotoViewer(box, state, visiblePhotos) {
+  const viewer = box.querySelector("#photo-lightbox");
+  if (!viewer) return;
+  const go = (step) => {
+    const next = state.lightboxIndex + step;
+    if (next < 0 || next >= visiblePhotos.length) return;
+    state.lightboxIndex = next;
+    state.viewerSheet = null;
+    state.viewerCaptionOpen = false;
+    const photo = visiblePhotos[next];
+    if (photo && !state.commentsByPhoto[photo.id]) loadPhotoComments(state, photo.id);
+    renderPhotos();
+  };
+  viewer.querySelectorAll("[data-pv-sheet]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      state.viewerSheet = btn.dataset.pvSheet;
+      renderPhotos();
+    })
+  );
+  viewer.querySelectorAll("[data-pv-sheet-close]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      state.viewerSheet = null;
+      renderPhotos();
+    })
+  );
+  const caption = viewer.querySelector("[data-pv-caption]");
+  if (caption)
+    caption.addEventListener("click", () => {
+      state.viewerCaptionOpen = !state.viewerCaptionOpen;
+      caption.classList.toggle("is-open", state.viewerCaptionOpen);
+    });
+  const shareBtn = viewer.querySelector("[data-pv-share]");
+  if (shareBtn)
+    shareBtn.addEventListener("click", async () => {
+      const v = photoViewerText();
+      const entry = entries.find((e) => e.shop.id === state.shopId);
+      const name = entry ? pick(entry.shop.name) : "";
+      const url = location.origin + location.pathname + shopUrl(state.shopId);
+      const text = v.shareText(name);
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: name, text, url });
+        } catch (e) {
+          // 共有画面を閉じただけのときは、何もしない
+        }
+        return;
+      }
+      const toast = viewer.querySelector(".pv-toast");
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        toast.textContent = v.copied;
+      } catch (e) {
+        toast.textContent = url;
+      }
+      toast.classList.add("is-on");
+      setTimeout(() => toast.classList.remove("is-on"), 2500);
+    });
+  // 上下のスワイプで、前後の写真へ(シートを開いているときは、しない)
+  let start = null;
+  viewer.addEventListener(
+    "touchstart",
+    (e) => {
+      if (state.viewerSheet || e.touches.length !== 1) return (start = null);
+      start = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    },
+    { passive: true }
+  );
+  viewer.addEventListener("touchend", (e) => {
+    if (!start) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    start = null;
+    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx) * 1.5) go(dy < 0 ? 1 : -1);
+  });
+  // 写真の上で指を動かしても、後ろのページがスクロールしないようにする(シートの中は、スクロールできる)
+  viewer.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!e.target.closest(".pv-sheet")) e.preventDefault();
+    },
+    { passive: false }
+  );
+  viewer._go = go;
+}
+// パソコン: ↑↓←→ で前後の写真、Esc で閉じる(シート → 拡大表示の順に閉じる)
+document.addEventListener("keydown", (e) => {
+  const viewer = document.getElementById("photo-lightbox");
+  if (!viewer || typeof photosState === "undefined" || !photosState) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "textarea" || tag === "input") return;
+  if (e.key === "Escape") {
+    if (photosState.viewerSheet) photosState.viewerSheet = null;
+    else photosState.lightboxIndex = null;
+    renderPhotos();
+  } else if ((e.key === "ArrowDown" || e.key === "ArrowRight") && viewer._go) {
+    e.preventDefault();
+    viewer._go(1);
+  } else if ((e.key === "ArrowUp" || e.key === "ArrowLeft") && viewer._go) {
+    e.preventDefault();
+    viewer._go(-1);
+  }
+});
