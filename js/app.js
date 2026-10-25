@@ -151,14 +151,30 @@ function stationLabelField() {
 
 // 周りのお店・施設の種類分け(地図のデータの class / subclass で分ける)
 //   アイコン付き: 🍜 レストラン / ☕ カフェ / 🛒 食材・スーパー / 💇 美容・サロン /
-//                🏢 行政・公共施設(市役所・郵便局・警察など)
+//                行政・公共施設(市役所・郵便局・警察など)はマーク無しで名前だけ / 🌏 海外・エスニック料理(いちばん優先)
 //   それ以外のお店は青い小さな丸、そのほかの施設(病院・学校・図書館・銀行なども)は灰色の小さな丸
+// 海外の料理・エスニック料理らしいお店の名前に含まれる言葉(地図のデータには「何料理か」が入っていないため、名前で見分ける)
+//   ・このサイトは外国から来た人の利用が多いので、こうしたお店を、ほかの施設より優先して地図に出す
+const WORLD_FOOD_WORDS = [
+  "ベトナム", "フォー", "バインミー", "タイ料理", "タイ屋台", "タイ国", "ガパオ", "インド", "ネパール", "スリランカ", "パキスタン",
+  "バングラ", "ビリヤニ", "カレー", "ハラル", "ハラール", "ケバブ", "トルコ", "韓国", "サムギョプサル", "ビビンバ", "中華", "台湾",
+  "四川", "上海", "香港", "広東", "火鍋", "麻辣", "ミャンマー", "インドネシア", "マレーシア", "シンガポール", "フィリピン", "モンゴル",
+  "イタリア", "トラットリア", "ピッツェリア", "ピザ", "フレンチ", "ビストロ", "スペイン", "パエリア", "メキシ", "タコス", "ブラジル",
+  "ペルー", "ギリシャ", "レバノン", "アラビア", "ペルシャ", "アフリカ", "エチオピア", "ロシア", "ドイツ",
+  "vietnam", "pho", "banh mi", "thai", "india", "nepal", "sri lanka", "pakistan", "biryani", "curry", "halal", "kebab", "turk",
+  "korea", "chinese", "taiwan", "sichuan", "dim sum", "burma", "myanmar", "indonesia", "malaysia", "singapore", "filipino",
+  "mongol", "italia", "trattoria", "pizzeria", "pizza", "bistro", "french", "spanish", "mexic", "taco", "brazil", "peru",
+  "greek", "lebanese", "arab", "persian", "african", "ethiopia", "russian", "german",
+];
 const POI_CATEGORIES = [
+  // 🌏 海外・エスニック料理(飲食店のうち、名前で見分けたもの)。いちばん優先して出す
+  { key: "world", emoji: "🌏", color: "#c62828", class: ["restaurant", "fast_food", "bar", "beer", "pub", "food_court", "cafe"], words: WORLD_FOOD_WORDS },
   { key: "beauty", emoji: "💇", color: "#c2185b", subclass: ["hairdresser", "beauty", "massage", "nail_salon", "nails", "barber"] },
   { key: "cafe", emoji: "☕", color: "#8d5524", class: ["cafe", "ice_cream"], subclass: ["bakery", "confectionery", "pastry", "tea", "coffee"] },
   { key: "food", emoji: "🍜", color: "#e8710a", class: ["restaurant", "fast_food", "bar", "beer", "pub", "food_court"] },
   { key: "grocery", emoji: "🛒", color: "#2e7d32", class: ["grocery"], subclass: ["supermarket", "convenience", "greengrocer", "butcher", "seafood"], exclude: ["department_store"] },
-  { key: "public", emoji: "🏢", color: "#3949ab", class: ["town_hall", "post", "police", "fire_station"], subclass: ["townhall", "post_office", "police", "fire_station", "courthouse", "community_centre"] },
+  // 🏢 行政・公共施設: マークは出さず、名前だけ(noIcon)
+  { key: "public", emoji: "", noIcon: true, color: "#3949ab", class: ["town_hall", "post", "police", "fire_station"], subclass: ["townhall", "post_office", "police", "fire_station", "courthouse", "community_centre"] },
 ];
 const POI_SHOP_CLASSES = ["shop", "clothing_store", "alcohol_shop", "department_store", "mall", "grocery"];
 
@@ -172,11 +188,40 @@ function poiCategoryExpression(field) {
     let cond = conds.length > 1 ? ["any", ...conds] : conds[0];
     // exclude: この subclass は、この種類に入れない(例: デパートは「食材・スーパー」ではなく、ふつうのお店)
     if (c.exclude) cond = ["all", cond, ["!", ["in", ["get", "subclass"], ["literal", c.exclude]]]];
-    expr.push(cond, field === "icon" ? `app-poi-${c.key}` : c.color);
+    if (c.words) cond = ["all", cond, worldFoodNameCondition(c.words)];
+    expr.push(cond, field === "icon" ? (c.noIcon ? "app-poi-blank" : `app-poi-${c.key}`) : c.color);
   });
   expr.push(["in", ["get", "class"], ["literal", POI_SHOP_CLASSES]], field === "icon" ? "app-poi-shop" : "#1558b0");
   expr.push(field === "icon" ? "app-poi-other" : "#5f6368");
   return expr;
+}
+// 名前(日本語・英語)に、どれかの言葉が入っているか(大文字・小文字は区別しない)
+function worldFoodNameCondition(words) {
+  const names = ["downcase", ["concat", ["coalesce", ["get", "name"], ""], " ", ["coalesce", ["get", "name:en"], ""]]];
+  return ["any", ...words.map((w) => ["in", w, names])];
+}
+// 地図に出す順番(数が小さいほど先に場所を取る。重なったときに残る)
+//   海外・エスニック料理 → ほかの飲食店 → カフェ → 食材・スーパー → そのほか。同じ種類の中では、有名な施設が先
+function poiSortKeyExpression() {
+  const isCat = (key) => {
+    const c = POI_CATEGORIES.find((x) => x.key === key);
+    const conds = [];
+    if (c.subclass) conds.push(["in", ["get", "subclass"], ["literal", c.subclass]]);
+    if (c.class) conds.push(["in", ["get", "class"], ["literal", c.class]]);
+    let cond = conds.length > 1 ? ["any", ...conds] : conds[0];
+    if (c.words) cond = ["all", cond, worldFoodNameCondition(c.words)];
+    return cond;
+  };
+  return [
+    "+",
+    ["case", isCat("world"), 0, isCat("food"), 1000, isCat("cafe"), 2000, isCat("grocery"), 3000, 5000],
+    ["coalesce", ["to-number", ["get", "rank"]], 100],
+  ];
+}
+// 名前だけの施設(マーク無し)かどうか
+function poiNoIconCondition() {
+  const c = POI_CATEGORIES.find((x) => x.key === "public");
+  return ["any", ["in", ["get", "subclass"], ["literal", c.subclass]], ["in", ["get", "class"], ["literal", c.class]]];
 }
 function poiIconExpression() {
   return poiCategoryExpression("icon");
@@ -201,7 +246,8 @@ function addPoiIcons(gl) {
       // マークを描けなかったときは、文字だけで出す
     }
   };
-  POI_CATEGORIES.forEach((cat) =>
+  draw("app-poi-blank", 2, () => {}); // マークを出さない施設用(透明)
+  POI_CATEGORIES.filter((cat) => !cat.noIcon).forEach((cat) =>
     draw(`app-poi-${cat.key}`, 48, (ctx, size) => {
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
@@ -428,7 +474,7 @@ function customizeBaseMap(gl) {
   addAppStations(gl);
   // ③'' 周りのお店・施設(飲食店・コンビニ・スーパー・病院など): 大きく拡大したとき(一覧の地図のズーム16以上)だけ出す
   //    ・地図のデータの「施設」(poi_label)を使う。駅は、上の全国の駅のデータで描くので、ここでは出さない
-  //    ・種類ごとのアイコン(🍜 ☕ 🛒 💇 🏢。くわしくは POI_CATEGORIES)。それ以外は小さな丸
+  //    ・種類ごとのアイコン(🌏 🍜 ☕ 🛒 💇。くわしくは POI_CATEGORIES)。それ以外は小さな丸
   addPoiIcons(gl);
   //    (バス停・駐車場・駐輪場・トイレ・出入口などは、お店ではないので出さない)
   set(() => gl.setFilter("poi_label", poiFilter([])));
@@ -436,12 +482,13 @@ function customizeBaseMap(gl) {
   set(() => gl.setLayoutProperty("poi_label", "text-field", localNameField())); // 英語の画面では、英語の名前
   set(() => gl.setLayoutProperty("poi_label", "icon-image", poiIconExpression()));
   set(() => gl.setLayoutProperty("poi_label", "icon-size", 1));
-  set(() => gl.setLayoutProperty("poi_label", "text-anchor", "left"));
-  set(() => gl.setLayoutProperty("poi_label", "text-justify", "left"));
-  set(() => gl.setLayoutProperty("poi_label", "text-offset", [0.8, 0]));
+  // マークの無い施設(市役所など)は、名前をその場所の真ん中に。それ以外は、マークの右に
+  set(() => gl.setLayoutProperty("poi_label", "text-anchor", ["case", poiNoIconCondition(), "center", "left"]));
+  set(() => gl.setLayoutProperty("poi_label", "text-justify", ["case", poiNoIconCondition(), "center", "left"]));
+  set(() => gl.setLayoutProperty("poi_label", "text-offset", ["case", poiNoIconCondition(), ["literal", [0, 0]], ["literal", [0.8, 0]]]));
   set(() => gl.setLayoutProperty("poi_label", "text-size", ["interpolate", ["linear"], ["zoom"], 15, 11, 18, 13]));
   set(() => gl.setLayoutProperty("poi_label", "text-optional", false));
-  set(() => gl.setLayoutProperty("poi_label", "symbol-sort-key", ["get", "rank"])); // 有名な施設ほど、先に場所を取る
+  set(() => gl.setLayoutProperty("poi_label", "symbol-sort-key", poiSortKeyExpression())); // 海外・エスニック料理 → 飲食店 → … の順に、先に場所を取る
   set(() => gl.setPaintProperty("poi_label", "text-color", poiColorExpression()));
   set(() => gl.setPaintProperty("poi_label", "text-halo-color", "#ffffff"));
   set(() => gl.setPaintProperty("poi_label", "text-halo-width", 1.2));
