@@ -418,6 +418,35 @@
         });
         // 計算のためだけの、見えない層(これが無いと、まとめ表示の計算が行われない)
         this.gl.addLayer({ id: "vf-shops-hidden", type: "circle", source: "vf-shops", paint: { "circle-radius": 0, "circle-opacity": 0 } });
+        // お店のピン(と数字の丸)の場所を、背景の地図の文字・マーク(周りの施設・駅名など)が避けるようにする
+        //   ・ピン(幅36・高さ44px、先が場所の少し上)と同じ大きさの「透明な絵」を、いちばん上の層に置く
+        //   ・地図の文字は、上の層から順に場所を取るので、ピンと重なる文字・マークは出なくなる(ピンが見やすくなる)
+        try {
+          if (!this.gl.hasImage("vf-pin-space")) {
+            this.gl.addImage("vf-pin-space", { width: 40, height: 46, data: new Uint8Array(40 * 46 * 4) });
+          }
+          this.gl.addLayer({
+            id: "vf-pin-space",
+            type: "symbol",
+            source: "vf-shops",
+            layout: {
+              "icon-image": "vf-pin-space",
+              "icon-anchor": "bottom",
+              "icon-offset": ["case", ["has", "point_count"], ["literal", [0, 23]], ["literal", [0, 6]]], // 数字の丸は、場所が真ん中
+              "icon-allow-overlap": true, // ピンどうしは重なってもよい(ピンは、別に描いている)
+              "icon-ignore-placement": false, // 地図の文字・マークは、この場所を避ける
+            },
+          });
+          // あとから足した層(駅名など)より、いつも上に置く(上にある層ほど、先に場所を取るため)
+          this.gl.on("styledata", () => {
+            const layers = this.gl.getStyle && this.gl.getStyle().layers;
+            if (layers && layers.length && layers[layers.length - 1].id !== "vf-pin-space" && this.gl.getLayer("vf-pin-space")) {
+              this.gl.moveLayer("vf-pin-space");
+            }
+          });
+        } catch (e) {
+          // 用意できなくても、ピンの表示には影響しない
+        }
         this.ready = true;
         this._dirty = false;
         this._render();
