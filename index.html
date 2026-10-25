@@ -54,7 +54,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261025e" />
+    <link rel="stylesheet" href="css/style.css?v=20261025f" />
   </head>
   <body>
     <!-- 開いたときに、地図の画面が一瞬だけ見えないようにする
@@ -265,38 +265,38 @@
 
     <!-- ピンをまとめて表示するプラグイン Leaflet.markercluster(Leaflet 本体のあとに読み込む) -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script src="js/gl-map.js?v=20261025e"></script>
+    <script src="js/gl-map.js?v=20261025f"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261025e"></script>
-    <script src="js/data.js?v=20261025e"></script>
-    <script src="js/app.js?v=20261025e"></script>
-    <script src="js/live-location.js?v=20261025e"></script>
-    <script src="js/map-guide.js?v=20261025e"></script>
-    <script src="js/tour.js?v=20261025e"></script>
+    <script src="js/i18n.js?v=20261025f"></script>
+    <script src="js/data.js?v=20261025f"></script>
+    <script src="js/app.js?v=20261025f"></script>
+    <script src="js/live-location.js?v=20261025f"></script>
+    <script src="js/map-guide.js?v=20261025f"></script>
+    <script src="js/tour.js?v=20261025f"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261025e"></script>
-    <script src="js/landmark-areas.js?v=20261025e"></script>
-    <script src="js/landmarks.js?v=20261025e"></script>
+    <script src="js/station-lines.js?v=20261025f"></script>
+    <script src="js/landmark-areas.js?v=20261025f"></script>
+    <script src="js/landmarks.js?v=20261025f"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261025e"></script>
+    <script src="js/auth.js?v=20261025f"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261025e"></script>
+    <script src="js/auth-modal.js?v=20261025f"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261025e"></script>
+    <script src="js/home.js?v=20261025f"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261025e"></script>
+    <script src="js/todo.js?v=20261025f"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/avatar-crop.js?v=20261025e"></script>
-    <script src="js/account.js?v=20261025e"></script>
-    <script src="js/settings.js?v=20261025e"></script>
+    <script src="js/avatar-crop.js?v=20261025f"></script>
+    <script src="js/account.js?v=20261025f"></script>
+    <script src="js/settings.js?v=20261025f"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261025e"></script>
-    <script src="js/contact.js?v=20261025e"></script>
-    <script src="js/detail.js?v=20261025e"></script>
-    <script src="js/onboard.js?v=20261025e"></script>
+    <script src="js/feature.js?v=20261025f"></script>
+    <script src="js/contact.js?v=20261025f"></script>
+    <script src="js/detail.js?v=20261025f"></script>
+    <script src="js/onboard.js?v=20261025f"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -1103,6 +1103,21 @@
                 .sort((a, b) => time(b.createdAt) - time(a.createdAt))
                 .map((d) => (kind === "followers" ? d.from : d.to));
             },
+            // --- 保存したお店(savedShops/{ユーザーID})。本人だけが読み書きできる(公開しない) ---
+            //   shops: 保存したお店の目印(店名)の一覧。新しく保存したものが後ろ
+            async fetchSavedShops() {
+              const uid = currentUid();
+              if (!uid) return [];
+              const snap = await withTimeout(getDoc(doc(db, "savedShops", uid)));
+              const keys = snap.exists() ? snap.data().shops : [];
+              return Array.isArray(keys) ? keys.filter((k) => typeof k === "string") : [];
+            },
+            async saveSavedShops(keys) {
+              const uid = currentUid();
+              if (!uid) throw new Error("not signed in");
+              const list = [...new Set(keys)].filter((k) => typeof k === "string" && k.length > 0 && k.length <= 200).slice(-500);
+              await withTimeout(setDoc(doc(db, "savedShops", uid), { shops: list, updatedAt: serverTimestamp() }));
+            },
             // 自分のチェックイン数を数え直して、公開用の数(userStats)に書く(変わっていなければ書かない)
             async syncMyCheckinCount(known) {
               const uid = currentUid();
@@ -1242,6 +1257,9 @@
               }
               const st = await withTimeout(getDoc(doc(db, "userStats", uid)));
               if (st.exists()) await withTimeout(deleteDoc(st.ref));
+              // 6) 保存したお店
+              const sv = await withTimeout(getDoc(doc(db, "savedShops", uid)));
+              if (sv.exists()) await withTimeout(deleteDoc(sv.ref));
               await withTimeout(deleteDoc(profileRef(uid)));
               await withTimeout(deleteDoc(doc(db, "users", uid)));
             },

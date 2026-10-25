@@ -601,35 +601,29 @@ function isNewTabClick(event) {
 // 3. data.js のお店を1件ずつ、「ピン」と「一覧の1行」にして表示する
 const listElement = document.getElementById("shop-list-items");
 
-// お気に入り: お店の名前を目印にして、ブラウザの localStorage に保存する
-//   ※ 詳細ページ用の id を data.js に追加しましたが、お気に入りの目印は、今までどおり「店名」のままです
-//     (id に変えると、すでに登録したお気に入りが消えてしまうため)
-//   ※ localStorage が使えない環境(プライベートモードなど)でも、エラーにせず、そのページを開いている間だけ覚える
-const FAVORITES_KEY = "vietnamFoodie.favorites";
+// 保存したお店(お気に入り): お店の名前を目印にして、アカウントごとに保存する(Firestore の savedShops/{ユーザーID})
+//   ・ログインしていないときは、何も保存されていない状態。保存マークを押すと、ログインを求める
+//   ・前の版で、この端末(localStorage「vietnamFoodie.favorites」)に保存していたお店は、
+//     はじめてログインしたときに、そのアカウントへ移して、端末からは消す
+//   ※ 目印は、今までどおり「店名」のまま(id に変えると、すでに保存したお店が分からなくなるため)
+const FAVORITES_KEY = "vietnamFoodie.favorites"; // 前の版の保存場所(移すときだけ使う)
 let favoritesOnly = false; // 「♥ お気に入りのみ表示」がオンか
 
 function favoriteKey(shop) {
   return typeof shop.name === "string" ? shop.name : shop.name.ja;
 }
 
-function loadFavorites() {
+// 前の版で、この端末に保存していたお店
+function legacyLocalFavorites() {
   try {
     const list = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
-    return new Set(Array.isArray(list) ? list.filter((x) => typeof x === "string") : []);
+    return Array.isArray(list) ? list.filter((x) => typeof x === "string") : [];
   } catch (error) {
-    return new Set();
+    return [];
   }
 }
 
-function saveFavorites() {
-  try {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
-  } catch (error) {
-    // 保存できなくても、画面の動きは止めない
-  }
-}
-
-const favorites = loadFavorites();
+const favorites = new Set();
 const isFavorite = (shop) => favorites.has(favoriteKey(shop));
 
 // いま詳細ページで表示しているお店の id(一覧を表示しているときは null)。detail.js が更新する
@@ -905,16 +899,84 @@ function renderFavorites() {
   only.setAttribute("aria-pressed", String(favoritesOnly));
 }
 
-// お気に入りの登録/解除
+// お気に入りの登録/解除。ログインしていないときは、ログインを求めて false を返す
+//   (ログインできたら、押したお店を保存する)
 function toggleFavorite(entry) {
   const key = favoriteKey(entry.shop);
+  if (!authUser || favoritesReadyUid !== authUser.uid) {
+    if (!authUser) {
+      pendingFavoriteKey = key;
+      if (typeof openAuthModal === "function") openAuthModal();
+    }
+    return false;
+  }
   if (favorites.has(key)) favorites.delete(key);
   else favorites.add(key);
-  saveFavorites();
+  persistFavorites();
   renderFavorites();
   // 「お気に入りのみ表示」中に解除したお店は、地図とリストから外す(地図は動かさない)
   if (favoritesOnly) applyFilters(false, true);
+  return true;
 }
+
+let favoritesReadyUid = null; // 保存したお店を読み込み済みのアカウント
+let pendingFavoriteKey = null; // ログインする前に、保存マークを押したお店
+let favoritesSaveTimer = null;
+// アカウントに書き込む(続けて押したときは、まとめて1回)
+function persistFavorites(onDone) {
+  if (!authUser || favoritesReadyUid !== authUser.uid) return;
+  clearTimeout(favoritesSaveTimer);
+  favoritesSaveTimer = setTimeout(() => {
+    getProfileApi()
+      .then((api) => api.saveSavedShops([...favorites]))
+      .then(() => onDone && onDone())
+      .catch((error) => console.warn("保存したお店の書き込みに失敗:", error));
+  }, 400);
+}
+// 保存マークなど、画面の表示を、いまの保存の状態に合わせる
+function refreshFavoriteViews() {
+  renderFavorites();
+  if (favoritesOnly) applyFilters(false, true);
+  if (document.body.classList.contains("view-home") && typeof renderHomeMode === "function") renderHomeMode();
+  if (typeof refreshDetailBookmark === "function") refreshDetailBookmark();
+}
+// ログイン・ログアウトしたら、そのアカウントの保存したお店を読み込む
+function syncFavoritesWithAccount() {
+  const user = authUser;
+  favorites.clear();
+  favoritesReadyUid = null;
+  if (!user) {
+    refreshFavoriteViews();
+    return;
+  }
+  const uid = user.uid;
+  getProfileApi()
+    .then((api) => api.fetchSavedShops())
+    .then((list) => {
+      if (!authUser || authUser.uid !== uid) return;
+      const saved = Array.isArray(list) ? list : [];
+      const merged = new Set(saved);
+      const legacy = legacyLocalFavorites();
+      legacy.forEach((k) => merged.add(k));
+      if (pendingFavoriteKey) merged.add(pendingFavoriteKey);
+      pendingFavoriteKey = null;
+      merged.forEach((k) => favorites.add(k));
+      favoritesReadyUid = uid;
+      if (merged.size !== saved.length) {
+        // 端末に残っていたお店(前の版)を、アカウントに移せたら、端末からは消す
+        persistFavorites(() => {
+          try {
+            localStorage.removeItem(FAVORITES_KEY);
+          } catch (e) {
+            // 消せなくても、次にログインしたときに、もう一度まとめるだけ
+          }
+        });
+      }
+      refreshFavoriteViews();
+    })
+    .catch((error) => console.warn("保存したお店の読み込みに失敗:", error));
+}
+window.addEventListener("auth-changed", syncFavoritesWithAccount);
 clusterGroup.addLayers(entries.map((entry) => entry.marker));
 
 // 店舗の画像
