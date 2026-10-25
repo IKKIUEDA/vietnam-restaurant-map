@@ -54,7 +54,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261025g" />
+    <link rel="stylesheet" href="css/style.css?v=20261025h" />
   </head>
   <body>
     <!-- 開いたときに、地図の画面が一瞬だけ見えないようにする
@@ -265,39 +265,39 @@
 
     <!-- ピンをまとめて表示するプラグイン Leaflet.markercluster(Leaflet 本体のあとに読み込む) -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script src="js/gl-map.js?v=20261025g"></script>
+    <script src="js/gl-map.js?v=20261025h"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261025g"></script>
-    <script src="js/data.js?v=20261025g"></script>
-    <script src="js/app.js?v=20261025g"></script>
-    <script src="js/live-location.js?v=20261025g"></script>
-    <script src="js/map-guide.js?v=20261025g"></script>
-    <script src="js/tour.js?v=20261025g"></script>
+    <script src="js/i18n.js?v=20261025h"></script>
+    <script src="js/data.js?v=20261025h"></script>
+    <script src="js/app.js?v=20261025h"></script>
+    <script src="js/live-location.js?v=20261025h"></script>
+    <script src="js/map-guide.js?v=20261025h"></script>
+    <script src="js/tour.js?v=20261025h"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261025g"></script>
-    <script src="js/landmark-areas.js?v=20261025g"></script>
-    <script src="js/landmarks.js?v=20261025g"></script>
+    <script src="js/station-lines.js?v=20261025h"></script>
+    <script src="js/landmark-areas.js?v=20261025h"></script>
+    <script src="js/landmarks.js?v=20261025h"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261025g"></script>
+    <script src="js/auth.js?v=20261025h"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261025g"></script>
+    <script src="js/auth-modal.js?v=20261025h"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261025g"></script>
+    <script src="js/home.js?v=20261025h"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261025g"></script>
+    <script src="js/todo.js?v=20261025h"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/avatar-crop.js?v=20261025g"></script>
-    <script src="js/account.js?v=20261025g"></script>
-    <script src="js/settings.js?v=20261025g"></script>
+    <script src="js/avatar-crop.js?v=20261025h"></script>
+    <script src="js/account.js?v=20261025h"></script>
+    <script src="js/settings.js?v=20261025h"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261025g"></script>
-    <script src="js/contact.js?v=20261025g"></script>
-    <script src="js/translate.js?v=20261025g"></script>
-    <script src="js/detail.js?v=20261025g"></script>
-    <script src="js/onboard.js?v=20261025g"></script>
+    <script src="js/feature.js?v=20261025h"></script>
+    <script src="js/contact.js?v=20261025h"></script>
+    <script src="js/translate.js?v=20261025h"></script>
+    <script src="js/detail.js?v=20261025h"></script>
+    <script src="js/onboard.js?v=20261025h"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
@@ -1076,6 +1076,22 @@
               }
               if (uid === to) throw new Error("cannot follow yourself");
               await withTimeout(setDoc(doc(db, "follows", `${uid}_${checkUid(to)}`), { from: uid, to, createdAt: serverTimestamp() }));
+            },
+            // --- 運営者の公式アカウント(config/official の uid) ---
+            //   ・運営者(管理者)がログインしたときに、自分の uid をここに書く(ほかの人は書けない)
+            //   ・新しく登録した人は、ここに書かれたアカウントを自動でフォローする
+            async fetchOfficialUid() {
+              const snap = await withTimeout(getDoc(doc(db, "config", "official")));
+              const uid = snap.exists() ? snap.data().uid : null;
+              return typeof uid === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(uid) ? uid : null;
+            },
+            async registerOfficialUid() {
+              const uid = currentUid();
+              if (!uid) return;
+              const ref = doc(db, "config", "official");
+              const cur = await withTimeout(getDoc(ref));
+              if (cur.exists() && cur.data().uid === uid) return;
+              await withTimeout(setDoc(ref, { uid, updatedAt: serverTimestamp() }));
             },
             async unfollow(to) {
               const uid = currentUid();

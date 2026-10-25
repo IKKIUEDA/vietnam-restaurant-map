@@ -534,6 +534,20 @@ service cloud.firestore {
     //   ・作れるのは本人の分だけ(ドキュメント名・from が自分のID)。自分自身はフォローできない。書き換え(update)はできない
     //   ・消せるのは、フォローした本人・フォローされた本人(アカウント削除のとき)・管理者
     // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // ⭐ 運営者の公式アカウント(config/official)
+    //   ・誰でも読める(新しく登録した人が、自動でフォローするため)
+    //   ・運営者(管理者)だけが、自分の uid を書ける
+    // ---------------------------------------------------------------
+    match /config/official {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(["uid", "updatedAt"])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
     match /follows/{followId} {
       allow read: if true;
 
