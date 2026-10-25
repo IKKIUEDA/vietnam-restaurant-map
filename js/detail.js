@@ -373,7 +373,7 @@ function renderDetail() {
 
 // ---------------------------------------------------------------------
 // ブックマーク(店舗ページの名前の横)
-//   ・「保存した店」(js/app.js の favorites)と同じもの。この端末(ブラウザ)の中だけに保存する
+//   ・「保存した店」(js/app.js の favorites)と同じもの。アカウントごとに保存する(ログインが必要)
 //   ・保存したお店は、地図の画面の「♡ 保存した店」で一覧できる
 // ---------------------------------------------------------------------
 const BOOKMARK_TEXT = {
@@ -396,13 +396,26 @@ function bookmarkButtonHtml(shop) {
   );
 }
 let bookmarkToastTimer = null;
+// 保存の状態が変わったとき(ログイン・ログアウトなど)に、店舗ページの保存マークを合わせる
+function refreshDetailBookmark() {
+  const btn = detailPage && detailPage.querySelector("[data-bookmark]");
+  const entry = entries.find((e) => e.shop.id === currentShopId);
+  if (!btn || !entry) return;
+  const x = BOOKMARK_TEXT[currentLang] || BOOKMARK_TEXT.ja;
+  const on = isFavorite(entry.shop);
+  btn.classList.toggle("is-on", on);
+  btn.setAttribute("aria-pressed", String(on));
+  btn.setAttribute("aria-label", on ? x.remove : x.add);
+  btn.title = on ? x.remove : x.add;
+  btn.innerHTML = on ? BOOKMARK_ICON_ON : BOOKMARK_ICON_OFF;
+}
 function bindBookmark() {
   const btn = detailPage.querySelector("[data-bookmark]");
   if (!btn) return;
   btn.addEventListener("click", () => {
     const entry = entries.find((e) => e.shop.id === currentShopId);
     if (!entry || typeof toggleFavorite !== "function") return;
-    toggleFavorite(entry);
+    if (!toggleFavorite(entry)) return; // ログインしていないときは、ログインの画面が出る
     const x = BOOKMARK_TEXT[currentLang] || BOOKMARK_TEXT.ja;
     const on = isFavorite(entry.shop);
     btn.classList.toggle("is-on", on);

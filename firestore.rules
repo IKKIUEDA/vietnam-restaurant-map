@@ -554,6 +554,23 @@ service cloud.firestore {
     //   ・チェックインの数だけ。どのお店に行ったかは書かない(チェックインの中身は、本人だけが見られるまま)
     //   ・書けるのは本人だけ(自分のチェックインを数えた数を書く)
     // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // 🔖 保存したお店(savedShops/{ユーザーID})
+    //   ・本人だけが読み書きできる(ほかの人には見えない)
+    //   ・shops: 保存したお店の目印(店名)の一覧。最大500件
+    // ---------------------------------------------------------------
+    match /savedShops/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["shops", "updatedAt"])
+        && request.resource.data.shops is list
+        && request.resource.data.shops.size() <= 500
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     match /userStats/{uid} {
       allow read: if true;
 

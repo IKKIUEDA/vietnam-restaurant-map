@@ -67,7 +67,7 @@ const ACCOUNT_TEXT = {
     back: "戻る",
     savedTitle: "保存したお店",
     savedEmpty: "まだ保存したお店はありません。お店の保存マークを押すと、ここに集まります。",
-    savedNote: "保存したお店は、この端末(ブラウザ)の中に記録しています。",
+    savedLogin: "ログインすると、お店を保存できます。保存したお店はアカウントに記録され、どの端末からでも見られます。",
     editTitle: "プロフィールを編集",
     nameLabel: "ニックネーム(30文字まで)",
     bioLabel: "自己紹介(160文字まで・任意)",
@@ -151,7 +151,7 @@ const ACCOUNT_TEXT = {
     back: "Back",
     savedTitle: "Saved shops",
     savedEmpty: "No saved shops yet. Tap the save icon on a shop to collect it here.",
-    savedNote: "Saved shops are stored on this device (in this browser).",
+    savedLogin: "Log in to save shops. Saved shops are kept in your account, so you can see them on any device.",
     editTitle: "Edit profile",
     nameLabel: "Nickname (up to 30 characters)",
     bioLabel: "About you (up to 160 characters, optional)",
@@ -235,7 +235,7 @@ const ACCOUNT_TEXT = {
     back: "Quay lại",
     savedTitle: "Quán đã lưu",
     savedEmpty: "Chưa có quán nào được lưu. Nhấn biểu tượng lưu ở quán để thêm vào đây.",
-    savedNote: "Quán đã lưu được ghi lại trên thiết bị này (trong trình duyệt).",
+    savedLogin: "Đăng nhập để lưu quán. Quán đã lưu được ghi vào tài khoản, xem được trên mọi thiết bị.",
     editTitle: "Sửa hồ sơ",
     nameLabel: "Biệt danh (tối đa 30 ký tự)",
     bioLabel: "Giới thiệu (tối đa 160 ký tự, không bắt buộc)",
@@ -452,8 +452,7 @@ function accountHeader(title, backHref) {
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 // 保存したお店(URL「?view=saved」)
-//   ・お店の保存マークで保存したお店の一覧。ログインしていなくても見られる
-//   ・保存先は、これまでと同じ この端末の中(localStorage「vietnamFoodie.favorites」。js/app.js)
+//   ・お店の保存マークで保存したお店の一覧。アカウントごとに保存する(ログインが必要。js/app.js の favorites)
 // ---------------------------------------------------------------------
 function savedUrl() {
   return location.pathname + "?view=saved";
@@ -499,8 +498,10 @@ function renderSavedPage() {
   homePage.innerHTML =
     accountHeader(x.savedTitle, accountUrl()) +
     `<section class="home-section saved-section">` +
-    `<p class="acct-small saved-note">${esc(x.savedNote)}</p>` +
-    (list.length
+    (!authUser
+      ? `<div class="saved-login"><p class="saved-empty">${esc(x.savedLogin)}</p>` +
+        `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button></div>`
+      : list.length
       ? `<ul class="saved-list">${list.map(savedRowHtml).join("")}</ul>`
       : `<p class="saved-empty">${esc(x.savedEmpty)}</p>`) +
     `</section>`;
@@ -524,7 +525,6 @@ function renderAccountPage() {
       `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
       `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
       `</div></div>` +
-      `<div class="acct-guest-sub">${accountSavedRowHtml()}</div>` +
       `</section>`;
     return;
   }
