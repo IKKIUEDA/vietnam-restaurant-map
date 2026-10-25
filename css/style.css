@@ -5106,7 +5106,7 @@ a.user-link:hover {
 
 @media (min-width: 900px) {
   .acct-photos {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* PC でも、スマホと同じ横3枚 */
     gap: 8px;
   }
 }
