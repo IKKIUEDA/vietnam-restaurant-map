@@ -7,6 +7,8 @@
   const KEY = "vf_map_guide";
   try {
     if (localStorage.getItem(KEY)) return;
+    // はじめての人には、使い方の案内(js/tour.js)の中で、地図の動かし方も説明するので、ここでは出さない
+    if (!localStorage.getItem("vf_tour_map")) return;
   } catch (e) {
     return; // 覚えておけない環境では、毎回出てしまうので、出さない
   }
