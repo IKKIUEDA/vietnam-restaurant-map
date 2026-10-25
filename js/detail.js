@@ -1008,7 +1008,7 @@ function renderTips() {
          </div>
        </form>`
     : "";
-  const messageHtml = state.message
+  const messageHtml = state.message && !state.formOpen
     ? `<p class="detail-note tips-message${state.message.error ? " is-error" : ""}" role="status">${esc(t[state.message.key])}</p>`
     : "";
 
@@ -2832,6 +2832,13 @@ function toggleAdminPhotoReports(state, photoId) {
 
 const REVIEW_COMMENT_MAX = 500; // コメントの、最大の文字数
 
+// レビューを書く画面の文言
+const REVIEW_SCREEN_TEXT = {
+  ja: { placeholder: "料理の味、お店の雰囲気、おすすめのメニューなど、感想を自由に書いてください", photos: (n) => `写真 ${n}枚`, reviews: (n) => `レビュー ${n}件` },
+  en: { placeholder: "Share your thoughts: the taste, the atmosphere, dishes you recommend…", photos: (n) => `${n} photos`, reviews: (n) => `${n} reviews` },
+  vi: { placeholder: "Hãy chia sẻ cảm nhận: hương vị, không gian, món bạn muốn giới thiệu…", photos: (n) => `${n} ảnh`, reviews: (n) => `${n} đánh giá` },
+};
+
 // 1つのお店の、レビュー一覧・投稿フォームの状態
 function createReviewsState(shopId) {
   return {
@@ -2982,28 +2989,57 @@ function renderReviews() {
         .join("")}</ul>`
     : "";
 
+  // レビューを書く画面: 「レビューを書く」を押すと、画面いっぱいに開く(上: ← と見出し / お店の情報 / 星 / 広いコメント欄 / 投稿ボタン)
+  //   ・スマホでキーボードが出ても、入力欄が狭くならないように、ページの途中ではなく、別の画面として出す
+  const rv = REVIEW_SCREEN_TEXT[currentLang] || REVIEW_SCREEN_TEXT.ja;
+  const rvEntry = entries.find((e) => e.shop.id === state.shopId);
+  const rvShop = rvEntry ? rvEntry.shop : null;
+  const rvReviews = state.reviews.filter((r) => !r.hidden).length;
+  const rvPhotos = photosState && photosState.shopId === state.shopId ? photosState.photos.filter((p) => !p.hidden).length : null;
   const formHtml = state.formOpen
-    ? `<form class="report-panel review-form" id="review-form">
-         <fieldset ${state.sending ? "disabled" : ""}>
-           <legend>${esc(t.reviewRatingLabel)}</legend>
-           <div class="star-input" id="review-star-input" role="radiogroup" aria-label="${esc(t.reviewRatingLabel)}">
-             ${[1, 2, 3, 4, 5]
-               .map(
-                 (n) =>
-                   `<button type="button" class="star-btn${n <= state.rating ? " is-filled" : ""}" data-value="${n}" ` +
-                   `role="radio" aria-checked="${n <= state.rating}" aria-label="${n}">★</button>`
-               )
-               .join("")}
-           </div>
-           <label class="review-comment-label">${esc(t.reviewCommentLabel)}
-             <textarea class="review-comment-input" rows="3" maxlength="${REVIEW_COMMENT_MAX}"></textarea>
-           </label>
-         </fieldset>
-         <div class="report-actions">
-           <button type="submit" class="btn btn-primary" ${state.sending ? "disabled" : ""}>${esc(state.sending ? t.reviewSending : t.reviewSubmit)}</button>
-           <button type="button" class="btn" id="review-close" ${state.sending ? "disabled" : ""}>${esc(t.tipsClose)}</button>
+    ? `<div class="rv-screen" id="review-screen" role="dialog" aria-modal="true" aria-labelledby="rv-title">
+         <div class="rv-head">
+           <button type="button" class="rv-back" id="review-close" aria-label="${esc(t.tipsClose)}" ${state.sending ? "disabled" : ""}>
+             <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+           </button>
+           <h2 class="rv-title" id="rv-title">${esc(t.reviewWrite)}</h2>
+           <span class="rv-head-space" aria-hidden="true"></span>
          </div>
-       </form>`
+         <div class="rv-scroll">
+           ${
+             rvShop
+               ? `<div class="rv-shop">
+                    <img class="rv-shop-img" src="${esc(getShopImage(rvShop).src)}" alt="" width="84" height="84">
+                    <div class="rv-shop-text">
+                      <p class="rv-shop-name">${esc(pick(rvShop.name))}</p>
+                      ${pick(rvShop.area) ? `<p class="rv-shop-area">📍 ${esc(pick(rvShop.area))}</p>` : ""}
+                      ${categoryText(rvShop) ? `<span class="rv-shop-chip">${esc(categoryText(rvShop))}</span>` : ""}
+                      <p class="rv-shop-counts">${rvPhotos !== null ? `<span>📷 ${esc(rv.photos(rvPhotos))}</span>` : ""}<span>★ ${esc(rv.reviews(rvReviews))}</span></p>
+                    </div>
+                  </div>`
+               : ""
+           }
+           <form class="rv-form review-form" id="review-form">
+             <fieldset ${state.sending ? "disabled" : ""}>
+               <legend class="rv-label">${esc(t.reviewRatingLabel)}</legend>
+               <div class="star-input rv-stars" id="review-star-input" role="radiogroup" aria-label="${esc(t.reviewRatingLabel)}">
+                 ${[1, 2, 3, 4, 5]
+                   .map(
+                     (n) =>
+                       `<button type="button" class="star-btn${n <= state.rating ? " is-filled" : ""}" data-value="${n}" ` +
+                       `role="radio" aria-checked="${n <= state.rating}" aria-label="${n}">★</button>`
+                   )
+                   .join("")}
+               </div>
+               <label class="rv-label" for="review-comment">${esc(t.reviewCommentLabel)}</label>
+               <textarea class="review-comment-input rv-textarea" id="review-comment" maxlength="${REVIEW_COMMENT_MAX}" placeholder="${esc(rv.placeholder)}"></textarea>
+               <p class="rv-count"><span id="review-count">${state.comment.length}</span> / ${REVIEW_COMMENT_MAX}</p>
+             </fieldset>
+             ${state.message ? `<p class="detail-note tips-message${state.message.error ? " is-error" : ""}" role="status">${esc(t[state.message.key])}</p>` : ""}
+             <button type="submit" class="btn btn-primary rv-submit" ${state.sending ? "disabled" : ""}>${esc(state.sending ? t.reviewSending : t.reviewSubmit)}</button>
+           </form>
+         </div>
+       </div>`
     : "";
   const messageHtml = state.message
     ? `<p class="detail-note tips-message${state.message.error ? " is-error" : ""}" role="status">${esc(t[state.message.key])}</p>`
@@ -3022,13 +3058,15 @@ function renderReviews() {
     : "";
 
   box.innerHTML = summaryHtml + listHtml + actionHtml + messageHtml + adminMessageHtml;
+  // レビューを書く画面を開いている間は、後ろのページを動かさない
+  document.body.classList.toggle("is-review-writing", !!state.formOpen);
 
   const bind = (selector, handler) => {
     const el = box.querySelector(selector);
     if (el) el.addEventListener("click", handler);
   };
   bind("#review-open", () => {
-    state.formOpen = !state.formOpen;
+    state.formOpen = true;
     state.message = null;
     renderReviews();
   });
@@ -3066,12 +3104,15 @@ function renderReviews() {
 
   const textarea = form.querySelector(".review-comment-input");
   textarea.value = state.comment; // フォームを開き直したときのために、前回の入力を復元する
+  const counter = box.querySelector("#review-count");
   textarea.addEventListener("input", () => {
     state.comment = textarea.value;
+    if (counter) counter.textContent = String(textarea.value.length);
   });
 
-  form.querySelector("#review-close").addEventListener("click", () => {
+  box.querySelector("#review-close").addEventListener("click", () => {
     state.formOpen = false;
+    state.message = null;
     renderReviews();
   });
   form.addEventListener("submit", (event) => {

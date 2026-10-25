@@ -8629,3 +8629,88 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
   height: 100%;
   object-fit: contain;
 }
+
+/* ===== レビューを書く画面(画面いっぱい。js/detail.js の renderReviews) ===== */
+body.view-detail.is-review-writing { overflow: hidden; }
+.rv-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 3100;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: #fff;
+  color: #1d2a22;
+}
+.rv-head {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 8px 8px;
+  border-bottom: 1px solid #eef0ec;
+}
+.rv-back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: #1d2a22;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.rv-title { margin: 0; font-size: 1.15rem; text-align: center; }
+.rv-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.rv-scroll > * { box-sizing: border-box; width: 100%; max-width: 640px; margin-left: auto; margin-right: auto; }
+.rv-shop {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eef0ec;
+}
+.rv-shop-img { flex: none; width: 84px; height: 84px; object-fit: cover; border-radius: 14px; background: #eef4ee; }
+.rv-shop-text { min-width: 0; }
+.rv-shop-name { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.35; }
+.rv-shop-area { margin: 3px 0 0; font-size: 0.85rem; color: #6b756e; }
+.rv-shop-chip {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2e7d32;
+  background: #eef4ee;
+  border-radius: 999px;
+}
+.rv-shop-counts { display: flex; gap: 14px; margin: 6px 0 0; font-size: 0.82rem; color: #6b756e; }
+.rv-form { padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 24px); }
+.rv-form fieldset { margin: 0; padding: 0; border: none; }
+.rv-label { display: block; margin: 0 0 8px; padding: 0; font-size: 0.95rem; font-weight: 700; }
+.rv-stars { margin-bottom: 20px; }
+.rv-stars .star-btn { font-size: 2.2rem; }
+.rv-textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 42dvh;
+  padding: 14px 16px;
+  font-size: 16px; /* iPhone で、入力時に勝手に拡大されないように */
+  line-height: 1.6;
+  color: #1d2a22;
+  background: #fff;
+  border: 1.5px solid #4caf7a;
+  border-radius: 14px;
+  resize: vertical;
+}
+.rv-textarea:focus { outline: none; border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15); }
+.rv-textarea::placeholder { color: #9aa29c; }
+.rv-count { margin: 6px 0 0; font-size: 0.78rem; color: #8a928c; text-align: right; }
+.rv-submit { display: block; width: 100%; margin-top: 16px; padding: 14px; font-size: 1rem; }
