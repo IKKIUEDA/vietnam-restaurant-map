@@ -8305,3 +8305,10 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
   -webkit-overflow-scrolling: touch;
 }
 .photo-lightbox .photo-comments-block { width: 100%; max-width: 480px; }
+
+/* 写真投稿のキャンセル: 投稿ボタンの下(いちばん下)に置く */
+.photo-composer .photo-composer-cancel {
+  display: block;
+  width: 100%;
+  margin: 10px 0 0;
+}
