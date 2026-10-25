@@ -488,6 +488,7 @@ function customizeBaseMap(gl) {
   set(() => gl.setLayoutProperty("poi_label", "text-offset", ["case", poiNoIconCondition(), ["literal", [0, 0]], ["literal", [0.8, 0]]]));
   set(() => gl.setLayoutProperty("poi_label", "text-size", ["interpolate", ["linear"], ["zoom"], 15, 11, 18, 13]));
   set(() => gl.setLayoutProperty("poi_label", "text-optional", false));
+  set(() => gl.setLayoutProperty("poi_label", "text-padding", 4)); // 文字どうしの間を少し空けて、込み合わないようにする
   set(() => gl.setLayoutProperty("poi_label", "symbol-sort-key", poiSortKeyExpression())); // 海外・エスニック料理 → 飲食店 → … の順に、先に場所を取る
   set(() => gl.setPaintProperty("poi_label", "text-color", poiColorExpression()));
   set(() => gl.setPaintProperty("poi_label", "text-halo-color", "#ffffff"));
