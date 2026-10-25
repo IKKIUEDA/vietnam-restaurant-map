@@ -356,11 +356,6 @@ const restaurants = [
     area: { ja: "日暮里", en: "Nippori", vi: "Nippori" },
     category: "ベトナム料理",
     dishes: ["ベトナム料理"],
-    feature: {
-      ja: "バインミー・フォー・ベトナム風ご飯・揚げ春巻き。ベトナムコーヒーやエッグコーヒーも。日暮里駅南口から徒歩約8〜9分、三河島駅から徒歩約7分",
-      en: "Bánh mì, phở, Vietnamese rice dishes and fried spring rolls, plus Vietnamese coffee and egg coffee. About 8–9 min walk from Nippori Station (South Exit), 7 min from Mikawashima Station",
-      vi: "Bánh mì, phở, cơm kiểu Việt và chả giò; có cà phê Việt Nam và cà phê trứng. Đi bộ khoảng 8–9 phút từ ga Nippori (cửa Nam), 7 phút từ ga Mikawashima",
-    },
   },
 
   // --- 千代田区・その他の東京都 ---
