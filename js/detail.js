@@ -2082,7 +2082,7 @@ function renderPhotos() {
           ${isAdmin && lp.isCover ? `<span class="pv-chip is-cover">${esc(coverText().badge)}</span>` : ""}
           ${lp.hidden ? `<span class="pv-chip is-hidden">${esc(t.adminHiddenBadge)}</span>` : ""}
         </div>
-        ${lp.description ? `<p class="pv-caption${state.viewerCaptionOpen ? " is-open" : ""}" data-pv-caption>${esc(lp.description)}</p>` : ""}
+        ${lp.description ? `<p class="pv-caption${state.viewerCaptionOpen ? " is-open" : ""}" data-pv-caption>${esc(lp.description)}</p>` + translateButtonHtml(lp.description, "dark") : ""}
         ${pvShopName ? `<p class="pv-place">${PV_ICONS.pin}<span>${esc(pvShopName)}</span></p>` : ""}
       </div>
       <p class="pv-toast" role="status" aria-live="polite"></p>
@@ -2505,6 +2505,7 @@ function renderPhotoCommentListHtml(cState, t) {
         (c.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
         `</div>` +
         `<p class="photo-comment-text">${esc(c.comment)}</p>` +
+        translateButtonHtml(c.comment) +
         (isMine || isAdmin
           ? `<div class="photo-comment-actions">` +
             (isMine
@@ -2964,7 +2965,7 @@ function renderReviews() {
             `<span class="review-stars" aria-label="${esc(t.reviewRatingLabel)}: ${Number(r.rating) || 0}/5">${starsText(r.rating)}</span>` +
             (r.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
             `</span></div>` +
-            (r.comment ? `<p class="review-comment-text">${esc(r.comment)}</p>` : "") +
+            (r.comment ? `<p class="review-comment-text">${esc(r.comment)}</p>` + translateButtonHtml(r.comment) : "") +
             (isMine
               ? `<button type="button" class="btn btn-small btn-warn review-delete-btn" ${state.deleting ? "disabled" : ""}>${esc(
                   state.deleting ? t.deleting : t.deleteButton

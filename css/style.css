@@ -8594,3 +8594,23 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
 }
 .tour-back { color: #2e7d32; background: #eef4ee; border: none; }
 .tour-next { color: #fff; background: #2e7d32; border: none; }
+
+/* ===== レビュー・コメントの「翻訳する」(js/translate.js) ===== */
+.tr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 0;
+  padding: 2px 0;
+  font-size: 0.78rem;
+  color: #2e7d32;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.tr-btn:disabled { opacity: 0.6; cursor: default; }
+.tr-btn .tr-ext { font-size: 0.7rem; opacity: 0.8; }
+.tr-btn.is-dark { color: #c8e6c9; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
+.tr-note { font-size: 0.75em; opacity: 0.7; }
+.review-comment-text + .tr-btn,
+.photo-comment-text + .tr-btn { display: flex; }
