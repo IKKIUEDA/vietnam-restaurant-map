@@ -547,6 +547,8 @@ function renderHome() {
     (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(count("cafe"))) : "") +
     feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
     `</div></section>` +
+    // ユーザー: ほかのユーザーを見つけて、フォローする(js/people.js)
+    (typeof homePeopleHtml === "function" ? homePeopleHtml() : "") +
     // このページをシェア(X・Facebook・LINE)
     homeShareHtml() +
     // お問い合わせ(js/contact.js)
@@ -809,6 +811,7 @@ function showHome(mode, listId) {
   if (typeof renderFeaturePage === "function") modes.push("feature");
   if (typeof renderContactPage === "function") modes.push("contact");
   modes.push("areas");
+  if (typeof renderPeoplePage === "function") modes.push("people");
   homeMode = modes.includes(mode) ? mode : "home";
   if (homeMode === "contact" && typeof resetContactIfDone === "function") resetContactIfDone();
   homeListId = listId || null;
@@ -851,6 +854,7 @@ function renderHomeMode() {
   else if (homeMode === "feature") renderFeaturePage(homeListId);
   else if (homeMode === "contact") renderContactPage();
   else if (homeMode === "areas") renderAreaListPage();
+  else if (homeMode === "people") renderPeoplePage();
   else renderHome();
 }
 function hideHome() {
