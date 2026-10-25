@@ -336,6 +336,28 @@ const restaurants = [
     dishes: ["ベトナム料理"],
   },
 
+  // --- 荒川区 ---
+  // ※ 以前ここ(同じ建物)にあった「Bông Cafe」は閉店したため削除し、同じ場所に開店したこのお店を載せています
+  {
+    id: "banhmi-saigon-nippori",
+    name: {
+      ja: "バインミー・サイゴン日暮里",
+      en: "SAIGON PAN Bánh Mì Nippori",
+      vi: "SAIGON PAN Bánh Mì Nippori",
+    },
+    address: {
+      ja: "東京都荒川区東日暮里5-23-7 メゾンフェスタ201(2階)",
+      en: "Maison Festa 201 (2F), 5-23-7 Higashinippori, Arakawa-ku, Tokyo",
+      vi: "Maison Festa 201 (tầng 2), 5-23-7 Higashinippori, Quận Arakawa, Tokyo",
+    },
+    lat: 35.7286150,
+    lng: 139.7768860,
+    prefecture: "東京都",
+    area: { ja: "日暮里", en: "Nippori", vi: "Nippori" },
+    category: "ベトナム料理",
+    dishes: ["ベトナム料理"],
+  },
+
   // --- 千代田区・その他の東京都 ---
   {
     id: "beto-ya-jimbocho",
@@ -2750,21 +2772,6 @@ const restaurants = [
     lng: 139.6497500,
     prefecture: "東京都",
     area: { ja: "高円寺", en: "Koenji", vi: "Koenji" },
-    category: "ベトナムカフェ",
-  },
-  {
-    id: "bong-cafe-nippori",
-    type: "cafe",
-    name: { ja: "Bông Cafe(ボンカフェ)", en: "Bông Cafe", vi: "Bông Cafe" },
-    address: {
-      ja: "東京都荒川区東日暮里5-23-7 メゾンフェスタ2F",
-      en: "Maison Festa 2F, 5-23-7 Higashinippori, Arakawa-ku, Tokyo",
-      vi: "Maison Festa 2F, 5-23-7 Higashinippori, Quận Arakawa, Tokyo",
-    },
-    lat: 35.7286150,
-    lng: 139.7768860,
-    prefecture: "東京都",
-    area: { ja: "日暮里", en: "Nippori", vi: "Nippori" },
     category: "ベトナムカフェ",
   },
 
