@@ -8296,3 +8296,12 @@ body:not(.view-home):not(.view-detail):not(.view-content-page) #search-bar {
   margin-top: 12px;
 }
 .photo-lightbox .photo-actions:empty { display: none; }
+
+/* 写真の拡大表示を開いている間: 後ろのページは動かさず、背景も暗くして見やすく */
+body.view-detail.is-photo-lightbox { overflow: hidden; }
+.photo-lightbox {
+  background: rgba(0, 0, 0, 0.94);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.photo-lightbox .photo-comments-block { width: 100%; max-width: 480px; }

@@ -2007,7 +2007,6 @@ function renderPhotos() {
         : "") +
       `</div>` +
       (PHOTO_REPORT_BUTTON_VISIBLE && state.reportFormPhotoId === p.id ? renderPhotoReportFormHtml(state, t) : "") +
-      (isAdmin && state.coverCheckId === p.id ? adminCoverCheckHtml() : "") +
       (isAdmin ? renderAdminReportSummaryHtml(p, state, t) : "")
     );
   };
@@ -2190,10 +2189,15 @@ function renderPhotos() {
     state.lightboxIndex = null;
     renderPhotos();
   });
+  // 背景(写真やコメント欄の外の、暗いところ)を押したときだけ閉じる
+  //   (中のコメント入力欄・ボタンを押したときに画面を作り直すと、入力や送信ができなくなるため、何もしない)
   bind("#photo-lightbox", (event) => {
-    if (event.target.id === "photo-lightbox") state.lightboxIndex = null; // 背景をクリックしたときも、閉じる
+    if (event.target.id !== "photo-lightbox") return;
+    state.lightboxIndex = null;
     renderPhotos();
   });
+  // 拡大表示を開いている間は、後ろのページが一緒に動かないようにする
+  document.body.classList.toggle("is-photo-lightbox", !!box.querySelector("#photo-lightbox"));
 }
 
 // 選んだ写真を送る(送っている間は、ボタンを押せなくする)
@@ -3448,10 +3452,8 @@ function bindAdminCover(box, state) {
   box.querySelectorAll(".admin-cover-btn[data-cover-id]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.coverId;
-      if (btn.dataset.coverOn === "1") {
-        state.coverCheckId = id; // まず、確認の3項目を出す
-        renderPhotos();
-      } else setPhotoCover(state, id, false);
+      // 押すだけで、トップ画像にする/やめる(確認の項目は出さない)
+      setPhotoCover(state, id, btn.dataset.coverOn === "1");
     });
   });
   const check = box.querySelector(".cover-check");
