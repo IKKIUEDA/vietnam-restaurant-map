@@ -1907,9 +1907,6 @@ function renderPhotoComposerHtml(state, t) {
     </fieldset>`;
 
   return `<div class="photo-composer">
-    <button type="button" class="btn photo-composer-cancel" id="photos-toggle" ${state.sending ? "disabled" : ""}>✕ ${esc(
-    t.photosCancel
-  )}</button>
     ${boxHtml}
     <input type="file" id="photos-file-input" accept="image/*" multiple hidden>
     ${selectErrorHtml}
@@ -1936,6 +1933,10 @@ function renderPhotoComposerHtml(state, t) {
       : n > 1
       ? t.photosSubmitN(n)
       : t.photosSubmit
+  )}</button>
+    <!-- キャンセルは、投稿ボタンの下(いちばん下)に置く -->
+    <button type="button" class="btn photo-composer-cancel" id="photos-toggle" ${state.sending ? "disabled" : ""}>✕ ${esc(
+    t.photosCancel
   )}</button>
   </div>`;
 }
