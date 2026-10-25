@@ -6006,6 +6006,14 @@ body > *:not(#content),
 .scan-overlay-header {
   touch-action: manipulation;
 }
+/* ホーム・アカウント・プロフィールなど(#home-view)と、お店のページ(#detail-view。お店の地図・写真の拡大表示は除く):
+   中の部品にも、ひとつずつ付ける(iPhone の Safari は、タップした部品の設定を見るため) */
+#home-view,
+#home-view *,
+#detail-view,
+#detail-view *:not(#detail-map):not(#detail-map *):not(.pv):not(.pv *) {
+  touch-action: manipulation;
+}
 
 /* マイリストのエリアのカード(写真がある県): 左半分を写真にする。左の緑の線は付けない */
 .mylist-area.has-photo-card {
