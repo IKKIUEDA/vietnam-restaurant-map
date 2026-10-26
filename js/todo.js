@@ -1,8 +1,8 @@
-// マイリスト(My List)
+// マイトラベルリスト(My Travel List)
 //   ・エリア(都道府県)ごとに1つずつ追加する。1つのエリアにつき「何を探す(料理店・カフェ・食材店)」を選ぶ
 //       追加: URL「?view=todo&edit=1」(&pref=東京都 で、そのエリアを選んだ状態から始める)
 //       変更・外す: エリアのお店の一覧の右上の設定マーク(URL「?view=todo&edit=1&pref=東京都」)
-//   ・ホーム: 「マイリスト」のカードを横に並べる(横にスライド)。「すべて見る」で一覧(URL「?view=todo」)
+//   ・ホーム: 「マイトラベルリスト」のカードを横に並べる(横にスライド)。「すべて見る」で一覧(URL「?view=todo」)
 //     カードを押すと、そのエリアのお店の一覧(URL「?view=todo&area=東京都」)。お店のカードを押すと、お店のページ(?shop=ID)
 //   ・お店の一覧は「おすすめ順」= みんなのレビューの評価(★)が高い順(同じなら、レビューが多い順 → データの順)
 //   ・選んだ内容は、この端末(ブラウザの localStorage)の中だけに保存する。サーバーや第三者には送らない
@@ -16,29 +16,30 @@ const MYLIST_TYPES = ["restaurant", "cafe", "grocery"];
 
 const TODO_TEXT = {
   ja: {
-    sectionTitle: "マイリスト",
+    sectionTitle: "マイトラベルリスト",
     sectionSub: "行きたいエリアと探したいお店を選ぼう！",
-    start: "マイリストを作る",
+    start: "マイトラベルリストを作る",
     startSub: "行きたいエリアを追加するだけ",
-    settings: "マイリストの設定",
-    settingsOpen: "マイリストの設定を変える",
+    settings: "マイトラベルリストの設定",
+    settingsOpen: "マイトラベルリストの設定を変える",
     close: "閉じる",
     count: (n) => `${n}件`,
     areaCount: (n) => `${n}つのエリア`,
     alsoTitle: "最近見たお店から",
     seeAll: "すべて見る",
     addArea: "エリアを追加",
-    addTitle: "マイリストに追加",
+    addTitle: "マイトラベルリスト",
+    addBtn: "マイトラベルリストに追加",
     addThis: "追加する",
     editTitle: (name) => `${name}の設定`,
     stepArea: "どのエリアに関心がありますか?",
     added: "追加済み",
-    addedToast: "マイリストに追加しました",
-    allAdded: "すべてのエリアを、マイリストに追加しています",
-    remove: "マイリストから外す",
+    addedToast: "マイトラベルリストに追加しました",
+    allAdded: "すべてのエリアを、マイトラベルリストに追加しています",
+    remove: "マイトラベルリストから外す",
     removeConfirm: "本当に外す",
-    removed: "マイリストから外しました",
-    backToList: "マイリストに戻る",
+    removed: "マイトラベルリストから外しました",
+    backToList: "マイトラベルリストに戻る",
     backToHome: "ホームに戻る",
     all: "すべて",
     rankNote: "おすすめ順(レビューの評価が高い順)",
@@ -53,29 +54,30 @@ const TODO_TEXT = {
     saved: "保存しました",
   },
   en: {
-    sectionTitle: "My List",
+    sectionTitle: "My Travel List",
     sectionSub: "Pick the areas you want to go and the shops you're looking for",
-    start: "Make My List",
+    start: "Make My Travel List",
     startSub: "Just add the areas you want to go",
-    settings: "My List settings",
-    settingsOpen: "Change My List settings",
+    settings: "My Travel List settings",
+    settingsOpen: "Change My Travel List settings",
     close: "Close",
     count: (n) => `${n} shops`,
     areaCount: (n) => (n === 1 ? "1 area" : `${n} areas`),
     alsoTitle: "Based on shops you viewed",
     seeAll: "See all",
     addArea: "Add an area",
-    addTitle: "Add to My List",
+    addTitle: "My Travel List",
+    addBtn: "Add to My Travel List",
     addThis: "Add",
     editTitle: (name) => `${name} settings`,
     stepArea: "Which area are you interested in?",
     added: "Added",
-    addedToast: "Added to My List",
-    allAdded: "All areas are already in My List",
-    remove: "Remove from My List",
+    addedToast: "Added to My Travel List",
+    allAdded: "All areas are already in My Travel List",
+    remove: "Remove from My Travel List",
     removeConfirm: "Really remove",
-    removed: "Removed from My List",
-    backToList: "Back to My List",
+    removed: "Removed from My Travel List",
+    backToList: "Back to My Travel List",
     backToHome: "Back to home",
     all: "All",
     rankNote: "Recommended order (highest rated first)",
@@ -90,9 +92,9 @@ const TODO_TEXT = {
     saved: "Saved",
   },
   vi: {
-    sectionTitle: "Danh sách của tôi",
+    sectionTitle: "Danh sách du lịch của tôi",
     sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
-    start: "Tạo danh sách của tôi",
+    start: "Tạo danh sách du lịch của tôi",
     startSub: "Chỉ cần thêm khu vực bạn muốn đến",
     settings: "Cài đặt danh sách",
     settingsOpen: "Thay đổi cài đặt danh sách",
@@ -102,7 +104,8 @@ const TODO_TEXT = {
     alsoTitle: "Dựa trên quán bạn đã xem",
     seeAll: "Xem tất cả",
     addArea: "Thêm khu vực",
-    addTitle: "Thêm vào danh sách",
+    addTitle: "Danh sách du lịch của tôi",
+    addBtn: "Thêm vào danh sách",
     addThis: "Thêm",
     editTitle: (name) => `Cài đặt ${name}`,
     stepArea: "Bạn quan tâm đến khu vực nào?",
@@ -112,7 +115,7 @@ const TODO_TEXT = {
     remove: "Xóa khỏi danh sách",
     removeConfirm: "Xóa thật",
     removed: "Đã xóa khỏi danh sách",
-    backToList: "Về danh sách của tôi",
+    backToList: "Về danh sách du lịch của tôi",
     backToHome: "Về trang chủ",
     all: "Tất cả",
     rankNote: "Thứ tự gợi ý (đánh giá cao trước)",
@@ -360,7 +363,7 @@ function myListAreaCards(settings) {
     .join("");
 }
 
-// ホームの「マイリスト」の部分(js/home.js の renderHome が呼ぶ)
+// ホームの「マイトラベルリスト」の部分(js/home.js の renderHome が呼ぶ)
 //   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリアも、うしろに続ける
 function renderTodoSection() {
   const x = todoText();
@@ -409,7 +412,7 @@ function myListHeader(backUrl, backLabel, title, right) {
   if (right && right.kind === "gear")
     btn = `<a class="mylist-gear" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit data-pref="${esc(right.pref)}" aria-label="${esc(x.settingsOpen)}" title="${esc(x.settingsOpen)}">${TODO_GEAR_ICON}</a>`;
   else if (right && right.kind === "add")
-    btn = `<a class="mylist-add-btn" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit${right.pref ? ` data-pref="${esc(right.pref)}"` : ""}>${homeIcon("plus", 20)}<span>${esc(right.pref ? x.addTitle : x.addArea)}</span></a>`;
+    btn = `<a class="mylist-add-btn" href="${esc(myListEditUrl(right.pref))}" data-mylist-edit${right.pref ? ` data-pref="${esc(right.pref)}"` : ""}>${homeIcon("plus", 20)}<span>${esc(right.pref ? x.addBtn : x.addArea)}</span></a>`;
   return (
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(backUrl)}" data-mylist-nav aria-label="${esc(backLabel)}">${homeIcon("back", 24)}</a>` +
@@ -431,7 +434,7 @@ function setMyListToast(text) {
 }
 
 // ---------------------------------------------------------------------
-// マイリストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
+// マイトラベルリストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
 // ---------------------------------------------------------------------
 function renderMyList() {
   const x = todoText();
@@ -494,8 +497,8 @@ function renderMyListArea(prefKey) {
 
 // ---------------------------------------------------------------------
 // 追加・変更の画面(URL「?view=todo&edit=1」/「&pref=東京都」)
-//   ・まだ追加していないエリア → 「マイリストに追加」(エリアを1つ選ぶ + 探したいお店)
-//   ・追加済みのエリア → 「〇〇の設定」(探したいお店を変える / マイリストから外す)
+//   ・まだ追加していないエリア → 「マイトラベルリストに追加」(エリアを1つ選ぶ + 探したいお店)
+//   ・追加済みのエリア → 「〇〇の設定」(探したいお店を変える / マイトラベルリストから外す)
 // ---------------------------------------------------------------------
 const myListDraft = { key: null, pref: null, types: null, message: "", confirmRemove: false };
 function myListEditPref() {
@@ -510,7 +513,7 @@ function startMyListDraft(prefKey) {
   myListDraft.confirmRemove = false;
 }
 
-// マイリストの設定画面の、背景のうすい葉っぱの飾り(自分で描いた形)
+// マイトラベルリストの設定画面の、背景のうすい葉っぱの飾り(自分で描いた形)
 const MYLIST_LEAF_SVG =
   '<svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
   '<path d="M18 104C40 76 66 52 108 18"/>' +
@@ -550,10 +553,13 @@ function renderMyListSettings() {
   const closeUrl = editing ? myListAreaUrl(urlPref) : items.length ? myListUrl() : homeUrl();
   const title = editing ? x.editTitle(pick(editPref.label)) : x.addTitle;
   homePage.innerHTML =
-    `<div class="todo-create-head mylist-page-head">` +
-    `<a class="todo-back" href="${esc(closeUrl)}" data-mylist-nav aria-label="${esc(x.close)}">${homeIcon("close", 24)}</a>` +
+    `<div class="todo-create-head mylist-page-head mylist-settings-head">` +
+    // 見出しは左。右に「×(保存しないで閉じる)」と「✓(この内容で保存)」の丸いボタン
     `<h2 class="todo-create-title">${esc(title)}</h2>` +
-    `</div>` +
+    `<div class="mylist-head-btns">` +
+    `<a class="mylist-head-close" href="${esc(closeUrl)}" data-mylist-nav aria-label="${esc(x.close)}" title="${esc(x.close)}">${homeIcon("close", 22)}</a>` +
+    (allAdded ? "" : `<button type="button" class="mylist-head-save" data-mylist-save aria-label="${esc(x.save)}" title="${esc(x.save)}">${homeIcon("check", 24)}</button>`) +
+    `</div></div>` +
     // 背景の飾り(自分で描いた、うすい葉っぱの絵)
     `<span class="mylist-leaf mylist-leaf-a" aria-hidden="true">${MYLIST_LEAF_SVG}</span>` +
     `<span class="mylist-leaf mylist-leaf-b" aria-hidden="true">${MYLIST_LEAF_SVG}</span>` +
@@ -564,7 +570,6 @@ function renderMyListSettings() {
         `<h3 class="todo-step-title"><span>${editing ? 1 : 2}</span>${esc(x.step2)}</h3>` +
         `<div class="todo-wants">${myListTypeChoices().map(typeBtn).join("")}</div>` +
         `<p class="home-status" role="status"${myListDraft.message ? "" : " hidden"}>${esc(myListDraft.message)}</p>` +
-        `<button type="button" class="todo-primary todo-make" data-mylist-save>${homeIcon("check", 20)}<span>${esc(x.save)}</span></button>` +
         (editing
           ? `<div class="todo-delete-row"><button type="button" class="todo-delete${myListDraft.confirmRemove ? " is-confirm" : ""}" data-mylist-remove>${esc(myListDraft.confirmRemove ? x.removeConfirm : x.remove)}</button></div>`
           : "")) +

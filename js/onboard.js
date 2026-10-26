@@ -2,7 +2,7 @@
 //   ・ホームを開いたときに、画面いっぱいに出す。はじめての1回と、そのあとは30日ごとに1回
 //   ・質問1: どのエリアに行く?(東京・神奈川・千葉・埼玉。いくつでも)
 //     質問2: 何を探す?(料理店・カフェ・食材店。いくつでも)
-//     → 選んだ内容は、マイリスト(js/todo.js)にエリアごとに保存する
+//     → 選んだ内容は、マイトラベルリスト(js/todo.js)にエリアごとに保存する
 //   ・「スキップ」でいつでも閉じられる。閉じた日時を、この端末(localStorage)の中だけに保存して、次に出す日を決める
 //   ・選んだ内容も、出した日時も、サーバーや第三者には送らない
 //   ・確認用: URL に「?onboard=1」を付けると、間隔に関係なく出す
@@ -25,7 +25,7 @@ const ONBOARD_TEXT = {
     doneLabel: "準備ができました",
     doneA: "さあ、",
     doneB: "はじめよう!",
-    doneSub: "マイリストに追加しました",
+    doneSub: "マイトラベルリストに追加しました",
     myAreas: "選んだエリア",
     start: "さがしはじめる",
     close: "閉じる",
@@ -46,7 +46,7 @@ const ONBOARD_TEXT = {
     doneLabel: "All done",
     doneA: "You're",
     doneB: "all set!",
-    doneSub: "Added to My List",
+    doneSub: "Added to My Travel List",
     myAreas: "My areas",
     start: "Start exploring",
     close: "Close",
@@ -67,7 +67,7 @@ const ONBOARD_TEXT = {
     doneLabel: "Hoàn tất",
     doneA: "Sẵn sàng",
     doneB: "rồi!",
-    doneSub: "Đã thêm vào danh sách của tôi",
+    doneSub: "Đã thêm vào danh sách du lịch của tôi",
     myAreas: "Khu vực đã chọn",
     start: "Bắt đầu khám phá",
     close: "Đóng",
@@ -114,7 +114,7 @@ function openOnboard() {
   const items = typeof loadMyListItems === "function" ? loadMyListItems() : [];
   onboard.open = true;
   onboard.step = 0;
-  onboard.prefs = items.map((it) => it.pref); // すでにマイリストにあるエリアは、選んだ状態から
+  onboard.prefs = items.map((it) => it.pref); // すでにマイトラベルリストにあるエリアは、選んだ状態から
   onboard.types = items.length ? MYLIST_TYPES.filter((t) => items.some((it) => it.types.includes(t))) : ["restaurant"];
   onboard.message = "";
   onboard.lastFocus = document.activeElement;
@@ -192,7 +192,7 @@ function renderOnboard() {
   if (first) first.focus({ preventScroll: true });
 }
 
-// 選んだ内容を、マイリストに保存する(エリアごと。すでにあるエリアは、種類を上書き)
+// 選んだ内容を、マイトラベルリストに保存する(エリアごと。すでにあるエリアは、種類を上書き)
 function onboardSave() {
   if (typeof loadMyListItems !== "function" || typeof saveMyListItems !== "function") return;
   const types = MYLIST_TYPES.filter((t) => onboard.types.includes(t));
@@ -234,7 +234,7 @@ document.addEventListener("click", (event) => {
     renderOnboard();
   } else if (action === "finish") {
     closeOnboard();
-    // ホームのマイリストに、すぐ反映する
+    // ホームのマイトラベルリストに、すぐ反映する
     if (document.body.classList.contains("view-home") && typeof renderHomeMode === "function") renderHomeMode();
   }
 });

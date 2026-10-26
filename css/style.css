@@ -9061,3 +9061,30 @@ body.view-detail.is-review-writing { overflow: hidden; }
 .shop-photo-label span { overflow: hidden; text-overflow: ellipsis; }
 /* 地図を引いて見ているときは、札を隠す(ピンだけにする) */
 .hide-photo-labels .shop-photo-label { display: none; }
+
+/* ===== マイトラベルリストの追加・設定: 見出しは左、右に「×」と「✓」の丸いボタン ===== */
+.mylist-settings-head {
+  padding-left: 18px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mylist-settings-head .todo-create-title { flex: 1; min-width: 0; margin: 0; }
+.mylist-head-btns { display: flex; flex: none; align-items: center; gap: 12px; }
+.mylist-head-close,
+.mylist-head-save {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.mylist-head-close { color: #2f3d33; background: #eceff0; text-decoration: none; }
+.mylist-head-save { color: #fff; background: #2f6b3a; box-shadow: 0 6px 16px rgba(47, 107, 58, 0.3); }
+.mylist-head-close:active,
+.mylist-head-save:active { transform: scale(0.95); }
