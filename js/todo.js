@@ -31,7 +31,7 @@ const TODO_TEXT = {
     addTitle: "マイリストに追加",
     addThis: "追加する",
     editTitle: (name) => `${name}の設定`,
-    stepArea: "どのエリアに行く?(1つ選ぶ)",
+    stepArea: "どのエリアに関心がありますか?",
     added: "追加済み",
     addedToast: "マイリストに追加しました",
     allAdded: "すべてのエリアを、マイリストに追加しています",
@@ -46,7 +46,7 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n}件)`,
     detail: "お店のページを見る",
     empty: "このエリアには、選んだ種類のお店がまだありません",
-    step2: "何を探す?(いくつでも)",
+    step2: "何を探しますか?",
     needArea: "エリアを選んでください",
     needType: "探したいお店を1つ以上選んでください",
     save: "この内容で保存",
@@ -68,7 +68,7 @@ const TODO_TEXT = {
     addTitle: "Add to My List",
     addThis: "Add",
     editTitle: (name) => `${name} settings`,
-    stepArea: "Which area are you going to? (choose one)",
+    stepArea: "Which area are you interested in?",
     added: "Added",
     addedToast: "Added to My List",
     allAdded: "All areas are already in My List",
@@ -83,7 +83,7 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "See shop page",
     empty: "There are no shops of the chosen kinds in this area yet",
-    step2: "What are you looking for? (any)",
+    step2: "What are you looking for?",
     needArea: "Please choose an area",
     needType: "Please choose at least one kind of shop",
     save: "Save",
@@ -105,7 +105,7 @@ const TODO_TEXT = {
     addTitle: "Thêm vào danh sách",
     addThis: "Thêm",
     editTitle: (name) => `Cài đặt ${name}`,
-    stepArea: "Bạn sẽ đến khu vực nào? (chọn một)",
+    stepArea: "Bạn quan tâm đến khu vực nào?",
     added: "Đã thêm",
     addedToast: "Đã thêm vào danh sách",
     allAdded: "Đã thêm tất cả khu vực vào danh sách",
@@ -120,7 +120,7 @@ const TODO_TEXT = {
     reviews: (avg, n) => `${avg} (${n})`,
     detail: "Xem trang quán",
     empty: "Khu vực này chưa có quán thuộc loại đã chọn",
-    step2: "Bạn đang tìm gì? (chọn nhiều)",
+    step2: "Bạn đang tìm gì?",
     needArea: "Hãy chọn một khu vực",
     needType: "Hãy chọn ít nhất một loại quán",
     save: "Lưu",
@@ -510,6 +510,15 @@ function startMyListDraft(prefKey) {
   myListDraft.confirmRemove = false;
 }
 
+// マイリストの設定画面の、背景のうすい葉っぱの飾り(自分で描いた形)
+const MYLIST_LEAF_SVG =
+  '<svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
+  '<path d="M18 104C40 76 66 52 108 18"/>' +
+  [0, 1, 2, 3, 4].map((i) => {
+    const x = 34 + i * 16, y = 86 - i * 14;
+    return `<path d="M${x} ${y}c-2-14 4-26 14-34M${x} ${y}c12-2 24 2 32 10" />`;
+  }).join("") +
+  "</svg>";
 function renderMyListSettings() {
   const x = todoText();
   const h = homeText();
@@ -526,7 +535,8 @@ function renderMyListSettings() {
     const on = !done && myListDraft.pref === p.key;
     return (
       `<button type="button" class="mylist-pick${on ? " is-on" : ""}${done ? " is-done" : ""}" aria-pressed="${on}" data-mylist-pref="${esc(p.key)}"${done ? " disabled" : ""}>` +
-      `<span>${esc(pick(p.label))}</span>${on ? homeIcon("check", 18) : ""}${done ? `<small>${esc(x.added)}</small>` : ""}</button>`
+      (done ? `<span class="mylist-pick-done-icon" aria-hidden="true">${homeIcon("check", 22)}</span>` : "") +
+      `<span class="mylist-pick-text"><span>${esc(pick(p.label))}</span>${done ? `<small>${esc(x.added)}</small>` : ""}</span>${on ? homeIcon("check", 18) : ""}</button>`
     );
   };
   const typeBtn = (t) => {
@@ -534,7 +544,7 @@ function renderMyListSettings() {
     return (
       `<button type="button" class="todo-want todo-want-${t}${on ? " is-on" : ""}" aria-pressed="${on}" data-mylist-type="${t}">` +
       `${typeIllustHtml(t, 48)}<span>${esc(h.typeLabel[t])}</span>` +
-      `<span class="mylist-want-check">${on ? homeIcon("check", 16) : ""}</span></button>`
+      (on ? `<span class="mylist-want-check is-on" aria-hidden="true">${homeIcon("check", 14)}</span>` : "") + `</button>`
     );
   };
   const closeUrl = editing ? myListAreaUrl(urlPref) : items.length ? myListUrl() : homeUrl();
@@ -543,9 +553,11 @@ function renderMyListSettings() {
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(closeUrl)}" data-mylist-nav aria-label="${esc(x.close)}">${homeIcon("close", 24)}</a>` +
     `<h2 class="todo-create-title">${esc(title)}</h2>` +
-    (allAdded ? "" : `<button type="button" class="mylist-save-round" data-mylist-save aria-label="${esc(x.save)}" title="${esc(x.save)}">${homeIcon("check", 22)}</button>`) +
     `</div>` +
-    `<section class="home-section todo-form-section">` +
+    // 背景の飾り(自分で描いた、うすい葉っぱの絵)
+    `<span class="mylist-leaf mylist-leaf-a" aria-hidden="true">${MYLIST_LEAF_SVG}</span>` +
+    `<span class="mylist-leaf mylist-leaf-b" aria-hidden="true">${MYLIST_LEAF_SVG}</span>` +
+    `<section class="home-section todo-form-section mylist-form-card">` +
     (allAdded
       ? `<p class="home-reason home-reason-plain">${esc(x.allAdded)}</p>`
       : (editing ? "" : `<h3 class="todo-step-title"><span>1</span>${esc(x.stepArea)}</h3><div class="mylist-picks">${choices.map(prefBtn).join("")}</div>`) +
