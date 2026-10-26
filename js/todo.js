@@ -384,8 +384,8 @@ function renderTodoSection() {
       `<p class="todo-intro-desc">${esc(x.introText)}</p>` +
       `</div>` +
       `<div class="todo-intro-phones" aria-hidden="true">` +
-      `<img class="todo-intro-phone is-left" src="images/travel-list-1.jpg" alt="" width="480" height="720" loading="lazy" decoding="async">` +
-      `<img class="todo-intro-phone is-right" src="images/travel-list-2.jpg" alt="" width="480" height="819" loading="lazy" decoding="async">` +
+      `<img class="todo-intro-phone is-left" src="images/travel-list-1.jpg?v=2" alt="" width="480" height="752" loading="lazy" decoding="async">` +
+      `<img class="todo-intro-phone is-right" src="images/travel-list-2.jpg?v=2" alt="" width="480" height="752" loading="lazy" decoding="async">` +
       `</div>` +
       `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
       // アイコンは、運営者が用意したイラスト(images/mylist-create.png)
