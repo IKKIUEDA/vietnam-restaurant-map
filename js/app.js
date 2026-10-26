@@ -984,8 +984,8 @@ clusterGroup.addLayers(entries.map((entry) => entry.marker));
 //   ・data.js の image に書かれた画像を使う。空・省略・使えない書き方のときは、デフォルト画像(イラスト)を使う
 //   ・画像は、自分のフォルダ(images/...)か、https:// で始まるURLだけを使う(javascript: などは使わない)
 //   ・外部のサイトから、画像を自動で集める処理は、このアプリにはありません
-const DEFAULT_IMAGE = "images/default-shop.svg"; // 一覧のカード用(正方形)
-const DEFAULT_HERO_IMAGE = "images/default-hero.svg"; // 詳細ページ用(横長)
+const DEFAULT_IMAGE = "images/default-shop.svg?v=2"; // 一覧のカード用(正方形)
+const DEFAULT_HERO_IMAGE = "images/default-hero.svg?v=2"; // 詳細ページ用(横長)
 
 // お店の画像:
 //   1. 管理者が確認して選んだ、投稿写真(トップ画像。index.html の fetchCovers → window.shopCovers)
