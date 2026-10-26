@@ -542,11 +542,20 @@ const SHOP_PIN_STYLES = {
       '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="#fff" d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>',
   },
 };
-function createShopIcon(shop) {
+// トップ画像が登録されているお店だけ、ピンの上に「写真+店名」の小さな札を出す(一覧の地図。withPhoto = true)
+//   ・トップ画像は、管理者が確認して選んだ投稿写真(window.shopCovers)。それ以外のお店は、今までどおりのピンだけ
+function shopPhotoLabelHtml(shop) {
+  const cover = window.shopCovers && window.shopCovers.get(shop.id);
+  if (!cover || !cover.secure_url) return "";
+  const thumb = String(cover.secure_url).replace("/image/upload/", "/image/upload/c_fill,w_96,h_96,q_auto,f_auto/");
+  return `<span class="shop-photo-label"><img src="${esc(thumb)}" alt="" width="32" height="32" loading="lazy"><span>${esc(pick(shop.name))}</span></span>`;
+}
+function createShopIcon(shop, withPhoto) {
   const style = SHOP_PIN_STYLES[shopType(shop || {})] || SHOP_PIN_STYLES.restaurant;
+  const label = withPhoto ? shopPhotoLabelHtml(shop) : "";
   return L.divIcon({
-    className: style.className,
-    html: `<span class="shop-pin"><span class="shop-pin-icon">${style.icon}</span></span>`,
+    className: style.className + (label ? " has-photo-label" : ""),
+    html: `${label}<span class="shop-pin"><span class="shop-pin-icon">${style.icon}</span></span>`,
     iconSize: [36, 44],
     iconAnchor: [18, 38], // ピンの先が、実際の場所に来るようにする
     popupAnchor: [0, -36], // ポップアップは、ピンの上に開く
@@ -758,8 +767,8 @@ function markerLatLng(shop) {
 const entries = restaurants.map((shop) => {
   // 地図に出すピン(ポップアップの中身は、あとで showTexts が入れる)
   const marker = (USE_GL_MAP
-    ? new GLMarker(markerLatLng(shop), { icon: createShopIcon(shop) })
-    : L.marker(markerLatLng(shop), { icon: createShopIcon(shop) })
+    ? new GLMarker(markerLatLng(shop), { icon: createShopIcon(shop, true) })
+    : L.marker(markerLatLng(shop), { icon: createShopIcon(shop, true) })
   ).bindPopup("", POPUP_OPTIONS);
 
   // 一覧に1行追加する(中身は、あとで showTexts が入れる)
@@ -2276,6 +2285,7 @@ function showTexts() {
 document.getElementById("lang-select").addEventListener("change", (event) => {
   currentLang = event.target.value;
   showTexts();
+  updatePhotoLabels(); // 写真つきの札の店名も、選んだ言語に
 });
 
 showTexts();
@@ -2291,7 +2301,18 @@ if (map.getContainer().offsetWidth > 0) {
 
 
 // トップ画像(管理者が選んだ投稿写真)を読み終えたら、いま出ている画像を差し替える
+// 地図のピン: トップ画像が登録されたお店は、写真つきの札を出す(変わったお店だけ、作り直す。言語が変わったら店名も)
+function updatePhotoLabels() {
+  entries.forEach((entry) => {
+    const cover = window.shopCovers && window.shopCovers.get(entry.shop.id);
+    const key = cover ? cover.secure_url + "|" + currentLang : "";
+    if ((entry.photoLabel || "") === key) return;
+    entry.photoLabel = key;
+    if (entry.marker && typeof entry.marker.setIcon === "function") entry.marker.setIcon(createShopIcon(entry.shop, true));
+  });
+}
 function refreshShopImages() {
+  updatePhotoLabels();
   entries.forEach((entry) => {
     const img = entry.item && entry.item.querySelector(".shop-thumb");
     if (!img) return;
@@ -2389,3 +2410,12 @@ window.addEventListener("shop-covers-ready", refreshShopImages);
     })
   );
 })();
+
+// 地図を引いて(広い範囲を)見ているときは、写真つきの札を隠す(札どうしが重なって、見えにくくならないように)
+//   一覧の地図のズーム14以上(駅のまわりが見えるくらい)で出す
+const PHOTO_LABEL_MIN_ZOOM = 14;
+function syncPhotoLabelZoom() {
+  map.getContainer().classList.toggle("hide-photo-labels", map.getZoom() < PHOTO_LABEL_MIN_ZOOM);
+}
+map.on("zoomend", syncPhotoLabelZoom);
+syncPhotoLabelZoom();

@@ -9027,3 +9027,37 @@ body.view-detail.is-review-writing { overflow: hidden; }
 }
 .map-quick-area-item small { font-size: 0.75rem; font-weight: 600; color: #6b756e; }
 .map-quick-area-item.is-on { color: #1f5e23; background: #e8f3e8; border-color: #2e7d32; }
+
+/* ===== トップ画像があるお店のピン: ピンの上に「写真+店名」の札(js/app.js の createShopIcon) ===== */
+.shop-marker.has-photo-label { overflow: visible; }
+.shop-photo-label {
+  position: absolute;
+  left: 50%;
+  bottom: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 190px;
+  padding: 4px 12px 4px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1d2a22;
+  white-space: nowrap;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+.shop-photo-label img {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 7px;
+  background: #eef4ee;
+}
+.shop-photo-label span { overflow: hidden; text-overflow: ellipsis; }
+/* 地図を引いて見ているときは、札を隠す(ピンだけにする) */
+.hide-photo-labels .shop-photo-label { display: none; }
