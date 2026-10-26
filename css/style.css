@@ -8920,3 +8920,27 @@ body.view-detail.is-review-writing { overflow: hidden; }
 .mylist-form-card .todo-want-restaurant.is-on { border-color: #e53935; }
 .mylist-form-card .todo-want-cafe.is-on { border-color: #795548; }
 .mylist-form-card .todo-want-grocery.is-on { border-color: #1e63d6; }
+
+/* ===== スマホだけ: お店のページの投稿写真を、横にスクロールする1列の並びに ===== */
+@media (max-width: 600px) {
+  .photo-grid.photo-grid-3 {
+    display: flex;
+    gap: 6px;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 0 16px 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .photo-grid.photo-grid-3::-webkit-scrollbar { display: none; }
+  .photo-grid.photo-grid-3 .photo-item {
+    flex: 0 0 42%;
+    scroll-snap-align: start;
+  }
+  .photo-grid.photo-grid-3 .photo-thumb-btn,
+  .photo-grid.photo-grid-3 .photo-thumb { border-radius: 10px; }
+}
