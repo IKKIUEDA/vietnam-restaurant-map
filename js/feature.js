@@ -89,7 +89,7 @@ function renderFeaturePage(type) {
   if (featureState.filter.startsWith("area:") && !areaMap.has(featureState.filter.slice(5))) featureState.filter = "all";
 
   let list;
-  let note = x.rankNote;
+  let note = ""; // おすすめ順の説明文は出さない(「近く」のときだけ、近い順の説明を出す)
   let status = "";
   if (featureState.filter === "near") {
     note = x.nearNote;
@@ -131,7 +131,7 @@ function renderFeaturePage(type) {
     `</div>` +
     (featureState.filter === "near" ? `<p class="acct-small feature-location-note">${esc(x.locationNote)}</p>` : "") +
     (status ? `<p class="home-status" role="status">${esc(status)}</p>` : "") +
-    (list.length ? `<p class="todo-rank-note">${esc(note)}</p><ul class="todo-shops">${list.map(todoShopCard).join("")}</ul>` : "") +
+    (list.length ? (note ? `<p class="todo-rank-note">${esc(note)}</p>` : "") + `<ul class="todo-shops">${list.map(todoShopCard).join("")}</ul>` : "") +
     `</section>`;
 }
 
