@@ -861,7 +861,7 @@ function favButtonHtml(entry, idx) {
   );
 }
 
-// ホームのカード(あなたへのおすすめ・マイトラベルリスト・特集のお店の一覧)の、写真の右上の保存ボタン
+// ホームのカード(あなたへのおすすめ・トラベル・リスト・特集のお店の一覧)の、写真の右上の保存ボタン
 //   カード(リンク)の中にボタンを入れられないので、カードの外(li の中)に置いて、写真の上に重ねる
 function cardSaveButtonHtml(shop) {
   const on = isFavorite(shop);
