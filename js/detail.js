@@ -3461,7 +3461,16 @@ function setDetailHero(shop) {
     : typeof shop.imageCredit === "string"
     ? shop.imageCredit.trim()
     : "";
-  if (credit && creditEl) {
+  // トップ画像(投稿写真)の投稿者名は、その人のいまのプロフィールの名前に合わせる(投稿した後に名前を変えても、新しい名前で出す)
+  const coverUid = image.cover && image.cover.uid;
+  if (credit && creditEl && coverUid && /^[A-Za-z0-9_-]{1,128}$/.test(String(coverUid))) {
+    requestUserProfile(coverUid);
+    const p = userProfileCache.get(coverUid);
+    const shown = (p && p.displayName) || image.cover.authorName;
+    creditEl.innerHTML = `📷 <span data-user-name="${esc(coverUid)}">${esc(shown)}</span>`;
+    creditEl.hidden = false;
+    creditEl.title = shown;
+  } else if (credit && creditEl) {
     creditEl.textContent = credit; // 文字として入れる
     creditEl.hidden = false;
     const source = !image.cover && typeof shop.imageSource === "string" ? shop.imageSource.trim() : "";
