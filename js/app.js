@@ -2384,6 +2384,31 @@ window.addEventListener("shop-covers-ready", refreshShopImages);
 // スマホ: ホーム・アカウントなど(地図以外の、ホームの場所に出る画面)では、2本指で画面を拡大できないようにする
 //   ・地図の画面・お店のページは、これまで通り(地図は、地図の中で拡大・縮小する)
 //   ・iPhone は、ページの設定(viewport)だけでは指での拡大を止められないので、2本指の操作をここで止める
+// スマホ(特に iPhone): 2回続けてタップしたときの「画面の拡大」を、地図以外では止める
+//   ・CSS の touch-action: manipulation だけでは、iPhone で、まれに拡大されてしまうことがあるため、
+//     「前のタップから 350ms 以内に、ほぼ同じ場所をもう一度タップした」ときだけ、2回目のタップの拡大を止める
+//   ・地図(2回タップで地図が拡大する)・写真の拡大表示・入力欄の中は、対象外(今まで通り)
+(function blockDoubleTapZoom() {
+  const SKIP = "#map, #map-wrap, #detail-map, .pv, input, textarea, select, [contenteditable]";
+  let last = { t: 0, x: 0, y: 0 };
+  document.addEventListener(
+    "touchend",
+    (event) => {
+      if (event.touches.length > 0 || event.changedTouches.length !== 1) return;
+      const touch = event.changedTouches[0];
+      const now = Date.now();
+      const quick = now - last.t < 350 && Math.abs(touch.clientX - last.x) < 40 && Math.abs(touch.clientY - last.y) < 40;
+      last = { t: now, x: touch.clientX, y: touch.clientY };
+      if (!quick) return;
+      const target = event.target && event.target.closest ? event.target : null;
+      if (target && target.closest(SKIP)) return;
+      event.preventDefault(); // 2回目のタップでの拡大を止める(1回目のタップは、いつも通り押せる)
+      last.t = 0; // 3回続けてタップしたときに、3回目まで止めないように
+    },
+    { passive: false }
+  );
+})();
+
 (function blockPinchOnHome() {
   const meta = document.querySelector('meta[name="viewport"]');
   const base = meta ? meta.getAttribute("content") : "";
