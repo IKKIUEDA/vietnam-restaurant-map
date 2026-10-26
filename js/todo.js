@@ -1,8 +1,8 @@
-// マイトラベルリスト(My Travel List)
+// トラベル・リスト(Travel List)
 //   ・エリア(都道府県)ごとに1つずつ追加する。1つのエリアにつき「何を探す(料理店・カフェ・食材店)」を選ぶ
 //       追加: URL「?view=todo&edit=1」(&pref=東京都 で、そのエリアを選んだ状態から始める)
 //       変更・外す: エリアのお店の一覧の右上の設定マーク(URL「?view=todo&edit=1&pref=東京都」)
-//   ・ホーム: 「マイトラベルリスト」のカードを横に並べる(横にスライド)。「すべて見る」で一覧(URL「?view=todo」)
+//   ・ホーム: 「トラベル・リスト」のカードを横に並べる(横にスライド)。「すべて見る」で一覧(URL「?view=todo」)
 //     カードを押すと、そのエリアのお店の一覧(URL「?view=todo&area=東京都」)。お店のカードを押すと、お店のページ(?shop=ID)
 //   ・お店の一覧は「おすすめ順」= みんなのレビューの評価(★)が高い順(同じなら、レビューが多い順 → データの順)
 //   ・選んだ内容は、この端末(ブラウザの localStorage)の中だけに保存する。サーバーや第三者には送らない
@@ -16,30 +16,30 @@ const MYLIST_TYPES = ["restaurant", "cafe", "grocery"];
 
 const TODO_TEXT = {
   ja: {
-    sectionTitle: "マイトラベルリスト",
+    sectionTitle: "トラベル・リスト",
     sectionSub: "行きたいエリアと探したいお店を選ぼう！",
-    start: "マイトラベルリストを作る",
+    start: "トラベル・リストを作る",
     startSub: "行きたいエリアを追加するだけ",
-    settings: "マイトラベルリストの設定",
-    settingsOpen: "マイトラベルリストの設定を変える",
+    settings: "トラベル・リストの設定",
+    settingsOpen: "トラベル・リストの設定を変える",
     close: "閉じる",
     count: (n) => `${n}件`,
     areaCount: (n) => `${n}つのエリア`,
     alsoTitle: "最近見たお店から",
     seeAll: "すべて見る",
     addArea: "エリアを追加",
-    addTitle: "マイトラベルリスト",
-    addBtn: "マイトラベルリストに追加",
+    addTitle: "トラベル・リスト",
+    addBtn: "トラベル・リストに追加",
     addThis: "追加する",
     editTitle: (name) => `${name}の設定`,
     stepArea: "どのエリアに関心がありますか?",
     added: "追加済み",
-    addedToast: "マイトラベルリストに追加しました",
-    allAdded: "すべてのエリアを、マイトラベルリストに追加しています",
-    remove: "マイトラベルリストから外す",
+    addedToast: "トラベル・リストに追加しました",
+    allAdded: "すべてのエリアを、トラベル・リストに追加しています",
+    remove: "トラベル・リストから外す",
     removeConfirm: "本当に外す",
-    removed: "マイトラベルリストから外しました",
-    backToList: "マイトラベルリストに戻る",
+    removed: "トラベル・リストから外しました",
+    backToList: "トラベル・リストに戻る",
     backToHome: "ホームに戻る",
     all: "すべて",
     rankNote: "おすすめ順(レビューの評価が高い順)",
@@ -54,30 +54,30 @@ const TODO_TEXT = {
     saved: "保存しました",
   },
   en: {
-    sectionTitle: "My Travel List",
+    sectionTitle: "Travel List",
     sectionSub: "Pick the areas you want to go and the shops you're looking for",
-    start: "Make My Travel List",
+    start: "Make a Travel List",
     startSub: "Just add the areas you want to go",
-    settings: "My Travel List settings",
-    settingsOpen: "Change My Travel List settings",
+    settings: "Travel List settings",
+    settingsOpen: "Change Travel List settings",
     close: "Close",
     count: (n) => `${n} shops`,
     areaCount: (n) => (n === 1 ? "1 area" : `${n} areas`),
     alsoTitle: "Based on shops you viewed",
     seeAll: "See all",
     addArea: "Add an area",
-    addTitle: "My Travel List",
-    addBtn: "Add to My Travel List",
+    addTitle: "Travel List",
+    addBtn: "Add to Travel List",
     addThis: "Add",
     editTitle: (name) => `${name} settings`,
     stepArea: "Which area are you interested in?",
     added: "Added",
-    addedToast: "Added to My Travel List",
-    allAdded: "All areas are already in My Travel List",
-    remove: "Remove from My Travel List",
+    addedToast: "Added to Travel List",
+    allAdded: "All areas are already in Travel List",
+    remove: "Remove from Travel List",
     removeConfirm: "Really remove",
-    removed: "Removed from My Travel List",
-    backToList: "Back to My Travel List",
+    removed: "Removed from Travel List",
+    backToList: "Back to Travel List",
     backToHome: "Back to home",
     all: "All",
     rankNote: "Recommended order (highest rated first)",
@@ -92,9 +92,9 @@ const TODO_TEXT = {
     saved: "Saved",
   },
   vi: {
-    sectionTitle: "Danh sách du lịch của tôi",
+    sectionTitle: "Danh sách du lịch",
     sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
-    start: "Tạo danh sách du lịch của tôi",
+    start: "Tạo danh sách du lịch",
     startSub: "Chỉ cần thêm khu vực bạn muốn đến",
     settings: "Cài đặt danh sách",
     settingsOpen: "Thay đổi cài đặt danh sách",
@@ -104,7 +104,7 @@ const TODO_TEXT = {
     alsoTitle: "Dựa trên quán bạn đã xem",
     seeAll: "Xem tất cả",
     addArea: "Thêm khu vực",
-    addTitle: "Danh sách du lịch của tôi",
+    addTitle: "Danh sách du lịch",
     addBtn: "Thêm vào danh sách",
     addThis: "Thêm",
     editTitle: (name) => `Cài đặt ${name}`,
@@ -115,7 +115,7 @@ const TODO_TEXT = {
     remove: "Xóa khỏi danh sách",
     removeConfirm: "Xóa thật",
     removed: "Đã xóa khỏi danh sách",
-    backToList: "Về danh sách du lịch của tôi",
+    backToList: "Về danh sách du lịch",
     backToHome: "Về trang chủ",
     all: "Tất cả",
     rankNote: "Thứ tự gợi ý (đánh giá cao trước)",
@@ -363,7 +363,7 @@ function myListAreaCards(settings) {
     .join("");
 }
 
-// ホームの「マイトラベルリスト」の部分(js/home.js の renderHome が呼ぶ)
+// ホームの「トラベル・リスト」の部分(js/home.js の renderHome が呼ぶ)
 //   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリアも、うしろに続ける
 function renderTodoSection() {
   const x = todoText();
@@ -434,7 +434,7 @@ function setMyListToast(text) {
 }
 
 // ---------------------------------------------------------------------
-// マイトラベルリストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
+// トラベル・リストの画面(URL「?view=todo」)。まだ設定していなければ、設定の画面を出す
 // ---------------------------------------------------------------------
 function renderMyList() {
   const x = todoText();
@@ -497,8 +497,8 @@ function renderMyListArea(prefKey) {
 
 // ---------------------------------------------------------------------
 // 追加・変更の画面(URL「?view=todo&edit=1」/「&pref=東京都」)
-//   ・まだ追加していないエリア → 「マイトラベルリストに追加」(エリアを1つ選ぶ + 探したいお店)
-//   ・追加済みのエリア → 「〇〇の設定」(探したいお店を変える / マイトラベルリストから外す)
+//   ・まだ追加していないエリア → 「トラベル・リストに追加」(エリアを1つ選ぶ + 探したいお店)
+//   ・追加済みのエリア → 「〇〇の設定」(探したいお店を変える / トラベル・リストから外す)
 // ---------------------------------------------------------------------
 const myListDraft = { key: null, pref: null, types: null, message: "", confirmRemove: false };
 function myListEditPref() {
@@ -513,7 +513,7 @@ function startMyListDraft(prefKey) {
   myListDraft.confirmRemove = false;
 }
 
-// マイトラベルリストの設定画面の、背景のうすい葉っぱの飾り(自分で描いた形)
+// トラベル・リストの設定画面の、背景のうすい葉っぱの飾り(自分で描いた形)
 const MYLIST_LEAF_SVG =
   '<svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
   '<path d="M18 104C40 76 66 52 108 18"/>' +

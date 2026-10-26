@@ -82,7 +82,7 @@ const SETTINGS_TEXT = {
     deleteNotes: [
       "写真・アイコンの画像ファイルは、画像の保存サービス(Cloudinary)に残る場合があります(本サービスでは表示されなくなります)。画像ファイルの削除をご希望の場合は、sales@compass-story.com までご連絡ください。",
       "すでに地図に掲載したお店の情報は、お店の情報として残ります。",
-      "この端末に保存しているマイトラベルリスト・閲覧の履歴は、端末の中に残ります。ブラウザの設定で、このサイトのデータを削除すると消せます。",
+      "この端末に保存しているトラベル・リスト・閲覧の履歴は、端末の中に残ります。ブラウザの設定で、このサイトのデータを削除すると消せます。",
     ],
     deleteAgree: "削除すると元に戻せないことを理解しました",
     deletePasswordLabel: "パスワード(本人確認のため)",
@@ -178,7 +178,7 @@ const SETTINGS_TEXT = {
     deleteNotes: [
       "Image files of photos and icons may remain on our image storage service (Cloudinary), though they will no longer be shown on this service. To have the image files deleted, please contact sales@compass-story.com.",
       "Shop information already listed on the map stays as shop information.",
-      "My Travel List and browsing history stored on this device stay on the device. You can remove them by deleting this site's data in your browser settings.",
+      "Travel List and browsing history stored on this device stay on the device. You can remove them by deleting this site's data in your browser settings.",
     ],
     deleteAgree: "I understand this can't be undone",
     deletePasswordLabel: "Password (to confirm it's you)",
@@ -274,7 +274,7 @@ const SETTINGS_TEXT = {
     deleteNotes: [
       "Tệp ảnh của ảnh đã đăng và ảnh đại diện có thể vẫn còn trên dịch vụ lưu trữ ảnh (Cloudinary), nhưng sẽ không còn hiển thị trên dịch vụ này. Nếu muốn xóa tệp ảnh, vui lòng liên hệ sales@compass-story.com.",
       "Thông tin quán đã được đăng trên bản đồ sẽ được giữ lại như thông tin của quán.",
-      "My Travel List và lịch sử xem lưu trên thiết bị này vẫn còn trên thiết bị. Bạn có thể xóa bằng cách xóa dữ liệu của trang này trong cài đặt trình duyệt.",
+      "Travel List và lịch sử xem lưu trên thiết bị này vẫn còn trên thiết bị. Bạn có thể xóa bằng cách xóa dữ liệu của trang này trong cài đặt trình duyệt.",
     ],
     deleteAgree: "Tôi hiểu rằng không thể khôi phục sau khi xóa",
     deletePasswordLabel: "Mật khẩu (để xác nhận danh tính)",
