@@ -18,6 +18,7 @@ const TODO_TEXT = {
   ja: {
     sectionTitle: "トラベル・リスト",
     sectionSub: "行きたいエリアと探したいお店を選ぼう！",
+    introText: "トラベル・リストは、ユーザーが選択したエリアと好みのスポットから、オススメのお店がリストで表示されます。身近にある新たなベトナムスポットを発見することが可能です。",
     start: "トラベル・リストを作る",
     startSub: "行きたいエリアを追加するだけ",
     settings: "トラベル・リストの設定",
@@ -56,6 +57,7 @@ const TODO_TEXT = {
   en: {
     sectionTitle: "Travel List",
     sectionSub: "Pick the areas you want to go and the shops you're looking for",
+    introText: "Travel List shows recommended shops based on the areas you choose and the kinds of spots you like. Discover new Vietnamese spots close to you.",
     start: "Make a Travel List",
     startSub: "Just add the areas you want to go",
     settings: "Travel List settings",
@@ -94,6 +96,7 @@ const TODO_TEXT = {
   vi: {
     sectionTitle: "Danh sách du lịch",
     sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
+    introText: "Danh sách du lịch hiển thị các quán được gợi ý dựa trên khu vực bạn chọn và loại địa điểm bạn thích. Hãy khám phá những địa điểm Việt Nam mới ngay gần bạn.",
     start: "Tạo danh sách du lịch",
     startSub: "Chỉ cần thêm khu vực bạn muốn đến",
     settings: "Cài đặt danh sách",
@@ -370,15 +373,26 @@ function renderTodoSection() {
   const h = homeText();
   const settings = loadMyList();
   if (!settings) {
+    // まだトラベル・リストを作っていない人には、機能の説明(左: 見出し・説明・作るボタン / 右: 画面の例2枚)を出す
+    //   画面の例の画像は、運営者が用意したもの(images/travel-list-1.jpg: お店の一覧 / images/travel-list-2.jpg: エリアと種類を選ぶ画面)
     return (
-      `<section class="home-section" id="home-todo">` +
-      `<h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
-      `<p class="home-reason home-reason-plain">${esc(x.sectionSub)}</p>` +
-      `<a class="todo-new" href="${esc(myListEditUrl())}" data-mylist-edit>` +
+      `<section class="home-section todo-intro" id="home-todo">` +
+      `<div class="todo-intro-grid">` +
+      `<div class="todo-intro-text">` +
+      `<p class="todo-intro-label">TRAVEL LIST</p>` +
+      `<h2 class="home-h2 todo-intro-title">${esc(x.sectionTitle)}</h2>` +
+      `<p class="todo-intro-desc">${esc(x.introText)}</p>` +
+      `</div>` +
+      `<div class="todo-intro-phones" aria-hidden="true">` +
+      `<img class="todo-intro-phone is-left" src="images/travel-list-1.jpg" alt="" width="480" height="720" loading="lazy" decoding="async">` +
+      `<img class="todo-intro-phone is-right" src="images/travel-list-2.jpg" alt="" width="480" height="819" loading="lazy" decoding="async">` +
+      `</div>` +
+      `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
       // アイコンは、運営者が用意したイラスト(images/mylist-create.png)
       `<span class="todo-new-icon has-illust"><img src="images/mylist-create.png" alt="" width="210" height="180" decoding="async"></span>` +
       `<span class="todo-new-text"><span>${esc(x.start)}</span><span>${esc(x.startSub)}</span></span>` +
-      `</a></section>`
+      `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span>` +
+      `</a></div></section>`
     );
   }
   const also = myListAlsoPrefs(settings);

@@ -9088,3 +9088,55 @@ body.view-detail.is-review-writing { overflow: hidden; }
 .mylist-head-save { color: #fff; background: #2f6b3a; box-shadow: 0 6px 16px rgba(47, 107, 58, 0.3); }
 .mylist-head-close:active,
 .mylist-head-save:active { transform: scale(0.95); }
+
+/* ===== ホームの「トラベル・リスト」の説明(まだ作っていない人向け。js/todo.js の renderTodoSection) ===== */
+.todo-intro-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas: "text" "phones" "cta";
+  gap: 18px;
+}
+.todo-intro-text { grid-area: text; }
+.todo-intro-phones { grid-area: phones; }
+.todo-intro-cta { grid-area: cta; margin-top: 0; }
+.todo-intro-label {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #2e7d32;
+}
+.todo-intro-title { margin: 0 0 12px; }
+.todo-intro-desc { margin: 0; font-size: 0.95rem; line-height: 1.9; color: #3f4d44; }
+.todo-intro-phones {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+}
+.todo-intro-phone {
+  display: block;
+  width: 46%;
+  max-width: 230px;
+  height: auto;
+  background: #fff;
+  border: 6px solid #1f2a23;
+  border-radius: 26px;
+  box-shadow: 0 12px 28px rgba(20, 40, 25, 0.22);
+}
+.todo-intro-phone.is-left { position: relative; z-index: 2; transform: translateY(14px); }
+.todo-intro-phone.is-right { margin-left: -8%; transform: translateY(-6px); }
+.todo-intro-cta .todo-intro-arrow { margin-left: auto; display: inline-flex; color: #2e7d32; }
+@media (min-width: 900px) {
+  .todo-intro-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "text phones" "cta phones";
+    align-items: center;
+    column-gap: 48px;
+    row-gap: 24px;
+  }
+  .todo-intro-text { align-self: end; }
+  .todo-intro-cta { align-self: start; max-width: 460px; }
+  .todo-intro-title { font-size: 1.9rem; }
+  .todo-intro-desc { font-size: 1rem; }
+}
