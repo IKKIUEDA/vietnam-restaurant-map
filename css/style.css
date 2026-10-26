@@ -8944,3 +8944,86 @@ body.view-detail.is-review-writing { overflow: hidden; }
   .photo-grid.photo-grid-3 .photo-thumb-btn,
   .photo-grid.photo-grid-3 .photo-thumb { border-radius: 10px; }
 }
+
+/* ===== 地図の検索ボックスの下の「エリア・カテゴリ」(js/map-quick.js) ===== */
+#search-bar { position: relative; }
+.map-quick { max-width: 640px; margin-top: 8px; }
+.map-quick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.map-quick-row::-webkit-scrollbar { display: none; }
+.map-quick-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2f3d33;
+  background: #fff;
+  border: 1px solid #dfe5dc;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.map-quick-chip img { width: 22px; height: 22px; object-fit: contain; margin: -3px 0; }
+.map-quick-chip.is-on { color: #fff; background: #2e7d32; border-color: #2e7d32; }
+.map-quick-chip.is-on img { background: #fff; border-radius: 50%; }
+.map-quick-sep { flex: none; width: 1px; height: 22px; background: #dfe5dc; }
+.map-quick-panel {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: calc(100% + 4px);
+  z-index: 1300;
+  max-width: 480px;
+  padding: 12px 12px 14px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+.map-quick-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 4px 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.map-quick-close { width: 32px; height: 32px; font-size: 1rem; color: #6b756e; background: none; border: none; cursor: pointer; }
+.map-quick-areas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 50vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.map-quick-areas li:first-child { grid-column: 1 / -1; }
+.map-quick-area-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 11px 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1d2a22;
+  text-align: left;
+  background: #f5f7f4;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.map-quick-area-item small { font-size: 0.75rem; font-weight: 600; color: #6b756e; }
+.map-quick-area-item.is-on { color: #1f5e23; background: #e8f3e8; border-color: #2e7d32; }
