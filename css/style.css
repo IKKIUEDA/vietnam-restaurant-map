@@ -8839,3 +8839,84 @@ body.view-detail.is-review-writing { overflow: hidden; }
 @media (min-width: 700px) {
   .people-grid-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* ===== マイリストに追加・設定の画面(白いカードにまとめ、背景にうすい葉っぱの飾り) ===== */
+#home-page { position: relative; }
+.mylist-leaf {
+  position: absolute;
+  z-index: 0;
+  color: #2e7d32;
+  opacity: 0.13;
+  pointer-events: none;
+}
+.mylist-leaf svg { display: block; width: 100%; height: 100%; }
+.mylist-leaf-a { top: 4px; right: -10px; width: 120px; height: 120px; transform: rotate(10deg); }
+.mylist-leaf-b { top: 52%; left: -36px; width: 130px; height: 130px; transform: rotate(-150deg); }
+.todo-create-head.mylist-page-head { position: relative; z-index: 1; }
+.mylist-form-card {
+  position: relative;
+  z-index: 1;
+  margin: 4px 12px 20px;
+  padding: 22px 16px 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  box-shadow: 0 6px 24px rgba(31, 61, 37, 0.08);
+}
+@media (min-width: 700px) {
+  .mylist-form-card { max-width: 640px; margin-left: auto; margin-right: auto; }
+}
+.mylist-form-card .todo-step-title { margin: 26px 0 14px; font-size: 1rem; }
+.mylist-form-card .todo-step-title:first-child { margin-top: 0; }
+.mylist-form-card .todo-step-title span {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  font-size: 0.95rem;
+  background: #24502a;
+}
+.mylist-form-card .mylist-picks { gap: 12px; }
+.mylist-form-card .mylist-pick {
+  min-height: 56px;
+  border: 1px solid #e7ebe5;
+  box-shadow: 0 3px 10px rgba(31, 61, 37, 0.07);
+}
+.mylist-form-card .mylist-pick.is-on { border: 2px solid #2e7d32; }
+.mylist-pick-text { display: flex; flex-direction: column; align-items: center; }
+.mylist-form-card .mylist-pick.is-done {
+  flex-direction: row;
+  gap: 10px;
+  color: #7d887f;
+  background: #eef1ed;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.mylist-pick-done-icon { display: inline-flex; color: #7d887f; }
+.mylist-form-card .todo-wants { gap: 12px; }
+.mylist-form-card .todo-want {
+  min-height: 108px;
+  border: 1px solid #e7ebe5;
+  box-shadow: 0 3px 10px rgba(31, 61, 37, 0.07);
+}
+.mylist-form-card .todo-want.is-on { border-width: 2px; }
+.mylist-want-check.is-on {
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  background: #e53935;
+  border-radius: 50%;
+}
+.todo-want-cafe .mylist-want-check.is-on { background: #795548; }
+.todo-want-grocery .mylist-want-check.is-on { background: #1e63d6; }
+.mylist-form-card .todo-make {
+  margin-top: 26px;
+  min-height: 56px;
+  border-radius: 28px;
+  background: #2f6b3a;
+  box-shadow: 0 6px 16px rgba(47, 107, 58, 0.28);
+}
+.mylist-form-card .todo-want-restaurant.is-on { border-color: #e53935; }
+.mylist-form-card .todo-want-cafe.is-on { border-color: #795548; }
+.mylist-form-card .todo-want-grocery.is-on { border-color: #1e63d6; }
