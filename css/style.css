@@ -4141,7 +4141,7 @@ a.todo-card .todo-card-foot {
 }
 
 /* ---- ホームの上の写真(ヒーロー) ----
-   画像: 運営者が用意した、ベトナムの街並みのイラスト(images/hero-vietnam-street.jpg。AIで作成したもの)。
+   画像: 運営者が用意した、ベトナムの街並みのイラスト(images/hero-vietnam-street-v2.jpg)。
    文字が読めるように、上と下を暗くするグラデーションを重ねる */
 .home-page {
   padding-top: 0;
@@ -4154,7 +4154,7 @@ a.todo-card .todo-card-foot {
   background-color: #0f2318;
   background-image:
     linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
-    url("../images/hero-vietnam-street.jpg");
+    url("../images/hero-vietnam-street-v2.jpg");
   background-size: cover;
   background-position: 50% 60%;
   color: #ffffff;
@@ -4167,7 +4167,7 @@ a.todo-card .todo-card-foot {
     border-radius: 28px;
     background-image:
       linear-gradient(180deg, rgba(8, 26, 17, 0.72) 0%, rgba(8, 26, 17, 0.28) 48%, rgba(8, 26, 17, 0.7) 100%),
-      url("../images/hero-vietnam-street.jpg");
+      url("../images/hero-vietnam-street-v2.jpg");
   }
 }
 
@@ -9139,4 +9139,22 @@ body.view-detail.is-review-writing { overflow: hidden; }
   .todo-intro-cta { align-self: start; max-width: 460px; }
   .todo-intro-title { font-size: 1.9rem; }
   .todo-intro-desc { font-size: 1rem; }
+}
+
+
+/* ===== ホームの上の写真(ヒーロー): PC では画面の横幅いっぱいに出す(ほかのセクションは今まで通り) =====
+   ・スマホ: 写真の中の人物が見えるよう、左寄りを中心に切り取る */
+.home-top {
+  background-position: 30% 50%;
+}
+@media (min-width: 900px) {
+  body.is-home-top #home-view {
+    overflow-x: hidden; /* 横幅いっぱいにした写真で、横にスクロールしないように */
+  }
+  body.is-home-top .home-top {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    border-radius: 0;
+    background-position: 50% 55%;
+  }
 }
