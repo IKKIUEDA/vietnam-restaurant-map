@@ -1829,6 +1829,7 @@ function renderResultHeading() {
 }
 
 function renderFilters() {
+  if (typeof renderMapQuick === "function") renderMapQuick(); // 地図の検索ボックスの下の「エリア・カテゴリ」(js/map-quick.js)
   if (typeof renderTabs === "function") renderTabs(); // 画面の下のタブ(スマホ)の「保存」の印も、いまの状態に合わせる
   const t = ui[currentLang];
   document.getElementById("dish-label").textContent = t.filterDish;
