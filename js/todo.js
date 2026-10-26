@@ -487,7 +487,7 @@ function renderMyListArea(prefKey) {
     `<section class="home-section todo-list-section">` +
     (types.length > 1 ? `<div class="todo-chips">${chip("all", x.all)}${types.map((t) => chip(t, h.typeLabel[t])).join("")}</div>` : "") +
     (shown.length
-      ? `<p class="todo-rank-note">${esc(x.rankNote)}</p><ul class="todo-shops">${shown.map(todoShopCard).join("")}</ul>`
+      ? `<ul class="todo-shops">${shown.map(todoShopCard).join("")}</ul>`
       : `<p class="home-reason home-reason-plain">${esc(x.empty)}</p>`) +
     `</section>`;
 }
