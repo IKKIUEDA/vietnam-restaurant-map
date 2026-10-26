@@ -76,7 +76,7 @@ function routeFromLocation() {
   if (view === "people" && typeof showHome === "function") return { name: "home", mode: "people" };
   // 特集(js/feature.js): 「?view=feature&type=cafe」
   if (view === "feature" && typeof showHome === "function") return { name: "home", mode: "feature", list: params.get("type") };
-  // マイトラベルリスト(js/todo.js): 「?view=todo」= マイトラベルリスト / 「&edit=1」= 設定 / 「&area=東京都」= そのエリアのお店の一覧
+  // トラベル・リスト(js/todo.js): 「?view=todo」= トラベル・リスト / 「&edit=1」= 設定 / 「&area=東京都」= そのエリアのお店の一覧
   if (view === "todo" && typeof showHome === "function") {
     if (params.get("area")) return { name: "home", mode: "todo-area", list: params.get("area") };
     return { name: "home", mode: params.get("edit") ? "todo-edit" : "todo" };

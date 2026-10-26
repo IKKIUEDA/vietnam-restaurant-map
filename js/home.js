@@ -237,7 +237,7 @@ function homeRecommendations() {
   //   ・保存したお店(♡): そのお店の近く / 同じエリア
   //   ・検索した言葉: 言葉が一致するお店、駅の近く(2km)のお店
   //   ・選んだ種類(料理店・食材店・カフェ)、特集を開いた回数
-  //   ・マイトラベルリストで選んだエリア(都道府県)と種類
+  //   ・トラベル・リストで選んだエリア(都道府県)と種類
   //   ・もう見たお店・保存したお店は出さない。同じエリアばかりにならないように、1エリア2件まで
   //   ・出すのは、レストラン(料理店)とカフェだけ(食材店は出さない。食材店を見た記録は、近さ・エリアの手がかりには使う)
   const recent = loadRecentShops();
@@ -250,7 +250,7 @@ function homeRecommendations() {
   const hasSignal = viewed.length > 0 || saved.length > 0 || searches.length > 0 || Object.keys(picks).length > 0 || !!myList;
   if (!hasSignal) return { items: [], hasSignal: false };
 
-  // 種類の好み(見たお店の種類 + 選んだ種類 + マイトラベルリストの種類)
+  // 種類の好み(見たお店の種類 + 選んだ種類 + トラベル・リストの種類)
   const typeCount = { restaurant: 0, grocery: 0, cafe: 0 };
   viewed.forEach((e, i) => (typeCount[shopType(e.shop)] += Math.pow(0.85, i)));
   saved.forEach((e) => (typeCount[shopType(e.shop)] += 0.5));
@@ -373,7 +373,7 @@ const HOME_AREAS = [
   { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "images/areas/shinmatsudo.jpg", source: "写真AC" },
   { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "images/areas/omiya.jpg", source: "写真AC" },
 ];
-// お店の種類のイラスト(ホームのカテゴリと同じ images/entries/ の絵)。マイトラベルリスト・最初の質問でも使う
+// お店の種類のイラスト(ホームのカテゴリと同じ images/entries/ の絵)。トラベル・リスト・最初の質問でも使う
 //   読み込めないときは、これまでの線のアイコンに戻す
 function typeIllustHtml(key, px) {
   return (
@@ -525,7 +525,7 @@ function renderHome() {
     // エリアから探す(駅のまわりのお店。カードを押すと、地図で「○○駅」を検索)
     renderHomeAreas() +
     `<div class="home-divider"></div>` +
-    // マイトラベルリスト(js/todo.js)
+    // トラベル・リスト(js/todo.js)
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     // あなたへのおすすめ: おすすめのお店があるときだけ出す(しくみの説明や距離は、画面には出さない)
     //   (記録を消すボタンは、アカウントの画面にある。js/account.js)
@@ -574,7 +574,7 @@ function renderHome() {
 }
 
 // ---------------------------------------------------------------------
-// 横にスライドする並び(エリアから探す・マイトラベルリスト・あなたへのおすすめ・特集)の下に、
+// 横にスライドする並び(エリアから探す・トラベル・リスト・あなたへのおすすめ・特集)の下に、
 // いまどのあたりを見ているかが分かる「バー」を出す
 //   ・バーの長さ = 見えている割合、位置 = スクロールした位置。スライドに合わせて動く
 //   ・全部が画面に収まっていて、スライドできないときは出さない
@@ -614,7 +614,7 @@ function attachSwipeBars() {
 }
 window.addEventListener("resize", () => homePage.querySelectorAll(SWIPE_SELECTORS.join(",")).forEach(updateSwipeBar));
 
-// ホームの各まとまり(エリアから探す・マイトラベルリスト・おすすめ・特集・シェア)の背景を、白と薄いグレーの交互にする
+// ホームの各まとまり(エリアから探す・トラベル・リスト・おすすめ・特集・シェア)の背景を、白と薄いグレーの交互にする
 //   ・いちばん下のお問い合わせ(グレー)から上へ、白・グレー・白…と決める(どのまとまりが出ていても、交互になるように)
 function paintHomeBands() {
   const sections = [...homePage.querySelectorAll(":scope > .home-section")].filter((el) => !el.classList.contains("home-top"));
@@ -797,7 +797,7 @@ homePage.addEventListener("submit", (event) => {
 // ---------------------------------------------------------------------
 // 画面の切り替え(js/detail.js の renderRoute から呼ばれる)
 // ---------------------------------------------------------------------
-//   mode: "todo" のときは、ホームの場所に「マイトラベルリストを作る」の画面を出す(URL「?view=todo」。js/todo.js)
+//   mode: "todo" のときは、ホームの場所に「トラベル・リストを作る」の画面を出す(URL「?view=todo」。js/todo.js)
 let homeMode = "home";
 //   mode: "todo-list" のときは、そのリストの一覧(URL「?view=todo&list=ID」)
 let homeListId = null;
@@ -819,7 +819,7 @@ function showHome(mode, listId) {
   homeView.scrollTop = 0;
   renderTabs();
 }
-// いまの画面(ホーム / マイトラベルリスト / マイトラベルリストの設定 / エリアのお店の一覧)を描き直す
+// いまの画面(ホーム / トラベル・リスト / トラベル・リストの設定 / エリアのお店の一覧)を描き直す
 // ホームのトップ: ロゴの横のサイト名の色を、うしろが写真(暗い)なら白、それ以外なら黒にする
 function updateHomeTitleColor() {
   const header = document.querySelector("header");
