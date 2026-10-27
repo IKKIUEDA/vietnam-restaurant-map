@@ -394,7 +394,7 @@ function renderTodoSection() {
     : `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
       // アイコンは、運営者が用意したイラスト(images/mylist-create.png)
       `<span class="todo-new-icon has-illust"><img src="images/mylist-create.png" alt="" width="210" height="180" decoding="async"></span>` +
-      `<span class="todo-new-text"><span>${esc(x.start)}</span><span>${esc(x.startSub)}</span></span>` +
+      `<span class="todo-new-text"><span>${esc(x.start)}</span></span>` +
       `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span></a>`;
   return (
     `<section class="home-section todo-intro" id="home-todo">` +
