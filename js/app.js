@@ -1838,6 +1838,7 @@ function renderResultHeading() {
 }
 
 function renderFilters() {
+  if (typeof schedulePhotoLabelLayout === "function") schedulePhotoLabelLayout(); // 絞り込みでピンが変わったら、写真つきの札を置き直す
   if (typeof renderMapQuick === "function") renderMapQuick(); // 地図の検索ボックスの下の「エリア・カテゴリ」(js/map-quick.js)
   if (typeof renderTabs === "function") renderTabs(); // 画面の下のタブ(スマホ)の「保存」の印も、いまの状態に合わせる
   const t = ui[currentLang];
@@ -2444,3 +2445,37 @@ function syncPhotoLabelZoom() {
 }
 map.on("zoomend", syncPhotoLabelZoom);
 syncPhotoLabelZoom();
+
+// 写真つきの札どうしが重ならないようにする
+//   ・画面に出ている札を上から順に見て、すでに出した札と重なる札は隠す(ピンは、そのまま出す)
+//   ・地図を動かす・拡大する・お店の絞り込みが変わるたびに、置き直す(拡大すると、隠れていた札も出てくる)
+function layoutPhotoLabels() {
+  const box = map.getContainer();
+  if (box.classList.contains("hide-photo-labels")) return;
+  const labels = [...box.querySelectorAll(".shop-photo-label")];
+  labels.forEach((el) => el.classList.remove("is-overlapped"));
+  // お店のピンは、いつも見えるようにする(札がほかのお店のピンに重なるときも、札のほうを隠す)
+  const pins = [...box.querySelectorAll(".shop-pin")].map((pin) => ({ pin, r: pin.getBoundingClientRect() })).filter((x) => x.r.width > 0);
+  const shown = [];
+  const PAD = 4; // 札と札のあいだに、少しすき間をあける
+  labels
+    .map((el) => ({ el, r: el.getBoundingClientRect() }))
+    .filter((x) => x.r.width > 0)
+    .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)
+    .forEach(({ el, r }) => {
+      const meet = (s, pad) => r.left < s.right + pad && r.right + pad > s.left && r.top < s.bottom + pad && r.bottom + pad > s.top;
+      const own = el.parentElement && el.parentElement.querySelector(".shop-pin");
+      const hit = shown.some((s) => meet(s, PAD)) || pins.some((x) => x.pin !== own && meet(x.r, 0));
+      if (hit) el.classList.add("is-overlapped");
+      else shown.push(r);
+    });
+}
+var photoLabelTimer = null; // var: 読み込みの途中(renderFilters)から呼ばれても、エラーにならないように
+function schedulePhotoLabelLayout() {
+  clearTimeout(photoLabelTimer);
+  // ピン(まとめ表示)の出し入れが終わってから、置き直す
+  photoLabelTimer = setTimeout(() => requestAnimationFrame(layoutPhotoLabels), 120);
+}
+map.on("moveend zoomend", schedulePhotoLabelLayout);
+window.addEventListener("resize", schedulePhotoLabelLayout);
+window.addEventListener("shop-covers-ready", schedulePhotoLabelLayout);

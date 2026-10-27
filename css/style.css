@@ -9171,3 +9171,17 @@ body.view-detail.is-review-writing { overflow: hidden; }
 }
 .home-label + .home-h2,
 .home-label + .home-area-head .home-h2 { margin-top: 0; }
+
+
+/* 写真つきの札: ほかの札と重なるものは隠す(js/app.js の layoutPhotoLabels)。スマホでは札を少し小さく */
+.shop-photo-label.is-overlapped { display: none; }
+@media (max-width: 600px) {
+  .shop-photo-label {
+    gap: 6px;
+    max-width: 150px;
+    padding: 3px 9px 3px 3px;
+    font-size: 12px;
+    border-radius: 9px;
+  }
+  .shop-photo-label img { width: 26px; height: 26px; border-radius: 6px; }
+}
