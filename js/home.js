@@ -411,6 +411,37 @@ function areaListUrl() {
 function homeSectionLabel(text) {
   return `<p class="home-label" lang="en">${esc(text)}</p>`;
 }
+// 横にスライドする並びを、左右の「‹ ›」ボタンといっしょに包む(ボタンは PC だけ。写真の縦の真ん中に重ねる)
+function hscrollHtml(listHtml, selector) {
+  const h = homeText();
+  const btn = (dir, icon, label) =>
+    `<button type="button" class="hscroll-arrow is-${dir < 0 ? "prev" : "next"}" data-scroll-list="${selector}" data-scroll-dir="${dir}" aria-label="${esc(label)}">${homeIcon(icon, 22)}</button>`;
+  return `<div class="hscroll">${btn(-1, "back", h.areaPrev)}${listHtml}${btn(1, "forward", h.areaNext)}</div>`;
+}
+// 「‹ ›」の高さを写真の真ん中に合わせ、端まで来たら、その向きのボタンを隠す
+function updateHscrollArrows() {
+  homePage.querySelectorAll(".hscroll").forEach((wrap) => {
+    const list = wrap.querySelector("ul");
+    if (!list) return;
+    const img = list.querySelector(".home-rec-img") || list.querySelector("li"); // 写真の部分(無ければ、カード全体)
+    if (img) {
+      const a = img.getBoundingClientRect();
+      const w = wrap.getBoundingClientRect();
+      if (a.height > 0) wrap.style.setProperty("--hscroll-mid", `${a.top - w.top + a.height / 2}px`);
+    }
+    const max = list.scrollWidth - list.clientWidth;
+    wrap.classList.toggle("at-start", list.scrollLeft <= 2);
+    wrap.classList.toggle("at-end", list.scrollLeft >= max - 2);
+    if (!list.dataset.hscroll) {
+      list.dataset.hscroll = "1";
+      list.addEventListener("scroll", () => updateHscrollArrows(), { passive: true });
+      // 写真が読み込まれたとき・マウスを乗せたときにも、高さを合わせ直す(読み込みの途中で、写真の高さが変わることがあるため)
+      wrap.addEventListener("mouseenter", () => updateHscrollArrows());
+      list.querySelectorAll("img").forEach((im) => im.addEventListener("load", () => updateHscrollArrows(), { once: true }));
+    }
+  });
+}
+window.addEventListener("resize", () => updateHscrollArrows());
 function renderHomeAreas() {
   const cards = homeAreaCardsHtml();
   if (!cards) return "";
@@ -421,12 +452,9 @@ function renderHomeAreas() {
     `<span class="mylist-head-actions">` +
     // 「もっと見る」: エリアの一覧のページ(URL「?view=areas」)
     `<a class="mylist-see-all" href="${esc(areaListUrl())}" data-home-nav>${esc(homeText().areaMore)}</a>` +
-    // PC 用の「‹ ›」ボタン(マウスでも横に送れるように。スマホは指で横にスクロール)
-    `<span class="home-area-arrows">` +
-    `<button type="button" class="home-area-arrow" data-area-scroll="-1" aria-label="${esc(homeText().areaPrev)}">${homeIcon("back", 20)}</button>` +
-    `<button type="button" class="home-area-arrow" data-area-scroll="1" aria-label="${esc(homeText().areaNext)}">${homeIcon("forward", 20)}</button>` +
-    `</span></span></div>` +
-    `<ul class="home-areas">${cards}</ul>` +
+    `</span></div>` +
+    // PC 用の「‹ ›」ボタンは、写真の左右の端(縦の真ん中)に重ねる(スマホは指で横にスクロール)
+    hscrollHtml(`<ul class="home-areas">${cards}</ul>`, ".home-areas") +
     `</section>`
   );
 }
@@ -537,13 +565,9 @@ function renderHome() {
     (rec.items.length
       ? `<section class="home-section home-rec-section">` +
         homeSectionLabel("Recommendations For You") +
-        `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2>` +
-        `<span class="home-area-arrows">` +
-        `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
-        `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="1" aria-label="${esc(h.areaNext)}">${homeIcon("forward", 20)}</button>` +
-        `</span></div>` +
+        `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2></div>` +
         `<p class="home-section-sub">${esc(h.recSub)}</p>` +
-        `<ul class="home-rec-cards">${recItems}</ul>` +
+        hscrollHtml(`<ul class="home-rec-cards">${recItems}</ul>`, ".home-rec-cards") +
         `</section>`
       : "") +
     `<section class="home-section">` +
@@ -579,6 +603,8 @@ function renderHome() {
   paintHomeBands();
   requestAnimationFrame(updateHomeTitleColor);
   attachSwipeBars();
+  updateHscrollArrows();
+  setTimeout(updateHscrollArrows, 400); // 写真の読み込みで高さが変わることがあるので、少しあとにも合わせ直す
 }
 
 // ---------------------------------------------------------------------
