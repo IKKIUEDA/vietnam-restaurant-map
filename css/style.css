@@ -9285,3 +9285,25 @@ body.view-detail.is-review-writing { overflow: hidden; }
   .hscroll.at-start .hscroll-arrow.is-prev,
   .hscroll.at-end .hscroll-arrow.is-next { opacity: 0; pointer-events: none; }
 }
+
+
+/* ===== PC のホームの上の検索バー: 押すと、検索バーだけを明るく残して、ほかを暗くする(js/home.js の ensureHeaderSearch) ===== */
+.header-search-shade { display: none; }
+@media (min-width: 900px) {
+  .header-search-box { padding-right: 16px; }
+  body.is-home-top.is-header-search-focus .header-search-shade {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    background: rgba(0, 0, 0, 0.55);
+    animation: header-shade-in 0.18s ease-out;
+  }
+  body.is-home-top .header-search { position: relative; z-index: 2; }
+  body.is-home-top.is-header-search-focus .header-search-box {
+    background: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  }
+  @keyframes header-shade-in { from { opacity: 0; } }
+}

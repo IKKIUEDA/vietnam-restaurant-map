@@ -950,6 +950,21 @@ function ensureHeaderSearch() {
     form.className = "header-search";
     form.setAttribute("role", "search");
     brand.insertAdjacentElement("afterend", form);
+    // 検索バーを押すと、検索バーだけを明るく残して、ほかを暗くする(もう一度ほかを押すか、Esc で元に戻る)
+    const shade = document.createElement("div");
+    shade.className = "header-search-shade";
+    shade.setAttribute("aria-hidden", "true");
+    header.appendChild(shade);
+    shade.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      const input = form.querySelector("input");
+      if (input) input.blur();
+    });
+    form.addEventListener("focusin", () => document.body.classList.add("is-header-search-focus"));
+    form.addEventListener("focusout", () => document.body.classList.remove("is-header-search-focus"));
+    form.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") event.target.blur();
+    });
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       const input = form.querySelector("input");
@@ -964,7 +979,6 @@ function ensureHeaderSearch() {
   form.innerHTML =
     `<label class="visually-hidden" for="header-search-input">${esc(h.searchLabel)}</label>` +
     `<span class="header-search-box">${homeIcon("search", 18)}` +
-    `<input id="header-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search">` +
-    `<button type="submit" class="header-search-btn">${esc(h.searchButton)}</button></span>`;
+    `<input id="header-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search"></span>`;
   form.querySelector("input").value = current;
 }
