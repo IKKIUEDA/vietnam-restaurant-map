@@ -9185,3 +9185,73 @@ body.view-detail.is-review-writing { overflow: hidden; }
   }
   .shop-photo-label img { width: 26px; height: 26px; border-radius: 6px; }
 }
+
+
+/* ===== PC のホームだけ: 上の帯を白くして、ロゴ・サイト名の右横に検索バーを出す(js/home.js の ensureHeaderSearch) =====
+   ・帯はスクロールしても上に出たまま。トップ画像の下の検索窓は、PC のホームでは出さない
+   ・スマホ・ほかの画面は、今まで通り(検索バーは出さない) */
+.header-search { display: none; }
+@media (min-width: 900px) {
+  body.is-home-top header {
+    height: 72px;
+    padding-top: 0;
+    padding-bottom: 0;
+    align-items: center;
+    gap: 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #ecefe9;
+    pointer-events: auto;
+  }
+  body.is-home-top header .header-titles,
+  body.is-home-top header.is-scrolled .header-titles {
+    opacity: 1;
+    visibility: visible;
+  }
+  body.is-home-top header.is-on-photo #app-title {
+    color: var(--c-text);
+    text-shadow: none;
+  }
+  body.is-home-top .app-logo { height: 48px; filter: none; }
+  body.is-home-top .header-brand { flex: none; }
+  body.is-home-top .header-search {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    max-width: 640px;
+    margin-right: auto;
+  }
+  .header-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 4px 0 16px;
+    color: #6b756e;
+    background: #f4f5f1;
+    border: 1.5px solid #2e7d32;
+    border-radius: 22px;
+  }
+  .header-search-box:focus-within { background: #ffffff; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15); }
+  .header-search-box input {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.95rem;
+    color: #1d2a22;
+    background: none;
+    border: none;
+    outline: none;
+  }
+  .header-search-btn {
+    flex: none;
+    height: 34px;
+    padding: 0 16px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: #2e7d32;
+    border: none;
+    border-radius: 17px;
+    cursor: pointer;
+  }
+  body.is-home-top .home-search { display: none; }
+}
