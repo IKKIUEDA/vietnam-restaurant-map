@@ -9491,3 +9491,10 @@ body.view-detail.is-review-writing { overflow: hidden; }
     max-width: none;
   }
 }
+
+/* 英語の画面では、見出しの上の緑の英語(「Search By Area」など)と、機能のカードの英語の小見出しを出さない
+   (見出しそのものが英語なので、同じ内容が重なるため)。日本語・ベトナム語の画面では、そのまま出す */
+html[lang="en"] .home-label,
+html[lang="en"] .fg-label {
+  display: none;
+}
