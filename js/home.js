@@ -575,6 +575,7 @@ function renderHome() {
     `<span>© Compass Story ALL RIGHTS RESERVED.</span></p>` +
     `</footer>`;
   homeEntriesRise = false;
+  ensureHeaderSearch();
   paintHomeBands();
   requestAnimationFrame(updateHomeTitleColor);
   attachSwipeBars();
@@ -907,3 +908,37 @@ document.getElementById("lang-select").addEventListener("change", () => {
     renderTabs();
   }, 0);
 });
+
+// PC のホームだけ: 画面の上の帯(ロゴ・サイト名の右横)に、検索バーを出す(CSS で、PC のホームのときだけ見える)
+//   ・下にスクロールしても、上の帯といっしょに出たまま
+//   ・探すと、ホームの検索窓と同じく、地図の画面で結果を出す
+function ensureHeaderSearch() {
+  const header = document.querySelector("header");
+  const brand = document.getElementById("brand-link");
+  if (!header || !brand) return;
+  const h = homeText();
+  let form = document.getElementById("header-search");
+  if (!form) {
+    form = document.createElement("form");
+    form.id = "header-search";
+    form.className = "header-search";
+    form.setAttribute("role", "search");
+    brand.insertAdjacentElement("afterend", form);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = form.querySelector("input");
+      const q = input.value.trim();
+      if (!q) return;
+      openMapWithSearch(q);
+      input.value = "";
+      input.blur();
+    });
+  }
+  const current = form.querySelector("input") ? form.querySelector("input").value : "";
+  form.innerHTML =
+    `<label class="visually-hidden" for="header-search-input">${esc(h.searchLabel)}</label>` +
+    `<span class="header-search-box">${homeIcon("search", 18)}` +
+    `<input id="header-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search">` +
+    `<button type="submit" class="header-search-btn">${esc(h.searchButton)}</button></span>`;
+  form.querySelector("input").value = current;
+}
