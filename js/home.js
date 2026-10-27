@@ -238,6 +238,7 @@ function homeRecommendations() {
   //   ・検索した言葉: 言葉が一致するお店、駅の近く(2km)のお店
   //   ・選んだ種類(料理店・食材店・カフェ)、特集を開いた回数
   //   ・トラベル・リストで選んだエリア(都道府県)と種類
+  //   ・レビューのあるお店を優先する(js/todo.js の loadAllRatings で、すべてのお店の評価をまとめて読む)
   //   ・もう見たお店・保存したお店は出さない。同じエリアばかりにならないように、1エリア2件まで
   //   ・出すのは、レストラン(料理店)とカフェだけ(食材店は出さない。食材店を見た記録は、近さ・エリアの手がかりには使う)
   const recent = loadRecentShops();
@@ -288,7 +289,14 @@ function homeRecommendations() {
         const placeHit = (sr.places || []).some((p) => Array.isArray(p) && distanceMeters(p[0], p[1], lat, lng) <= SEARCH_NEAR_STATION_M);
         if (placeHit || sr.terms.every((t) => text.includes(t))) score += 1.1 * w;
       });
+      const place = score + (myList && myList.prefs.includes(e.shop.prefecture) ? 0.4 : 0); // 場所(エリア)の合い具合
       if (typeTotal > 0) score += 0.6 * (typeCount[shopType(e.shop)] / typeTotal);
+      // レビューのあるお店を優先する。ただし、エリアも考える:
+      //   ・関心のあるエリアのお店なら +1.2(→ レビューのないお店より先に出る)
+      //   ・遠いエリアのお店は +0.6 まで(→ 関心のあるエリアのお店のあとに出る)
+      //   ・件数(5件まで)と★の平均でも、少しだけ上げる
+      const r = typeof todoRating === "function" ? todoRating(e.shop.id) : null;
+      if (r && r.count > 0) score += 0.6 + 0.6 * Math.min(1, place) + 0.1 * Math.min(5, r.count) + 0.1 * (r.avg - 3);
       if (myList) {
         if (myList.prefs.includes(e.shop.prefecture)) score += 0.4;
         if (!myList.types.includes(shopType(e.shop))) score *= 0.6;
@@ -482,23 +490,11 @@ function openMapWithSearch(q) {
 // ホームの中身
 // ---------------------------------------------------------------------
 let homeEntriesRise = true; // まだ一度も動かしていない(最初の1回だけ true)
-function renderHome() {
-  // スマホ(幅が狭い画面)では、検索窓の案内文を短くする(「(例: 千葉駅)」まで入れると、途中で切れてしまうため)
-  const narrowScreen = window.matchMedia("(max-width: 480px)").matches;
+// あなたへのおすすめ(写真つきのカードを横に並べる。おすすめのお店があるときだけ出す)
+//   (しくみの説明や距離は、画面には出さない。記録を消すボタンは、アカウントの画面にある。js/account.js)
+function homeRecSectionHtml() {
   const h = homeText();
-  const t = ui[currentLang];
-  const count = (type) => restaurants.filter((s) => shopType(s) === type).length;
-  const hasCafe = count("cafe") > 0;
-  const lead = `${t.resultHeading(t.resultWhere("default"), t.resultWhat(null, false))}`;
-
-  const entryButton = (key, label) =>
-    `<button type="button" class="home-entry home-entry-${key}" data-home-action="${key}">` +
-    // アイコンは、運営者が用意したイラスト(images/entries/)。読み込めないときは、これまでの線のアイコン
-    `<span class="home-entry-icon has-illust"><img src="images/entries/${key}.png" alt="" width="192" height="192" ` +
-    `onerror="this.parentNode.classList.remove('has-illust');this.replaceWith(document.createRange().createContextualFragment(${esc(JSON.stringify(homeIcon(key, 26)))}))"></span>` +
-    `<span class="home-entry-label">${esc(label)}</span>` +
-    `<span class="home-entry-arrow" aria-hidden="true">${homeIcon("forward", 18)}</span></button>`;
-
+  if (typeof loadAllRatings === "function") loadAllRatings();
   const rec = homeRecommendations();
   // おすすめは、写真つきのカードを横に並べる(1枚 = 1店舗。横にスライドして見る)
   if (typeof loadTodoRatings === "function") loadTodoRatings(rec.items.map((x) => x.entry.shop.id));
@@ -523,6 +519,43 @@ function renderHome() {
       );
     })
     .join("");
+  if (!rec.items.length) return "";
+  return (
+    `<section class="home-section home-rec-section">` +
+    homeSectionLabel("Recommendations For You") +
+    `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2></div>` +
+    `<p class="home-section-sub">${esc(h.recSub)}</p>` +
+    hscrollHtml(`<ul class="home-rec-cards">${recItems}</ul>`, ".home-rec-cards") +
+    `</section>`
+  );
+}
+// レビューの評価がそろったら、おすすめの部分だけを描き直す(ほかの部分・スクロールの位置はそのまま)
+function refreshHomeRec() {
+  const slot = document.getElementById("home-rec-slot");
+  if (!slot || !document.body.classList.contains("view-home") || homeMode !== "home") return;
+  const html = homeRecSectionHtml();
+  if (slot.innerHTML === html) return;
+  slot.innerHTML = html;
+  updateHscrollArrows();
+}
+
+function renderHome() {
+  // スマホ(幅が狭い画面)では、検索窓の案内文を短くする(「(例: 千葉駅)」まで入れると、途中で切れてしまうため)
+  const narrowScreen = window.matchMedia("(max-width: 480px)").matches;
+  const h = homeText();
+  const t = ui[currentLang];
+  const count = (type) => restaurants.filter((s) => shopType(s) === type).length;
+  const hasCafe = count("cafe") > 0;
+  const lead = `${t.resultHeading(t.resultWhere("default"), t.resultWhat(null, false))}`;
+
+  const entryButton = (key, label) =>
+    `<button type="button" class="home-entry home-entry-${key}" data-home-action="${key}">` +
+    // アイコンは、運営者が用意したイラスト(images/entries/)。読み込めないときは、これまでの線のアイコン
+    `<span class="home-entry-icon has-illust"><img src="images/entries/${key}.png" alt="" width="192" height="192" ` +
+    `onerror="this.parentNode.classList.remove('has-illust');this.replaceWith(document.createRange().createContextualFragment(${esc(JSON.stringify(homeIcon(key, 26)))}))"></span>` +
+    `<span class="home-entry-label">${esc(label)}</span>` +
+    `<span class="home-entry-arrow" aria-hidden="true">${homeIcon("forward", 18)}</span></button>`;
+
 
   const feature = (key, tag, title, sub) =>
     `<button type="button" class="home-feature home-feature-${key}" data-home-action="${key}">` +
@@ -560,16 +593,8 @@ function renderHome() {
     `<div class="home-divider"></div>` +
     // トラベル・リスト(js/todo.js)
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
-    // あなたへのおすすめ: おすすめのお店があるときだけ出す(しくみの説明や距離は、画面には出さない)
-    //   (記録を消すボタンは、アカウントの画面にある。js/account.js)
-    (rec.items.length
-      ? `<section class="home-section home-rec-section">` +
-        homeSectionLabel("Recommendations For You") +
-        `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2></div>` +
-        `<p class="home-section-sub">${esc(h.recSub)}</p>` +
-        hscrollHtml(`<ul class="home-rec-cards">${recItems}</ul>`, ".home-rec-cards") +
-        `</section>`
-      : "") +
+    // あなたへのおすすめ(レビューの評価を読み終えたら、ここだけ描き直す)
+    `<div id="home-rec-slot">${homeRecSectionHtml()}</div>` +
     `<section class="home-section">` +
     homeSectionLabel("Special Feature") +
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
