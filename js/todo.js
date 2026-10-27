@@ -20,6 +20,8 @@ const TODO_TEXT = {
     sectionSub: "行きたいエリアと探したいお店を選ぼう！",
     introText: "トラベル・リストは、ユーザーが選択したエリアと好みのスポットから、オススメのお店がリストで表示されます。身近にある新たなベトナムスポットを発見することが可能です。",
     start: "トラベル・リストを作る",
+    viewTitle: "トラベル・リストを見る",
+    viewSub: (names) => (names.length ? `${names.join("・")}のお店を見る` : "選んだエリアのお店を見る"),
     startSub: "行きたいエリアを追加するだけ",
     settings: "トラベル・リストの設定",
     settingsOpen: "トラベル・リストの設定を変える",
@@ -59,6 +61,8 @@ const TODO_TEXT = {
     sectionSub: "Pick the areas you want to go and the shops you're looking for",
     introText: "Travel List shows recommended shops based on the areas you choose and the kinds of spots you like. Discover new Vietnamese spots close to you.",
     start: "Make a Travel List",
+    viewTitle: "View your Travel List",
+    viewSub: (names) => (names.length ? `Shops in ${names.join(", ")}` : "Shops in the areas you chose"),
     startSub: "Just add the areas you want to go",
     settings: "Travel List settings",
     settingsOpen: "Change Travel List settings",
@@ -98,6 +102,8 @@ const TODO_TEXT = {
     sectionSub: "Chọn khu vực muốn đến và loại quán bạn đang tìm",
     introText: "Danh sách du lịch hiển thị các quán được gợi ý dựa trên khu vực bạn chọn và loại địa điểm bạn thích. Hãy khám phá những địa điểm Việt Nam mới ngay gần bạn.",
     start: "Tạo danh sách du lịch",
+    viewTitle: "Xem danh sách du lịch",
+    viewSub: (names) => (names.length ? `Quán ở ${names.join(", ")}` : "Quán ở khu vực bạn đã chọn"),
     startSub: "Chỉ cần thêm khu vực bạn muốn đến",
     settings: "Cài đặt danh sách",
     settingsOpen: "Thay đổi cài đặt danh sách",
@@ -370,52 +376,40 @@ function myListAreaCards(settings) {
 //   追加したエリアのカードを横に並べる(横にスライド)。最近見たお店のエリアも、うしろに続ける
 function renderTodoSection() {
   const x = todoText();
-  const h = homeText();
   const settings = loadMyList();
-  if (!settings) {
-    // まだトラベル・リストを作っていない人には、機能の説明(左: 見出し・説明・作るボタン / 右: 画面の例2枚)を出す
-    //   画面の例の画像は、運営者が用意したもの(images/travel-list-1.jpg: お店の一覧 / images/travel-list-2.jpg: エリアと種類を選ぶ画面)
-    return (
-      `<section class="home-section todo-intro" id="home-todo">` +
-      `<div class="todo-intro-grid">` +
-      `<div class="todo-intro-text">` +
-      homeSectionLabel("Travel List") +
-      `<h2 class="home-h2 todo-intro-title">${esc(x.sectionTitle)}</h2>` +
-      `<p class="todo-intro-desc">${esc(x.introText)}</p>` +
-      `</div>` +
-      `<div class="todo-intro-phones" aria-hidden="true">` +
-      `<img class="todo-intro-phone is-left" src="images/travel-list-1.jpg?v=3" alt="" width="480" height="752" loading="lazy" decoding="async">` +
-      `<img class="todo-intro-phone is-right" src="images/travel-list-2.jpg?v=2" alt="" width="480" height="752" loading="lazy" decoding="async">` +
-      `</div>` +
-      `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
+  // 機能の説明(左: 見出し・説明・ボタン / 右: 画面の例2枚)は、いつも出す
+  //   画面の例の画像は、運営者が用意したもの(images/travel-list-1.jpg: お店の一覧 / images/travel-list-2.jpg: エリアと種類を選ぶ画面)
+  //   ボタン: まだ作っていない人 →「トラベル・リストを作る」/ もう作った人 →「トラベル・リストを見る」(選んだエリアを小さく出す)
+  const areaNames = settings
+    ? settings.items
+        .map((it) => myListPrefs().find((q) => q.key === it.pref))
+        .filter(Boolean)
+        .map((p) => pick(p.label))
+    : [];
+  const cta = settings
+    ? `<a class="todo-new todo-intro-cta" href="${esc(myListUrl())}" data-mylist-nav>` +
+      `<span class="todo-new-icon has-illust"><img src="images/mylist-create.png" alt="" width="210" height="180" decoding="async"></span>` +
+      `<span class="todo-new-text"><span>${esc(x.viewTitle)}</span><span>${esc(x.viewSub(areaNames))}</span></span>` +
+      `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span></a>`
+    : `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
       // アイコンは、運営者が用意したイラスト(images/mylist-create.png)
       `<span class="todo-new-icon has-illust"><img src="images/mylist-create.png" alt="" width="210" height="180" decoding="async"></span>` +
       `<span class="todo-new-text"><span>${esc(x.start)}</span><span>${esc(x.startSub)}</span></span>` +
-      `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span>` +
-      `</a></div></section>`
-    );
-  }
-  const also = myListAlsoPrefs(settings);
-  const cards = [
-    ...settings.items.map((it) => {
-      const p = myListPrefs().find((q) => q.key === it.pref);
-      return p ? myListAreaCard(p, it.types) : "";
-    }),
-    // 最近見たお店のエリア(まだ追加していない)も、同じカードで続ける。押すと、そのエリアのお店の一覧
-    ...also.map((p) => myListAreaCard(p, myListTypeChoices())),
-  ].filter(Boolean);
+      `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span></a>`;
   return (
-    `<section class="home-section" id="home-todo">` +
+    `<section class="home-section todo-intro" id="home-todo">` +
+    `<div class="todo-intro-grid">` +
+    `<div class="todo-intro-text">` +
     homeSectionLabel("Travel List") +
-    `<div class="home-area-head"><h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
-    `<span class="mylist-head-actions">` +
-    `<a class="mylist-see-all" href="${esc(myListUrl())}" data-mylist-nav>${esc(x.seeAll)}</a>` +
-    `<span class="home-area-arrows">` +
-    `<button type="button" class="home-area-arrow mylist-arrow" data-scroll-list=".mylist-carousel" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
-    `<button type="button" class="home-area-arrow mylist-arrow" data-scroll-list=".mylist-carousel" data-scroll-dir="1" aria-label="${esc(h.areaNext)}">${homeIcon("forward", 20)}</button>` +
-    `</span></span></div>` +
-    `<ul class="mylist-carousel">${cards.map((c) => `<li>${c}</li>`).join("")}</ul>` +
-    `</section>`
+    `<h2 class="home-h2 todo-intro-title">${esc(x.sectionTitle)}</h2>` +
+    `<p class="todo-intro-desc">${esc(x.introText)}</p>` +
+    `</div>` +
+    `<div class="todo-intro-phones" aria-hidden="true">` +
+    `<img class="todo-intro-phone is-left" src="images/travel-list-1.jpg?v=3" alt="" width="480" height="752" loading="lazy" decoding="async">` +
+    `<img class="todo-intro-phone is-right" src="images/travel-list-2.jpg?v=2" alt="" width="480" height="752" loading="lazy" decoding="async">` +
+    `</div>` +
+    cta +
+    `</div></section>`
   );
 }
 
