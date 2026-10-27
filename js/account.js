@@ -520,12 +520,15 @@ function renderAccountPage() {
       //   (保存した店は、地図の「♡ 保存した店」から見られる。履歴を消すは、ログイン後のアカウント画面にある)
       accountHeader(x.title) +
       (accountGoodbye ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(accountGoodbye)}</span></p>` : "") +
-      `<section class="home-section acct-section acct-guest">` +
-      `<div class="acct-guest-main"><div class="acct-guest-card">` +
-      `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
-      `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
-      `</div></div>` +
-      `</section>`;
+      // ログイン・新規会員登録の入力欄を、画面に直接出す(js/auth-page.js)
+      (typeof authPageHtml === "function"
+        ? authPageHtml()
+        : `<section class="home-section acct-section acct-guest">` +
+          `<div class="acct-guest-main"><div class="acct-guest-card">` +
+          `<p class="acct-guest-title">${esc(x.loginTitle)}</p>` +
+          `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button>` +
+          `</div></div>` +
+          `</section>`);
     return;
   }
   accountGoodbye = "";
