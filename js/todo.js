@@ -379,7 +379,7 @@ function renderTodoSection() {
       `<section class="home-section todo-intro" id="home-todo">` +
       `<div class="todo-intro-grid">` +
       `<div class="todo-intro-text">` +
-      `<p class="todo-intro-label">TRAVEL LIST</p>` +
+      homeSectionLabel("Travel List") +
       `<h2 class="home-h2 todo-intro-title">${esc(x.sectionTitle)}</h2>` +
       `<p class="todo-intro-desc">${esc(x.introText)}</p>` +
       `</div>` +
@@ -406,6 +406,7 @@ function renderTodoSection() {
   ].filter(Boolean);
   return (
     `<section class="home-section" id="home-todo">` +
+    homeSectionLabel("Travel List") +
     `<div class="home-area-head"><h2 class="home-h2">${esc(x.sectionTitle)}</h2>` +
     `<span class="mylist-head-actions">` +
     `<a class="mylist-see-all" href="${esc(myListUrl())}" data-mylist-nav>${esc(x.seeAll)}</a>` +
