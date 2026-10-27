@@ -236,6 +236,27 @@ function loadTodoRatings(ids) {
       }
     });
 }
+// すべてのお店の評価を、まとめて1回だけ読む(ホームの「あなたへのおすすめ」で、レビューのあるお店を優先するため)
+//   ・読み終えたら、レビューの無いお店は「0件」として覚える(お店ごとに読み直さない)
+let allRatingsStatus = "idle"; // "idle" | "loading" | "done" | "failed"
+function loadAllRatings() {
+  if (allRatingsStatus !== "idle" || typeof getReviewsApi !== "function") return;
+  allRatingsStatus = "loading";
+  getReviewsApi()
+    .then((api) => (typeof api.fetchAllRatings === "function" ? api.fetchAllRatings() : Promise.reject(new Error("no api"))))
+    .then((map) => {
+      entries.forEach((e) => todoRatings.set(e.shop.id, map[e.shop.id] || { avg: 0, count: 0 }));
+      allRatingsStatus = "done";
+    })
+    .catch((error) => {
+      console.warn("レビューの評価をまとめて読めませんでした:", error);
+      allRatingsStatus = "failed";
+    })
+    .then(() => {
+      if (typeof refreshHomeRec === "function") refreshHomeRec();
+      if (typeof updateHomeRatings === "function") updateHomeRatings();
+    });
+}
 function todoRating(id) {
   const r = todoRatings.get(id);
   return r && r !== "loading" ? r : null;
