@@ -136,6 +136,7 @@ function homePeopleInnerHtml() {
     body = `<p class="people-empty">${esc(x.loading)}</p>`;
   }
   return (
+    homeSectionLabel("User") +
     `<div class="home-area-head"><h2 class="home-h2">${esc(x.title)}</h2>` +
     `<a class="mylist-see-all" href="${esc(peopleUrl())}" data-home-nav>${esc(x.more)}</a></div>` +
     `<p class="home-section-sub">${esc(x.sub)}</p>` +

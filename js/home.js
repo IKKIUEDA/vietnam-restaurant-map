@@ -407,11 +407,16 @@ function homeAreaCardsHtml() {
 function areaListUrl() {
   return location.pathname + "?view=areas";
 }
+// ホームの各まとまりの見出しの上に出す、緑の小さな英語のラベル(例: 「Search By Area」)
+function homeSectionLabel(text) {
+  return `<p class="home-label" lang="en">${esc(text)}</p>`;
+}
 function renderHomeAreas() {
   const cards = homeAreaCardsHtml();
   if (!cards) return "";
   return (
     `<section class="home-section home-area-section">` +
+    homeSectionLabel("Search By Area") +
     `<div class="home-area-head"><h2 class="home-h2">${esc(homeText().areaTitle)}</h2>` +
     `<span class="mylist-head-actions">` +
     // 「もっと見る」: エリアの一覧のページ(URL「?view=areas」)
@@ -531,6 +536,7 @@ function renderHome() {
     //   (記録を消すボタンは、アカウントの画面にある。js/account.js)
     (rec.items.length
       ? `<section class="home-section home-rec-section">` +
+        homeSectionLabel("Recommendations For You") +
         `<div class="home-area-head"><h2 class="home-h2">${esc(h.recTitle)}</h2>` +
         `<span class="home-area-arrows">` +
         `<button type="button" class="home-area-arrow" data-scroll-list=".home-rec-cards" data-scroll-dir="-1" aria-label="${esc(h.areaPrev)}">${homeIcon("back", 20)}</button>` +
@@ -541,6 +547,7 @@ function renderHome() {
         `</section>`
       : "") +
     `<section class="home-section">` +
+    homeSectionLabel("Special Feature") +
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
     `<p class="home-section-sub">${esc(h.featureSub)}</p>` +
     `<div class="home-features">` +
