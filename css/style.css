@@ -9255,3 +9255,33 @@ body.view-detail.is-review-writing { overflow: hidden; }
   }
   body.is-home-top .home-search { display: none; }
 }
+
+
+/* ===== 横にスライドする並びの「‹ ›」(PC だけ): 写真の左右の端・縦の真ん中に重ねる(js/home.js の hscrollHtml) ===== */
+.hscroll { position: relative; }
+.hscroll-arrow { display: none; }
+@media (hover: hover) and (min-width: 900px) {
+  .hscroll-arrow {
+    position: absolute;
+    top: var(--hscroll-mid, 40%);
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #1d2a22;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: opacity 0.2s, background-color 0.15s;
+  }
+  .hscroll-arrow:hover { background: #ffffff; }
+  .hscroll-arrow.is-prev { left: -14px; }
+  .hscroll-arrow.is-next { right: -14px; }
+  .hscroll.at-start .hscroll-arrow.is-prev,
+  .hscroll.at-end .hscroll-arrow.is-next { opacity: 0; pointer-events: none; }
+}
