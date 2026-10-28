@@ -625,9 +625,10 @@ function renderHome() {
     `<img src="images/logo.png" alt="" width="158" height="208" loading="lazy">` +
     `<span>${esc(t.title)}</span></a>` +
     `<nav class="home-footer" aria-label="Site pages">` +
-    `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
-    `<a href="${esc(privacyUrl())}" data-home-nav>${esc(t.privacyPageTitle)}</a>` +
+    // 並び: 事業者情報 → プライバシーポリシー → 利用規約
     `<a href="${esc(aboutUrl())}" data-home-nav>${esc(t.aboutPageTitle)}</a>` +
+    `<a href="${esc(privacyUrl())}" data-home-nav>${esc(t.privacyPageTitle)}</a>` +
+    `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
     `</nav>` +
     // 運営会社のロゴと、権利の表示(画像は運営者から提供されたもの)
     `<p class="site-copyright"><img src="images/compass-story-logo.png" alt="Compass Story" width="360" height="133" loading="lazy">` +
