@@ -684,15 +684,18 @@ function attachSwipeBars() {
 }
 window.addEventListener("resize", () => homePage.querySelectorAll(SWIPE_SELECTORS.join(",")).forEach(updateSwipeBar));
 
-// ホームの各まとまり(エリアから探す・トラベル・リスト・おすすめ・特集・シェア)の背景を、白と薄いグレーの交互にする
-//   ・いちばん下のお問い合わせ(グレー)から上へ、白・グレー・白…と決める(どのまとまりが出ていても、交互になるように)
+// ホームの各まとまりの背景色を決める(色そのものは css/style.css の「ホームの背景色の帯」)
 function paintHomeBands() {
+  // ホームの各まとまりの背景色(上から):
+  //   カテゴリーから探す・エリアから探す = 白(間に細い線)/ おすすめの機能・トラベル・リスト = 薄い青緑 /
+  //   あなたへのおすすめ = 白 / 特集(シェアを含む)= グレー / ユーザー = 白 / お問い合わせ = グレー(CSS)
   const sections = [...homePage.querySelectorAll(":scope > .home-section")].filter((el) => !el.classList.contains("home-top"));
-  sections.forEach((el) => el.classList.remove("home-band-gray"));
-  // お問い合わせのすぐ上(ユーザー)はグレー、その上は白、…(シェアは特集の中に入れたので、色の並びは前と同じ)
-  for (let i = sections.length - 1, n = 0; i >= 0; i -= 1, n += 1) {
-    if (n % 2 === 0) sections[i].classList.add("home-band-gray");
-  }
+  sections.forEach((el) => el.classList.remove("home-band", "home-band-gray", "home-band-teal", "home-band-line"));
+  sections.forEach((el) => {
+    if (el.classList.contains("home-area-section")) el.classList.add("home-band-line");
+    else if (el.classList.contains("feature-guide") || el.classList.contains("todo-intro")) el.classList.add("home-band", "home-band-teal");
+    else if (el.querySelector(":scope > .home-features")) el.classList.add("home-band", "home-band-gray");
+  });
 }
 
 // ---------------------------------------------------------------------

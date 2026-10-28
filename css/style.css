@@ -9867,3 +9867,44 @@ select.contact-control {
   width: 24px;
   height: 24px;
 }
+
+/* ===== ホームの背景色の帯(js/home.js の paintHomeBands) =====
+   ・薄い青緑: おすすめの機能・トラベル・リスト(隣り合うので、1本の帯につながる)
+   ・グレー: 特集
+   ・帯は画面の左右いっぱいまで広げる。帯が続くときは、間に白いすき間を作らない
+   ・エリアから探すは白。上のカテゴリーから探すとの間に、細い線を1本 */
+body.is-home-top #home-page > .home-section.home-band {
+  margin-top: 28px;
+  padding-top: 32px;
+  background: var(--band-bg);
+  box-shadow: 0 0 0 100vmax var(--band-bg);
+  clip-path: inset(0 -100vmax);
+}
+body.is-home-top #home-page > .home-band-gray { --band-bg: #f5f5f5; }
+body.is-home-top #home-page > .home-band-teal { --band-bg: #d6eeec; }
+body.is-home-top #home-page > .home-band + .home-band {
+  margin-top: 0;
+}
+body.is-home-top #home-page > .home-band + .home-section,
+body.is-home-top #home-page > .home-band + div > .home-section {
+  padding-top: 32px;
+}
+body.is-home-top #home-page > .home-section.home-band-line {
+  margin-top: 24px;
+  padding-top: 32px;
+  border-top: 1px solid #e3e5df;
+}
+@media (min-width: 900px) {
+  body.is-home-top #home-page > .home-section.home-band {
+    margin-top: 44px;
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+  body.is-home-top #home-page > .home-band + .home-band {
+    margin-top: 0;
+  }
+  body.is-home-top #home-page > .home-section.home-band-line {
+    margin-top: 40px;
+    padding-top: 44px;
+  }
+}
