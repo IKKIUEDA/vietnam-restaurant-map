@@ -213,62 +213,204 @@ const ui = {
     ],
     // プライバシーポリシーページ
     privacyPageTitle: "プライバシーポリシー",
-    privacyIntro: "「ベトナムフーディー」(以下「本サービス」)における、ユーザーの情報の取り扱いについて、以下のとおりお知らせします。",
+    privacyIntro: "「ベトナムフーディー」（以下「本サービス」といいます）は、利用者の個人情報および利用に関する情報を、以下のとおり取り扱います。",
     privacySections: [
       {
-        title: "1. はじめに",
-        body: "本ページでは、本サービスが、どのような情報を取得し、どのように利用するかについて説明します。本サービスをご利用いただく前に、ご一読ください。",
+        "title": "1. はじめに",
+        "paras": [
+          "本ポリシーでは、本サービスが取得する情報、その利用目的、保存・管理方法などについて説明します。本サービスをご利用になる前に、ご確認ください。"
+        ]
       },
       {
-        title: "2. 取得する情報と、その利用目的",
-        body: "本サービスでは、以下の情報を取得することがあります。",
-        list: [
-          "ログイン情報(メールアドレス、Googleアカウントの表示名): アカウントの管理、投稿者名の表示のために利用します。メールアドレスでログインしている方には、ご本人の操作に応じて、メールアドレスの認証・変更や、パスワード再設定のためのメールを、Firebase の仕組みで送ります。",
-          "スポットの情報提供(設定の「新しいスポットを追加」から送られた、お店の種類・店名・住所・最寄り駅・URL・メモと、送信日時、送信したアカウントのID): 運営者が内容を確認し、地図に掲載するかを判断するために利用します。他の利用者には公開せず、送った方のお名前も表示しません。掲載するときは、お店の情報として掲載します。",
-          "投稿情報(Tips・Check-in・レビュー・写真、それぞれの内容と投稿日時): サービス内でのお店情報の共有・表示のために利用します。",
-          "位置情報: ホームの「近く」や特集の「近く」を押したとき、または店舗ページで現在地からの距離を表示するときに、その場で、近くの店舗を探す・距離を計算するために利用します。また、地図では、現在地を青い点で表示し、移動に合わせて動かすために利用します(地図の現在地ボタンを押したとき、または、すでにブラウザで位置情報を許可している場合は地図を開いたとき)。位置情報は、ブラウザで許可した場合だけ取得し、お使いの端末の中だけで使い、保存や送信はしません。方角(端末の向き): 地図のコンパスボタンを押したときだけ、向いている方向を表示するために利用し、保存や送信はしません。",
-          "本サービス内での行動の記録(見たお店・検索した言葉・選んだお店の種類・開いた特集): ホームの「あなたへのおすすめ」と、トラベル・リストの「こちらもおすすめ」で、その方に合わせた店舗・エリアを選ぶために利用します。お使いの端末(ブラウザ)の中だけに保存し、本サービスのサーバーや第三者に送ることはありません(おすすめの計算も、端末の中で行います)。ブラウザの設定でこのサイトのデータ(Cookie とサイトデータ)を削除することで、いつでもまとめて削除できます。",
-          "保存したお店(保存マークを押したお店): アカウント画面の「保存したお店」に表示し、ほかの端末からログインしても同じお店を見られるようにするために利用します。ログインしているアカウントに結び付けて、本サービスのデータベース(Google Firebase)に保存します。ご本人だけが見られ、他の利用者には公開せず、第三者に提供することもありません。もう一度保存マークを押すといつでも外すことができ、アカウントを削除すると、あわせて削除されます。なお、以前の版でお使いの端末(ブラウザ)の中に保存していたお店は、はじめてログインしたときにアカウントへ移し、端末からは削除します。",
-          "トラベル・リスト(選んだエリアと、探したいお店の種類): ホームの「あなたへのおすすめ」にも使います。お使いの端末(ブラウザ)の中だけに保存し、本サービスのサーバーや第三者に送ることはありません。ホームを開いたときに出る質問(行きたいエリア・探したいお店。はじめての時と、その後30日ごと)の答えも、トラベル・リストとして保存します。質問を次に出す日を決めるため、前に質問を出した日時も、同じく端末の中だけに保存します。トラベル・リストの画面から、いつでも追加・変更・削除でき、ブラウザの設定でこのサイトのデータを削除すると、まとめて消すことができます。",
-          "使い方の案内: 使い方の説明(ポップアップ)を1回だけ表示するために、案内を表示したことだけを、お使いの端末(ブラウザ)の中に保存します。本サービスのサーバーや第三者に送ることはなく、ブラウザの設定でこのサイトのデータを削除すると消えます。",
-          "翻訳: レビュー・コメントなどの下の「翻訳する」を押したときだけ、その文章を翻訳します。お使いのブラウザに端末の中で翻訳する機能がある場合は、端末の中で翻訳し、文章を外部に送りません。その機能が無い場合は、Google 翻訳(Google LLC が提供)のページを新しいタブで開き、その文章を Google に送ります(Google でのお取り扱いは、Google のプライバシーポリシーに従います)。自動で翻訳したり、翻訳した内容を保存したりすることはありません。",
-          "シェア: ホームの「このページをシェアする」で X・Facebook・LINE を押したときだけ、そのサービスのシェア画面を新しいタブで開きます。そのとき渡すのは、本サービスのURLと短い紹介文だけです。シェアした内容や、その後のお取り扱いは、各サービス(X Corp.・Meta Platforms, Inc.・LINEヤフー株式会社)のプライバシーポリシーに従います。本サービスが、シェアしたことを記録することはありません。",
-          "プロフィール(ニックネーム・アイコン画像・自己紹介・出身国・在住国。任意で設定するもの): プロフィールページで、他の利用者も見られます。また、ニックネーム・アイコン画像・出身国・在住国は、ホームの「ユーザー」の一覧にも表示されます(ほかの利用者がフォローできるようにするため)。あわせて、その方が投稿した写真・レビューの一覧も、プロフィールページに表示されます。チェックインの一覧は、ご本人のアカウント画面にだけ表示し、他の利用者には公開しません。プロフィールは、アカウント画面からいつでも変更でき、アカウントを削除すると、あわせて削除されます。アイコン画像は、写真投稿と同じ画像保存サービス(Cloudinary)に保存します。",
-          "フォロー(フォローした相手と日時): プロフィールの「フォロー」「フォロワー」の数と一覧として、他の利用者も見られます(誰が誰をフォローしているかが公開されます)。新しくアカウントを登録したときは、本サービスの運営者の公式アカウントを自動でフォローします(運営からのお知らせを見やすくするため。いつでも外すことができ、外した後に自動でフォローし直すことはありません)。フォローはいつでも外すことができ、アカウントを削除すると、あわせて削除されます。チェックインの数(件数だけ): プロフィールに表示し、他の利用者も見られます。どのお店にチェックインしたかは、これまで通りご本人にだけ表示します。",
-          "Cookie・アクセスログ: サービスの利用状況の把握、不正利用の防止のために利用する場合があります(Firebase等のインフラが標準的に記録するものを含みます)。",
-          "お問い合わせ情報(お問い合わせフォームで入力された、お問い合わせの種類・お名前・メールアドレス・内容と、送信日時。ログイン中に送った場合は、アカウントのID): いただいたお問い合わせへの確認・回答のために利用します。Firebase に保存し、運営者だけが見られます。対応が終わり、保存しておく必要がなくなったものは削除します。",
+        "title": "2. 取得する情報と利用目的",
+        "paras": [
+          "本サービスでは、機能の提供および運営のため、以下の情報を取得・利用します。"
         ],
+        "subs": [
+          {
+            "title": "2-1. ログイン情報",
+            "paras": [
+              "メールアドレス、Googleアカウントの表示名、アカウントIDなどを、アカウントの管理や投稿者の表示に利用します。",
+              "メールアドレスでログインしている場合、利用者の操作に応じて、メールアドレスの認証・変更やパスワードの再設定に必要なメールをFirebaseの仕組みを通じて送信します。"
+            ]
+          },
+          {
+            "title": "2-2. 新しいスポットの追加に関する情報",
+            "paras": [
+              "設定画面から送信された店舗の種類、店名、住所、最寄り駅、URL、メモ、送信日時、送信者のアカウントIDを取得します。",
+              "これらの情報は、運営者が内容を確認し、本サービスへの掲載可否を判断するために利用します。送信された情報や送信者の名前は、ほかの利用者には公開しません。掲載が決まった場合は、店舗情報として公開します。"
+            ]
+          },
+          {
+            "title": "2-3. 投稿情報",
+            "paras": [
+              "Tips、レビュー、コメント、チェックイン、写真、いいねなどの投稿内容や投稿日時を、店舗情報の共有および本サービス内での表示に利用します。",
+              "投稿の公開範囲については、「3. 情報の公開範囲」をご確認ください。"
+            ]
+          },
+          {
+            "title": "2-4. 位置情報・端末の向き",
+            "paras": [
+              "位置情報は、利用者がブラウザで許可した場合に、近くの店舗の検索、地図上の現在地の表示、店舗までの距離の計算などに利用します。",
+              "位置情報は端末内で利用し、本サービスのサーバーには保存・送信しません。",
+              "また、地図のコンパス機能では、利用者がコンパスボタンを押したときに端末の向きを取得し、地図上の方角の表示に利用します。端末の向きも保存・送信しません。"
+            ]
+          },
+          {
+            "title": "2-5. 本サービス内での行動の記録",
+            "paras": [
+              "閲覧した店舗、検索した言葉、選択した店舗の種類、閲覧した特集などの情報を、おすすめ機能の提供に利用します。",
+              "これらの情報はブラウザ内に保存し、本サービスのサーバーには送信しません。おすすめの計算も端末内で行います。",
+              "保存された情報は、ブラウザの設定から本サービスのサイトデータを削除することで消去できます。"
+            ]
+          },
+          {
+            "title": "2-6. 保存した店舗",
+            "paras": [
+              "保存マークを押した店舗の情報を、アカウント画面の「保存したお店」に表示するために利用します。",
+              "保存情報はログイン中のアカウントに紐づけてFirebaseに保存し、本人のみが閲覧できるようにします。ほかの利用者には公開しません。保存マークを再度押すことで保存を解除できます。アカウントを削除した場合は、保存情報も削除します。",
+              "なお、以前のバージョンでブラウザ内に保存していた店舗情報は、初回ログイン時にアカウントへ移行する場合があります。"
+            ]
+          },
+          {
+            "title": "2-7. トラベル・リスト",
+            "paras": [
+              "選択したエリアや探したい店舗の種類などを、トラベル・リストの表示やおすすめ機能に利用します。",
+              "これらの情報はブラウザ内に保存し、本サービスのサーバーには送信しません。ホーム画面で表示される質問への回答や、次回の質問表示時期を決めるための日時も、同様にブラウザ内に保存します。",
+              "情報はトラベル・リストの画面から追加・変更・削除できます。また、ブラウザのサイトデータを削除すると、保存された情報も消去されます。"
+            ]
+          },
+          {
+            "title": "2-8. 使い方の案内",
+            "paras": [
+              "操作説明を適切に表示するため、案内を表示したかどうかの情報をブラウザ内に保存します。この情報は本サービスのサーバーには送信しません。"
+            ]
+          },
+          {
+            "title": "2-9. 翻訳機能",
+            "paras": [
+              "レビューやコメントなどの「翻訳する」を押した場合に、対象の文章を翻訳します。",
+              "ブラウザに端末内で翻訳する機能がある場合は、その機能を利用します。端末内で翻訳できない場合は、Google翻訳（Google LLC）のページを新しいタブで開き、対象の文章をGoogleに送信します。この場合、Googleにおける情報の取り扱いは、Googleのプライバシーポリシーに従います。",
+              "翻訳は利用者の操作に応じて行い、本サービスが翻訳を自動実行したり、翻訳結果を保存したりすることはありません。"
+            ]
+          },
+          {
+            "title": "2-10. シェア機能",
+            "paras": [
+              "ホーム画面の「このページをシェアする」からX、Facebook、LINEを選択した場合、本サービスのURLと紹介文を各サービスのシェア画面に渡します。",
+              "各サービスにおける情報の取り扱いは、それぞれのプライバシーポリシーに従います。本サービスでは、シェア操作を行ったこと自体を記録しません。"
+            ]
+          },
+          {
+            "title": "2-11. プロフィール情報",
+            "paras": [
+              "利用者が任意で設定するニックネーム、アイコン画像、自己紹介、出身国、在住国などを、プロフィールの表示に利用します。",
+              "ニックネーム、アイコン画像、出身国、在住国は、ほかの利用者も閲覧できるプロフィールやユーザー一覧に表示されます。プロフィールには、本人が投稿した写真やレビューなども表示されます。",
+              "チェックインした店舗の一覧は本人のアカウント画面にのみ表示し、ほかの利用者には公開しません。",
+              "プロフィール情報はアカウント画面から変更できます。アカウントを削除した場合、プロフィール情報も削除します。アイコン画像は、写真投稿と同じCloudinaryに保存します。"
+            ]
+          },
+          {
+            "title": "2-12. フォロー情報・チェックイン数",
+            "paras": [
+              "フォローした相手やフォローした日時などの情報を、フォロー・フォロワーの一覧や件数の表示に利用します。誰が誰をフォローしているかは、ほかの利用者も閲覧できます。",
+              "新しくアカウントを登録したときは、運営からのお知らせを見やすくするため、本サービスの運営者の公式アカウントを自動でフォローします。フォローはいつでも解除でき、解除した後に自動で再びフォローすることはありません。アカウントを削除した場合、フォロー情報も削除します。",
+              "また、チェックインの件数をプロフィールに表示します。チェックインした店舗の一覧は、本人にのみ公開します。"
+            ]
+          },
+          {
+            "title": "2-13. Cookie・アクセスログ",
+            "paras": [
+              "ログイン状態の保持、サービスの安定運用、利用状況の把握、不正利用の防止などのため、Cookieやアクセスログなどの情報を利用する場合があります。Firebaseなどの利用サービスが標準的に記録する情報を含みます。"
+            ]
+          },
+          {
+            "title": "2-14. お問い合わせ情報",
+            "paras": [
+              "お問い合わせフォームに入力されたお問い合わせの種類、お名前、メールアドレス、内容、送信日時を取得します。ログイン中に送信された場合は、アカウントIDも取得することがあります。",
+              "これらの情報は、お問い合わせへの確認・回答のために利用し、Firebaseに保存します。閲覧できるのは運営者に限られます。対応終了後、保存の必要がなくなった情報は削除します。"
+            ]
+          }
+        ]
       },
       {
-        title: "3. 情報の管理・保存について",
-        body: "本サービスは、データの保存に Firebase(Google社が提供するサービス)を利用しています。取得した情報は、Firebase が提供する仕組みを通じて管理しています。",
+        "title": "3. 情報の公開範囲",
+        "paras": [
+          "本サービスでは、機能に応じて情報の公開範囲が異なります。"
+        ],
+        "list": [
+          {
+            "label": "ほかの利用者に公開される情報：",
+            "text": "公開対象となるTips、レビュー、コメント、写真、プロフィール情報、フォロー・フォロワーの一覧、チェックインの件数など"
+          },
+          {
+            "label": "本人のみが閲覧できる情報：",
+            "text": "保存した店舗、チェックインした店舗の一覧など"
+          },
+          {
+            "label": "運営者が確認する情報：",
+            "text": "新しいスポットの追加申請、お問い合わせ情報など"
+          }
+        ],
+        "after": [
+          "投稿やプロフィールを利用する際は、公開される情報の内容をご確認ください。"
+        ]
       },
       {
-        title: "4. 第三者への提供について",
-        body: "取得した情報は、法令に基づく場合を除き、ご本人の同意なく第三者に提供することはありません。",
+        "title": "4. 情報の保存・管理と外部サービスの利用",
+        "paras": [
+          "本サービスでは、アカウント情報や投稿情報などの保存・管理に、Google LLCが提供するFirebaseを利用しています。また、アイコン画像や投稿写真の保存にはCloudinaryを利用しています。",
+          "本サービスの機能によっては、Google翻訳やGoogle アナリティクスなどの外部サービスを利用します。翻訳機能では対象の文章をGoogleに送信する場合があり、Google アナリティクスでは利用状況に関する情報がGoogleに送信されます。",
+          "各サービスにおける情報の取り扱いは、それぞれのプライバシーポリシーや利用条件に従います。"
+        ]
       },
       {
-        title: "5. 情報の保存期間・削除について",
-        body: "投稿した情報(Tips・Check-in・レビュー・写真)は、投稿したご本人が、いつでも削除できます(削除機能は、各投稿のそばにあります)。削除すると、そのデータは削除され、また新しく投稿できる状態に戻ります。また、アカウント画面の「設定」→「アカウント設定」→「アカウントの削除」から、いつでも退会できます。退会すると、アカウント、プロフィール、投稿(写真・レビュー・Tips・チェックイン・いいね・コメント)、送ったスポットの情報を削除します。ただし、写真・アイコンの画像ファイルは、画像保存サービス(Cloudinary)上に残る場合があります(本サービスでは表示されなくなります)。画像ファイルの削除をご希望の場合や、退会についてのご相談は、下記のお問い合わせ窓口までご連絡ください。なお、すでに地図に掲載したお店の情報は、お店の情報として残ります。",
+        "title": "5. Cookie・アクセス解析について",
+        "paras": [
+          "本サービスでは、ログイン状態の保持やサービスの動作、利用状況の把握などのため、Cookieなどの技術を利用する場合があります。",
+          "また、サービスの改善を目的として、Google LLCが提供するアクセス解析ツール「Google アナリティクス」を利用しています。Google アナリティクスは、Cookieなどを利用して利用状況に関する情報を収集し、Googleに送信します。",
+          "収集・処理される情報の内容や取り扱いは、Googleのポリシーに従います。Google アナリティクスによる情報収集を希望しない場合は、以下のオプトアウト用アドオンを利用できます。"
+        ],
+        "list": [
+          "Googleのプライバシーポリシー：https://policies.google.com/privacy",
+          "Google アナリティクス オプトアウト アドオン：https://tools.google.com/dlpage/gaoptout"
+        ],
+        "after": [
+          "ブラウザの設定でCookieを制限・削除できますが、その場合、本サービスの一部の機能が正しく動作しないことがあります。"
+        ]
       },
       {
-        title: "6. Cookieについて",
-        body: "本サービスは、ログイン状態の保持など、サービスを正しく動作させるために、Cookieや、それに類する技術を利用する場合があります。ブラウザの設定により、Cookieの利用を制限できますが、その場合、一部の機能が正しく動作しないことがあります。",
+        "title": "6. 情報の保存期間・削除について",
+        "paras": [
+          "投稿したTips、チェックイン、レビュー、写真などは、各投稿の削除機能から削除できます。",
+          "アカウント画面の「設定」から「アカウント設定」を開き、「アカウントの削除」を選択することで、いつでも退会できます。",
+          "退会時には、アカウント情報、プロフィール、投稿（写真・レビュー・Tips・チェックイン・いいね・コメント）、送信したスポットの追加申請などを削除します。",
+          "ただし、写真やアイコン画像のファイルは、画像保存サービスであるCloudinary上に残る場合があります。本サービス内では表示されなくなりますが、画像ファイルの削除を希望する場合や退会について相談したい場合は、下記のお問い合わせ窓口までご連絡ください。",
+          "また、すでに地図に掲載された店舗情報は、店舗情報として本サービス内に残ります。"
+        ]
       },
       {
-        title: "7. アクセス解析ツールについて",
-        body: "本サービスは、サービスの利用状況(訪問者数・再訪問の割合・よく見られているお店や検索された言葉など)を把握し、改善に役立てるため、Google社のアクセス解析ツール「Google アナリティクス」を利用しています。Google アナリティクスは、Cookieを使って、個人を特定しない形で利用状況の情報を収集し、Google社に送信します。収集・処理の方法は、Google社のポリシーに基づきます。ブラウザのアドオン(Google アナリティクス オプトアウト アドオン)を使うと、情報の収集を止めることができます。",
-        list: ["Google のプライバシーポリシー: https://policies.google.com/privacy", "Google アナリティクス オプトアウト アドオン: https://tools.google.com/dlpage/gaoptout"],
+        "title": "7. 第三者への情報提供について",
+        "paras": [
+          "本サービスは、法令に基づく場合などを除き、利用者の同意なく、取得した個人情報を第三者に提供しません。",
+          "ただし、本ポリシーに記載した外部サービスの利用に伴い、機能の提供やアクセス解析などに必要な情報が各サービスに送信される場合があります。送信される情報やその取り扱いについては、各サービスに関する説明をご確認ください。"
+        ]
       },
       {
-        title: "8. お問い合わせ窓口",
-        body: "本ページの内容、または取得した情報の取り扱いについて、ご質問・ご要望がある場合は、以下までお問い合わせください。",
-        list: ["sales@compass-story.com"],
+        "title": "8. お問い合わせ窓口",
+        "paras": [
+          "本ポリシーや、本サービスにおける情報の取り扱いについて、ご質問・ご要望がある場合は、以下までお問い合わせください。"
+        ],
+        "list": [
+          "メールアドレス：sales@compass-story.com"
+        ]
       },
       {
-        title: "9. プライバシーポリシーの変更について",
-        body: "本ページの内容は、必要に応じて変更することがあります。変更後の内容は、本ページに掲載した時点から効力を持ちます。",
-      },
+        "title": "9. プライバシーポリシーの変更について",
+        "paras": [
+          "本ポリシーは、必要に応じて変更することがあります。変更後の内容は、本ページに掲載した時点から適用します。"
+        ]
+      }
     ],
     // 運営者情報ページ
     aboutPageTitle: "運営者情報",
@@ -634,63 +776,204 @@ const ui = {
     ],
     // Privacy Policy page
     privacyPageTitle: "Privacy Policy",
-    privacyIntro:
-      "This page explains how “Vietnam Foodie” (the “Service”) handles user information.",
+    privacyIntro: "“Vietnam Foodie” (the “Service”) handles users' personal information and information about their use of the Service as described below.",
     privacySections: [
       {
-        title: "1. Introduction",
-        body: "This page explains what information the Service collects and how it is used. Please read it before using the Service.",
+        "title": "1. Introduction",
+        "paras": [
+          "This policy explains what information the Service collects, why it is used, and how it is stored and managed. Please read it before using the Service."
+        ]
       },
       {
-        title: "2. Information we collect, and why",
-        body: "The Service may collect the following information.",
-        list: [
-          "Login information (email address, Google account display name): used to manage your account and to show your name on your posts. If you log in with an email address, emails for verifying or changing your email address and for resetting your password are sent through Firebase when you request them.",
-          "Place submissions (the kind of place, name, address, nearest station, URL and note sent via ‘Add a new spot’ in Settings, with the date and time and the ID of the sending account): used by the operator to review the information and decide whether to list it on the map. It is not shown to other users, and the sender's name is not displayed. If listed, it is published as shop information.",
-          "Submission information (the content and post date/time of each Tips, check-in, review, and photo): used to share and display shop information within the Service.",
-          "Location: used on the spot, when you tap ‘Nearby’ on the home screen or ‘Near me’ in a feature, or when a shop page shows the distance from where you are, to find nearby shops and calculate distances. On the map, it is also used to show where you are as a blue dot that moves with you (when you tap the location button on the map, or when you open the map if you have already allowed location in your browser). It is obtained only if you allow it in your browser, is used only on your device, and is never stored or sent. Direction (which way your device is facing): used only when you tap the compass button on the map, to show the direction you are facing; it is never stored or sent.",
-          "Your activity on the Service (shops you viewed, words you searched for, the shop categories you chose, and the features you opened): used to pick shops and areas for you in ‘Picked for you’ on the home screen and ‘You may also like’ in Travel List. It is stored only on your device (in your browser) and is never sent to our servers or to third parties (the recommendations are also calculated on your device). You can delete all of it at any time by deleting this site's data (cookies and site data) in your browser settings.",
-          "Saved shops (shops you tap the save icon on): used to show them under ‘Saved shops’ on your account screen, and to let you see the same shops when you log in on another device. They are stored in our database (Google Firebase), linked to the account you are logged in with. Only you can see them; they are not shown to other users or provided to third parties. You can remove a shop at any time by tapping the save icon again, and they are deleted when you delete your account. Shops saved on your device (browser) in an earlier version are moved to your account the first time you log in, and removed from the device.",
-          "Travel List (the areas and kinds of shops you choose): also used for ‘Picked for you’ on the home screen. Stored only on your device (in your browser) and never sent to our servers or to third parties. Your answers to the questions shown when you open the home screen (the areas you want to visit and the shops you're looking for; shown the first time and then every 30 days) are also saved as Travel List. To decide when to show the questions next, the date and time they were last shown is also stored only on your device. You can add, change or remove areas at any time from the Travel List screen, and remove everything by deleting this site's data in your browser settings.",
-          "Usage guide: so that the how-to-use pop-up guide is shown only once, we save only the fact that you have seen it, on your device (browser). It is not sent to our servers or any third party, and it is removed when you delete this site's data in your browser settings.",
-          "Translation: a review or comment is translated only when you tap ‘Translate’ under it. If your browser can translate on the device, it is translated on your device and the text is not sent anywhere. Otherwise, a Google Translate page (provided by Google LLC) opens in a new tab and the text is sent to Google (handled under Google's privacy policy). We never translate automatically and do not store translations.",
-          "Sharing: only when you tap X, Facebook or LINE under ‘Share this page’ on the home screen, that service's share page opens in a new tab. Only this site's URL and a short description are passed to it. What you share is handled under each service's privacy policy (X Corp., Meta Platforms, Inc., LY Corporation). We do not record that you shared.",
-          "Profile (nickname, profile picture, bio, home country and country of residence, if you set them): visible to other users on your profile page, together with a list of the photos and reviews you have posted. Your nickname, profile picture, home country and country of residence also appear in the ‘People’ list on the home screen, so other users can follow you. Your list of check-ins is shown only on your own Account screen and is not made public. You can change your profile at any time from the Account screen, and it is deleted together with your account if you delete your account. Profile pictures are stored with the same image service used for photo posts (Cloudinary).",
-          "Follows (who you follow and when): shown to other users as the Following / Followers counts and lists on profiles (who follows whom is public). When you create a new account, you automatically follow the official account of the service operator (so you can easily see news from us); you can unfollow at any time, and we will not re-follow automatically after you do. You can unfollow at any time, and follows are deleted when you delete your account. Number of check-ins (the number only): shown on your profile and visible to other users. Which shops you checked in to is still shown only to you.",
-          "Cookies and access logs: may be used to understand how the Service is used and to prevent misuse (this includes what infrastructure such as Firebase records by default).",
-          "Contact information (the type of inquiry, name, email address and message entered in the contact form, the date and time sent, and your account ID if you were logged in): used to review and respond to your inquiry. Stored in Firebase and visible only to the operator. Deleted once handled and no longer needed.",
+        "title": "2. Information we collect and how we use it",
+        "paras": [
+          "To provide and operate its features, the Service collects and uses the following information."
         ],
+        "subs": [
+          {
+            "title": "2-1. Login information",
+            "paras": [
+              "Your email address, Google account display name, account ID and similar information are used to manage your account and to show who posted content.",
+              "If you sign in with an email address, emails needed to verify or change your email address or to reset your password are sent through Firebase in response to your actions."
+            ]
+          },
+          {
+            "title": "2-2. Information about suggested new spots",
+            "paras": [
+              "When you send a new spot from the settings screen, we collect the type of shop, shop name, address, nearest station, URL, notes, the date and time it was sent, and the sender's account ID.",
+              "The operator uses this information to review the content and decide whether to list it on the Service. The information you send and your name are not shown to other users. If the spot is listed, it is published as shop information."
+            ]
+          },
+          {
+            "title": "2-3. Posts",
+            "paras": [
+              "The content and posting date of Tips, reviews, comments, check-ins, photos, likes and other posts are used to share shop information and to display it within the Service.",
+              "For who can see your posts, see “3. Who can see your information”."
+            ]
+          },
+          {
+            "title": "2-4. Location and device orientation",
+            "paras": [
+              "If you allow it in your browser, your location is used to search for nearby shops, show your current location on the map, calculate the distance to shops, and similar purposes.",
+              "Your location is used only on your device and is not stored on or sent to the Service's servers.",
+              "The map's compass feature reads your device's orientation only when you press the compass button, to show directions on the map. Device orientation is not stored or sent either."
+            ]
+          },
+          {
+            "title": "2-5. Activity within the Service",
+            "paras": [
+              "Information such as shops you viewed, words you searched, types of shops you selected and features you viewed is used to provide recommendations.",
+              "This information is stored in your browser and is not sent to the Service's servers. Recommendations are also calculated on your device.",
+              "You can erase it by deleting this site's data in your browser settings."
+            ]
+          },
+          {
+            "title": "2-6. Saved shops",
+            "paras": [
+              "Shops you mark with the save icon are used to show them under “Saved shops” on your account screen.",
+              "Saved shops are stored in Firebase, linked to the account you are signed in with, and can be seen only by you. They are not shown to other users. Press the save icon again to remove a shop. If you delete your account, your saved shops are also deleted.",
+              "Shops saved in your browser in an earlier version may be moved to your account the first time you sign in."
+            ]
+          },
+          {
+            "title": "2-7. Travel List",
+            "paras": [
+              "The areas and types of shops you choose are used to show your Travel List and to provide recommendations.",
+              "This information is stored in your browser and is not sent to the Service's servers. Your answers to the questions shown on the home screen, and the date used to decide when to ask again, are also stored in your browser.",
+              "You can add, change or delete this information on the Travel List screen. Deleting this site's data in your browser also erases it."
+            ]
+          },
+          {
+            "title": "2-8. Usage guide",
+            "paras": [
+              "To show the usage guide appropriately, we store in your browser whether the guide has been shown. This information is not sent to the Service's servers."
+            ]
+          },
+          {
+            "title": "2-9. Translation",
+            "paras": [
+              "When you press “Translate” on a review, comment or similar text, that text is translated.",
+              "If your browser can translate on your device, that feature is used. If it cannot, a Google Translate (Google LLC) page opens in a new tab and the text is sent to Google. In that case, Google handles the information under Google's privacy policy.",
+              "Translation happens only when you request it; the Service does not translate automatically or store translations."
+            ]
+          },
+          {
+            "title": "2-10. Sharing",
+            "paras": [
+              "If you choose X, Facebook or LINE under “Share this page” on the home screen, the Service's URL and a short description are passed to that service's share screen.",
+              "Each service handles the information under its own privacy policy. The Service does not record that you shared."
+            ]
+          },
+          {
+            "title": "2-11. Profile information",
+            "paras": [
+              "The nickname, icon image, self-introduction, home country, country of residence and similar information you choose to set are used to show your profile.",
+              "Your nickname, icon image, home country and country of residence are shown on your profile and in the user list, which other users can see. Photos, reviews and other content you posted are also shown on your profile.",
+              "The list of shops you checked in to is shown only on your own account screen and is not shown to other users.",
+              "You can change your profile information on the account screen. If you delete your account, your profile information is also deleted. Icon images are stored in Cloudinary, the same service used for photo posts."
+            ]
+          },
+          {
+            "title": "2-12. Follows and number of check-ins",
+            "paras": [
+              "Information such as who you follow and when is used to show follow and follower lists and counts. Other users can see who follows whom.",
+              "When you create a new account, you automatically follow the official account of the Service's operator so you can easily see news from us. You can unfollow at any time, and we will not follow again automatically after you do. If you delete your account, your follow information is also deleted.",
+              "The number of your check-ins is shown on your profile. The list of shops you checked in to is visible only to you."
+            ]
+          },
+          {
+            "title": "2-13. Cookies and access logs",
+            "paras": [
+              "Cookies, access logs and similar information may be used to keep you signed in, run the Service reliably, understand how it is used, and prevent misuse. This includes information that services we use, such as Firebase, record as standard."
+            ]
+          },
+          {
+            "title": "2-14. Inquiries",
+            "paras": [
+              "We collect the type of inquiry, name, email address, message and the date and time sent through the contact form. If you send it while signed in, your account ID may also be collected.",
+              "This information is used to review and reply to your inquiry and is stored in Firebase. Only the operator can see it. Information that no longer needs to be kept after we have dealt with the inquiry is deleted."
+            ]
+          }
+        ]
       },
       {
-        title: "3. How information is managed and stored",
-        body: "The Service uses Firebase (a service provided by Google) to store data. Information we collect is managed through the mechanisms Firebase provides.",
+        "title": "3. Who can see your information",
+        "paras": [
+          "Who can see information depends on the feature."
+        ],
+        "list": [
+          {
+            "label": "Visible to other users:",
+            "text": "public Tips, reviews, comments, photos, profile information, follow and follower lists, number of check-ins, etc."
+          },
+          {
+            "label": "Visible only to you:",
+            "text": "saved shops, the list of shops you checked in to, etc."
+          },
+          {
+            "label": "Reviewed by the operator:",
+            "text": "suggested new spots, inquiries, etc."
+          }
+        ],
+        "after": [
+          "When posting or using your profile, please check what information will be public."
+        ]
       },
       {
-        title: "4. Sharing with third parties",
-        body: "We do not share collected information with third parties without your consent, except where required by law.",
+        "title": "4. Storage, management and external services",
+        "paras": [
+          "The Service uses Firebase, provided by Google LLC, to store and manage account information, posts and other data. Icon images and posted photos are stored in Cloudinary.",
+          "Some features use external services such as Google Translate and Google Analytics. The translation feature may send text to Google, and Google Analytics sends information about usage to Google.",
+          "Each service handles information under its own privacy policy and terms."
+        ]
       },
       {
-        title: "5. Retention and deletion of information",
-        body: "You can delete your own submissions (Tips, check-ins, reviews, photos) at any time (a delete option is available next to each submission). Once deleted, the data is removed, and you can submit again. You can also delete your account at any time from Account → Settings → Account settings → Delete account. This deletes your account, profile, submissions (photos, reviews, Tips, check-ins, likes, comments) and the places you submitted. However, image files of photos and profile pictures may remain on our image storage service (Cloudinary), though they will no longer be shown on this service. To have those image files deleted, or for any questions about closing your account, please contact us using the details below. Shop information already listed on the map remains as shop information.",
+        "title": "5. Cookies and analytics",
+        "paras": [
+          "The Service may use cookies and similar technologies to keep you signed in, make the Service work, understand how it is used, and similar purposes.",
+          "To improve the Service, we use Google Analytics, an analytics tool provided by Google LLC. Google Analytics uses cookies and similar technologies to collect information about usage and sends it to Google.",
+          "The information collected and processed and how it is handled follow Google's policies. If you do not want Google Analytics to collect information, you can use the opt-out add-on below."
+        ],
+        "list": [
+          "Google Privacy Policy: https://policies.google.com/privacy",
+          "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"
+        ],
+        "after": [
+          "You can restrict or delete cookies in your browser settings, but some features of the Service may then not work correctly."
+        ]
       },
       {
-        title: "6. About cookies",
-        body: "The Service may use cookies or similar technologies, for example to keep you signed in, so that the Service works correctly. You can restrict cookies through your browser settings, but some features may not work correctly if you do.",
+        "title": "6. Retention and deletion",
+        "paras": [
+          "You can delete Tips, check-ins, reviews, photos and other posts with the delete function on each post.",
+          "You can leave the Service at any time by opening “Settings” → “Account settings” on the account screen and choosing “Delete account”.",
+          "When you leave, we delete your account information, profile, posts (photos, reviews, Tips, check-ins, likes, comments), the new spots you sent, and similar information.",
+          "However, photo and icon image files may remain on Cloudinary, the image storage service. They will no longer be shown in the Service, but if you would like the image files deleted or want to talk to us about leaving, please contact us at the address below.",
+          "Shop information already listed on the map remains in the Service as shop information."
+        ]
       },
       {
-        title: "7. Analytics",
-        body: "To understand how the Service is used (such as the number of visitors, how many come back, which shops are viewed and which words are searched) and to improve it, the Service uses Google Analytics, an analytics tool provided by Google. Google Analytics uses cookies to collect usage information in a form that does not identify individuals, and sends it to Google. It is collected and processed in accordance with Google's policies. You can stop this collection with a browser add-on (Google Analytics Opt-out Browser Add-on).",
-        list: ["Google Privacy Policy: https://policies.google.com/privacy", "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"],
+        "title": "7. Disclosure to third parties",
+        "paras": [
+          "Except where required by law or similar cases, the Service does not provide personal information it has collected to third parties without your consent.",
+          "However, when using the external services described in this policy, information needed to provide features, analyze access and similar purposes may be sent to those services. For what is sent and how it is handled, please see the explanation of each service."
+        ]
       },
       {
-        title: "8. Contact",
-        body: "If you have any questions about this page, or about how your information is handled, please contact us at the address below.",
-        list: ["sales@compass-story.com"],
+        "title": "8. Contact",
+        "paras": [
+          "If you have questions or requests about this policy or how the Service handles information, please contact us below."
+        ],
+        "list": [
+          "Email: sales@compass-story.com"
+        ]
       },
       {
-        title: "9. Changes to this Privacy Policy",
-        body: "This page may be changed as needed. Any changes take effect once posted on this page.",
-      },
+        "title": "9. Changes to this policy",
+        "paras": [
+          "We may change this policy as needed. Changes take effect from the time they are posted on this page."
+        ]
+      }
     ],
     // About page
     aboutPageTitle: "About Us",
@@ -1055,63 +1338,204 @@ const ui = {
     ],
     // Trang Chính sách quyền riêng tư
     privacyPageTitle: "Chính sách quyền riêng tư",
-    privacyIntro:
-      "Trang này thông báo về cách “Vietnam Foodie” (gọi là “Dịch vụ”) xử lý thông tin người dùng.",
+    privacyIntro: "“Vietnam Foodie” (sau đây gọi là “Dịch vụ”) xử lý thông tin cá nhân của người dùng và thông tin về việc sử dụng Dịch vụ như sau.",
     privacySections: [
       {
-        title: "1. Giới thiệu",
-        body: "Trang này giải thích Dịch vụ thu thập những thông tin gì và sử dụng như thế nào. Vui lòng đọc trước khi sử dụng Dịch vụ.",
+        "title": "1. Giới thiệu",
+        "paras": [
+          "Chính sách này giải thích Dịch vụ thu thập những thông tin gì, sử dụng vào mục đích gì và lưu trữ, quản lý như thế nào. Vui lòng đọc trước khi sử dụng Dịch vụ."
+        ]
       },
       {
-        title: "2. Thông tin thu thập và mục đích sử dụng",
-        body: "Dịch vụ có thể thu thập các thông tin sau.",
-        list: [
-          "Thông tin đăng nhập (địa chỉ email, tên hiển thị tài khoản Google): dùng để quản lý tài khoản và hiển thị tên người đăng. Với người đăng nhập bằng email, khi bạn yêu cầu, chúng tôi sẽ gửi email để xác minh, đổi địa chỉ email hoặc đặt lại mật khẩu thông qua Firebase.",
-          "Thông tin địa điểm được gửi (loại quán, tên quán, địa chỉ, ga gần nhất, URL, ghi chú gửi từ mục “Thêm địa điểm mới” trong Cài đặt, cùng thời gian gửi và ID của tài khoản gửi): dùng để đơn vị vận hành kiểm tra và quyết định có đăng lên bản đồ hay không. Thông tin này không được công khai cho người dùng khác và không hiển thị tên người gửi. Nếu được đăng, thông tin sẽ được công bố như thông tin của quán.",
-          "Thông tin đăng tải (nội dung và thời gian đăng của từng Tips, check-in, đánh giá, ảnh): dùng để chia sẻ và hiển thị thông tin quán trong Dịch vụ.",
-          "Vị trí: dùng ngay tại thời điểm bạn nhấn ‘Gần đây’ ở trang chủ hoặc trong trang chủ đề, hoặc khi trang quán hiển thị khoảng cách từ vị trí của bạn, để tìm quán gần và tính khoảng cách. Trên bản đồ, vị trí còn được dùng để hiển thị chấm xanh tại nơi bạn đang đứng và di chuyển theo bạn (khi bạn nhấn nút vị trí trên bản đồ, hoặc khi mở bản đồ nếu bạn đã cho phép vị trí trên trình duyệt). Chỉ lấy khi bạn cho phép trên trình duyệt, chỉ dùng trên thiết bị của bạn, không lưu và không gửi đi. Hướng (hướng thiết bị đang quay về): chỉ dùng khi bạn nhấn nút la bàn trên bản đồ để hiển thị hướng bạn đang nhìn; không lưu và không gửi đi.",
-          "Hoạt động của bạn trên Dịch vụ (quán đã xem, từ khóa đã tìm, loại quán đã chọn, chủ đề đã mở): dùng để chọn quán và khu vực phù hợp với bạn trong mục ‘Gợi ý cho bạn’ ở trang chủ và ‘Có thể bạn cũng thích’ trong Danh sách du lịch. Chỉ được lưu trên thiết bị (trình duyệt) của bạn, không gửi đến máy chủ của chúng tôi hay bên thứ ba (việc tính toán gợi ý cũng được thực hiện trên thiết bị). Bạn có thể xóa toàn bộ bất cứ lúc nào bằng cách xóa dữ liệu của trang này (cookie và dữ liệu trang) trong cài đặt trình duyệt.",
-          "Quán đã lưu (quán bạn nhấn biểu tượng lưu): dùng để hiển thị trong mục ‘Quán đã lưu’ trên màn hình tài khoản và để bạn xem được cùng các quán đó khi đăng nhập trên thiết bị khác. Dữ liệu được lưu trong cơ sở dữ liệu của dịch vụ (Google Firebase), gắn với tài khoản bạn đang đăng nhập. Chỉ bạn xem được; không hiển thị cho người dùng khác và không cung cấp cho bên thứ ba. Bạn có thể bỏ lưu bất cứ lúc nào bằng cách nhấn lại biểu tượng lưu, và dữ liệu sẽ bị xóa khi bạn xóa tài khoản. Các quán đã lưu trên thiết bị (trình duyệt) ở phiên bản trước sẽ được chuyển vào tài khoản khi bạn đăng nhập lần đầu và bị xóa khỏi thiết bị.",
-          "Danh sách du lịch (khu vực và loại quán bạn chọn): cũng dùng cho ‘Gợi ý cho bạn’ ở trang chủ. Chỉ được lưu trên thiết bị (trình duyệt) của bạn, không gửi đến máy chủ của chúng tôi hay bên thứ ba. Câu trả lời cho các câu hỏi hiện ra khi mở trang chủ (khu vực muốn đến và loại quán muốn tìm; hiện lần đầu và sau đó mỗi 30 ngày) cũng được lưu thành Danh sách du lịch. Để quyết định lần hiện câu hỏi tiếp theo, thời điểm hiện câu hỏi lần trước cũng chỉ được lưu trên thiết bị của bạn. Bạn có thể thêm, thay đổi hoặc xóa khu vực bất cứ lúc nào trong màn hình Danh sách du lịch, và xóa toàn bộ bằng cách xóa dữ liệu của trang này trong cài đặt trình duyệt.",
-          "Hướng dẫn sử dụng: để chỉ hiển thị hướng dẫn cách dùng (cửa sổ bật lên) một lần, chúng tôi chỉ lưu trên thiết bị (trình duyệt) của bạn thông tin rằng bạn đã xem hướng dẫn. Thông tin này không được gửi đến máy chủ của dịch vụ hay bên thứ ba và sẽ bị xóa khi bạn xóa dữ liệu của trang trong cài đặt trình duyệt.",
-          "Dịch: đánh giá hoặc bình luận chỉ được dịch khi bạn nhấn ‘Dịch’ bên dưới. Nếu trình duyệt có thể dịch ngay trên thiết bị, văn bản được dịch trên thiết bị và không gửi ra ngoài. Nếu không, trang Google Dịch (do Google LLC cung cấp) sẽ mở trong tab mới và văn bản được gửi đến Google (xử lý theo chính sách quyền riêng tư của Google). Chúng tôi không dịch tự động và không lưu bản dịch.",
-          "Chia sẻ: chỉ khi bạn nhấn X, Facebook hoặc LINE ở mục ‘Chia sẻ trang này’ trên trang chủ, trang chia sẻ của dịch vụ đó mới mở trong tab mới. Chỉ URL của trang này và một đoạn giới thiệu ngắn được chuyển đi. Nội dung bạn chia sẻ được xử lý theo chính sách quyền riêng tư của từng dịch vụ (X Corp., Meta Platforms, Inc., LY Corporation). Chúng tôi không ghi lại việc bạn đã chia sẻ.",
-          "Hồ sơ (biệt danh, ảnh đại diện, giới thiệu, quê quán và quốc gia đang sống — nếu bạn cài đặt): người dùng khác có thể xem trên trang hồ sơ, cùng với danh sách ảnh và đánh giá bạn đã đăng. Biệt danh, ảnh đại diện, quê quán và quốc gia đang sống cũng hiển thị trong danh sách ‘Mọi người’ ở trang chủ để người dùng khác có thể theo dõi bạn. Danh sách check-in chỉ hiển thị trên màn hình Tài khoản của chính bạn và không được công khai. Bạn có thể thay đổi hồ sơ bất cứ lúc nào từ màn hình Tài khoản, và hồ sơ sẽ bị xóa cùng khi bạn xóa tài khoản. Ảnh đại diện được lưu trên cùng dịch vụ lưu ảnh với ảnh đăng (Cloudinary).",
-          "Theo dõi (người bạn theo dõi và thời điểm): hiển thị cho người dùng khác dưới dạng số lượng và danh sách Đang theo dõi / Người theo dõi trên hồ sơ (ai theo dõi ai sẽ được công khai). Khi bạn tạo tài khoản mới, bạn sẽ tự động theo dõi tài khoản chính thức của đơn vị vận hành dịch vụ (để dễ xem thông báo); bạn có thể bỏ theo dõi bất cứ lúc nào và chúng tôi sẽ không tự động theo dõi lại sau khi bạn bỏ. Bạn có thể bỏ theo dõi bất cứ lúc nào, và dữ liệu theo dõi sẽ bị xóa khi bạn xóa tài khoản. Số lần check-in (chỉ con số): hiển thị trên hồ sơ và người dùng khác cũng xem được. Bạn đã check-in ở quán nào thì vẫn chỉ hiển thị cho riêng bạn.",
-          "Cookie và nhật ký truy cập: có thể được dùng để nắm tình hình sử dụng Dịch vụ và ngăn chặn hành vi lạm dụng (bao gồm cả những gì hạ tầng như Firebase ghi nhận theo mặc định).",
-          "Thông tin liên hệ (loại câu hỏi, họ tên, địa chỉ email, nội dung nhập trong mẫu liên hệ, thời gian gửi, và ID tài khoản nếu bạn đã đăng nhập): dùng để kiểm tra và trả lời câu hỏi của bạn. Được lưu trên Firebase và chỉ đơn vị vận hành xem được. Sẽ được xóa khi đã xử lý xong và không cần lưu nữa.",
+        "title": "2. Thông tin thu thập và mục đích sử dụng",
+        "paras": [
+          "Để cung cấp và vận hành các tính năng, Dịch vụ thu thập và sử dụng các thông tin sau."
         ],
+        "subs": [
+          {
+            "title": "2-1. Thông tin đăng nhập",
+            "paras": [
+              "Địa chỉ email, tên hiển thị của tài khoản Google, ID tài khoản và các thông tin tương tự được dùng để quản lý tài khoản và hiển thị người đăng bài.",
+              "Nếu bạn đăng nhập bằng email, theo thao tác của bạn, chúng tôi gửi qua cơ chế của Firebase các email cần thiết để xác minh hoặc thay đổi địa chỉ email và đặt lại mật khẩu."
+            ]
+          },
+          {
+            "title": "2-2. Thông tin về địa điểm mới đề xuất",
+            "paras": [
+              "Khi bạn gửi địa điểm mới từ màn hình cài đặt, chúng tôi thu thập loại cửa hàng, tên quán, địa chỉ, ga gần nhất, URL, ghi chú, thời điểm gửi và ID tài khoản của người gửi.",
+              "Đơn vị vận hành dùng thông tin này để kiểm tra nội dung và quyết định có đăng lên Dịch vụ hay không. Thông tin đã gửi và tên người gửi không được công khai cho người dùng khác. Nếu được đăng, địa điểm sẽ được công khai dưới dạng thông tin cửa hàng."
+            ]
+          },
+          {
+            "title": "2-3. Bài đăng",
+            "paras": [
+              "Nội dung và thời điểm đăng của Tips, đánh giá, bình luận, check-in, ảnh, lượt thích và các bài đăng khác được dùng để chia sẻ thông tin cửa hàng và hiển thị trong Dịch vụ.",
+              "Về phạm vi công khai của bài đăng, vui lòng xem “3. Phạm vi công khai thông tin”."
+            ]
+          },
+          {
+            "title": "2-4. Vị trí và hướng của thiết bị",
+            "paras": [
+              "Nếu bạn cho phép trên trình duyệt, vị trí của bạn được dùng để tìm quán gần đây, hiển thị vị trí hiện tại trên bản đồ, tính khoảng cách đến quán và các mục đích tương tự.",
+              "Vị trí chỉ được dùng trên thiết bị của bạn, không được lưu hay gửi đến máy chủ của Dịch vụ.",
+              "Tính năng la bàn trên bản đồ chỉ đọc hướng của thiết bị khi bạn nhấn nút la bàn, để hiển thị phương hướng trên bản đồ. Hướng của thiết bị cũng không được lưu hay gửi đi."
+            ]
+          },
+          {
+            "title": "2-5. Hoạt động trong Dịch vụ",
+            "paras": [
+              "Các thông tin như quán đã xem, từ khóa đã tìm, loại cửa hàng đã chọn và chuyên đề đã xem được dùng để cung cấp tính năng gợi ý.",
+              "Thông tin này được lưu trong trình duyệt và không gửi đến máy chủ của Dịch vụ. Việc tính toán gợi ý cũng được thực hiện trên thiết bị.",
+              "Bạn có thể xóa bằng cách xóa dữ liệu trang web này trong cài đặt trình duyệt."
+            ]
+          },
+          {
+            "title": "2-6. Quán đã lưu",
+            "paras": [
+              "Các quán bạn nhấn biểu tượng lưu được dùng để hiển thị trong “Quán đã lưu” trên màn hình tài khoản.",
+              "Quán đã lưu được lưu trên Firebase, gắn với tài khoản đang đăng nhập, và chỉ bạn xem được. Không công khai cho người dùng khác. Nhấn lại biểu tượng lưu để bỏ lưu. Nếu bạn xóa tài khoản, quán đã lưu cũng bị xóa.",
+              "Các quán đã lưu trong trình duyệt ở phiên bản trước có thể được chuyển sang tài khoản khi bạn đăng nhập lần đầu."
+            ]
+          },
+          {
+            "title": "2-7. Travel List",
+            "paras": [
+              "Khu vực và loại cửa hàng bạn chọn được dùng để hiển thị Travel List và cung cấp gợi ý.",
+              "Thông tin này được lưu trong trình duyệt và không gửi đến máy chủ của Dịch vụ. Câu trả lời cho các câu hỏi hiển thị trên trang chủ và thời điểm dùng để quyết định khi nào hỏi lại cũng được lưu trong trình duyệt.",
+              "Bạn có thể thêm, thay đổi hoặc xóa trên màn hình Travel List. Xóa dữ liệu trang web trong trình duyệt cũng sẽ xóa thông tin này."
+            ]
+          },
+          {
+            "title": "2-8. Hướng dẫn sử dụng",
+            "paras": [
+              "Để hiển thị hướng dẫn sử dụng phù hợp, chúng tôi lưu trong trình duyệt thông tin về việc hướng dẫn đã được hiển thị hay chưa. Thông tin này không gửi đến máy chủ của Dịch vụ."
+            ]
+          },
+          {
+            "title": "2-9. Dịch",
+            "paras": [
+              "Khi bạn nhấn “Dịch” ở đánh giá, bình luận hoặc văn bản tương tự, văn bản đó sẽ được dịch.",
+              "Nếu trình duyệt có thể dịch ngay trên thiết bị, tính năng đó sẽ được dùng. Nếu không, trang Google Dịch (Google LLC) sẽ mở trong tab mới và văn bản được gửi đến Google. Khi đó, Google xử lý thông tin theo chính sách quyền riêng tư của Google.",
+              "Việc dịch chỉ diễn ra khi bạn yêu cầu; Dịch vụ không tự động dịch hay lưu bản dịch."
+            ]
+          },
+          {
+            "title": "2-10. Chia sẻ",
+            "paras": [
+              "Nếu bạn chọn X, Facebook hoặc LINE ở “Chia sẻ trang này” trên trang chủ, URL của Dịch vụ và một đoạn giới thiệu ngắn sẽ được chuyển đến màn hình chia sẻ của dịch vụ đó.",
+              "Mỗi dịch vụ xử lý thông tin theo chính sách quyền riêng tư riêng. Dịch vụ không ghi lại việc bạn đã chia sẻ."
+            ]
+          },
+          {
+            "title": "2-11. Thông tin hồ sơ",
+            "paras": [
+              "Biệt danh, ảnh đại diện, giới thiệu bản thân, quốc gia xuất thân, quốc gia đang sống và các thông tin tương tự mà bạn tự chọn thiết lập được dùng để hiển thị hồ sơ.",
+              "Biệt danh, ảnh đại diện, quốc gia xuất thân và quốc gia đang sống được hiển thị trên hồ sơ và danh sách người dùng mà người dùng khác cũng xem được. Ảnh, đánh giá và nội dung khác bạn đã đăng cũng hiển thị trên hồ sơ.",
+              "Danh sách quán bạn đã check-in chỉ hiển thị trên màn hình tài khoản của bạn và không công khai cho người dùng khác.",
+              "Bạn có thể thay đổi thông tin hồ sơ trên màn hình tài khoản. Nếu xóa tài khoản, thông tin hồ sơ cũng bị xóa. Ảnh đại diện được lưu trên Cloudinary, giống như ảnh đăng bài."
+            ]
+          },
+          {
+            "title": "2-12. Theo dõi và số lần check-in",
+            "paras": [
+              "Thông tin như người bạn theo dõi và thời điểm theo dõi được dùng để hiển thị danh sách và số lượng Đang theo dõi / Người theo dõi. Người dùng khác cũng xem được ai theo dõi ai.",
+              "Khi bạn tạo tài khoản mới, bạn sẽ tự động theo dõi tài khoản chính thức của đơn vị vận hành Dịch vụ để dễ xem thông báo. Bạn có thể bỏ theo dõi bất cứ lúc nào và chúng tôi sẽ không tự động theo dõi lại sau khi bạn bỏ. Nếu xóa tài khoản, thông tin theo dõi cũng bị xóa.",
+              "Số lần check-in được hiển thị trên hồ sơ. Danh sách quán đã check-in chỉ công khai cho riêng bạn."
+            ]
+          },
+          {
+            "title": "2-13. Cookie và nhật ký truy cập",
+            "paras": [
+              "Cookie, nhật ký truy cập và thông tin tương tự có thể được dùng để duy trì trạng thái đăng nhập, vận hành ổn định, nắm bắt tình hình sử dụng và ngăn chặn hành vi lạm dụng. Bao gồm cả thông tin mà các dịch vụ chúng tôi sử dụng như Firebase ghi lại theo tiêu chuẩn."
+            ]
+          },
+          {
+            "title": "2-14. Thông tin liên hệ",
+            "paras": [
+              "Chúng tôi thu thập loại câu hỏi, họ tên, địa chỉ email, nội dung và thời điểm gửi được nhập vào biểu mẫu liên hệ. Nếu gửi khi đang đăng nhập, ID tài khoản cũng có thể được thu thập.",
+              "Thông tin này được dùng để kiểm tra và trả lời câu hỏi, và được lưu trên Firebase. Chỉ đơn vị vận hành xem được. Thông tin không còn cần lưu sau khi xử lý xong sẽ bị xóa."
+            ]
+          }
+        ]
       },
       {
-        title: "3. Về việc quản lý, lưu trữ thông tin",
-        body: "Dịch vụ sử dụng Firebase (dịch vụ do Google cung cấp) để lưu trữ dữ liệu. Thông tin thu thập được quản lý thông qua cơ chế mà Firebase cung cấp.",
+        "title": "3. Phạm vi công khai thông tin",
+        "paras": [
+          "Phạm vi công khai thông tin khác nhau tùy theo tính năng."
+        ],
+        "list": [
+          {
+            "label": "Công khai cho người dùng khác:",
+            "text": "Tips, đánh giá, bình luận, ảnh công khai, thông tin hồ sơ, danh sách Đang theo dõi / Người theo dõi, số lần check-in, v.v."
+          },
+          {
+            "label": "Chỉ bạn xem được:",
+            "text": "quán đã lưu, danh sách quán đã check-in, v.v."
+          },
+          {
+            "label": "Đơn vị vận hành kiểm tra:",
+            "text": "đề xuất địa điểm mới, thông tin liên hệ, v.v."
+          }
+        ],
+        "after": [
+          "Khi đăng bài hoặc sử dụng hồ sơ, vui lòng kiểm tra những thông tin sẽ được công khai."
+        ]
       },
       {
-        title: "4. Về việc cung cấp cho bên thứ ba",
-        body: "Chúng tôi không cung cấp thông tin đã thu thập cho bên thứ ba khi chưa có sự đồng ý của bạn, trừ trường hợp pháp luật yêu cầu.",
+        "title": "4. Lưu trữ, quản lý và dịch vụ bên ngoài",
+        "paras": [
+          "Dịch vụ sử dụng Firebase do Google LLC cung cấp để lưu trữ và quản lý thông tin tài khoản, bài đăng và dữ liệu khác. Ảnh đại diện và ảnh đăng bài được lưu trên Cloudinary.",
+          "Một số tính năng sử dụng dịch vụ bên ngoài như Google Dịch và Google Analytics. Tính năng dịch có thể gửi văn bản đến Google, và Google Analytics gửi thông tin về tình hình sử dụng đến Google.",
+          "Mỗi dịch vụ xử lý thông tin theo chính sách quyền riêng tư và điều khoản riêng."
+        ]
       },
       {
-        title: "5. Về thời gian lưu trữ và xóa thông tin",
-        body: "Bạn có thể xóa nội dung mình đã đăng (Tips, check-in, đánh giá, ảnh) bất cứ lúc nào (nút xóa nằm cạnh mỗi bài đăng). Sau khi xóa, dữ liệu đó sẽ bị xóa và bạn có thể đăng lại. Bạn cũng có thể xóa tài khoản bất cứ lúc nào từ Tài khoản → Cài đặt → Cài đặt tài khoản → Xóa tài khoản. Khi xóa, tài khoản, hồ sơ, nội dung đã đăng (ảnh, đánh giá, Tips, check-in, lượt thích, bình luận) và thông tin địa điểm đã gửi sẽ bị xóa. Tuy nhiên, tệp ảnh của ảnh đã đăng và ảnh đại diện có thể vẫn còn trên dịch vụ lưu trữ ảnh (Cloudinary), nhưng sẽ không còn hiển thị trên dịch vụ này. Nếu muốn xóa các tệp ảnh đó hoặc cần tư vấn về việc xóa tài khoản, vui lòng liên hệ qua thông tin bên dưới. Thông tin quán đã được đăng trên bản đồ sẽ được giữ lại như thông tin của quán.",
+        "title": "5. Cookie và phân tích truy cập",
+        "paras": [
+          "Dịch vụ có thể sử dụng cookie và các công nghệ tương tự để duy trì trạng thái đăng nhập, giúp Dịch vụ hoạt động, nắm bắt tình hình sử dụng và các mục đích tương tự.",
+          "Để cải thiện Dịch vụ, chúng tôi sử dụng Google Analytics, công cụ phân tích truy cập do Google LLC cung cấp. Google Analytics dùng cookie và công nghệ tương tự để thu thập thông tin về tình hình sử dụng và gửi đến Google.",
+          "Nội dung thông tin được thu thập, xử lý và cách xử lý tuân theo chính sách của Google. Nếu không muốn Google Analytics thu thập thông tin, bạn có thể dùng tiện ích chặn dưới đây."
+        ],
+        "list": [
+          "Chính sách quyền riêng tư của Google: https://policies.google.com/privacy",
+          "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"
+        ],
+        "after": [
+          "Bạn có thể hạn chế hoặc xóa cookie trong cài đặt trình duyệt, nhưng khi đó một số tính năng của Dịch vụ có thể không hoạt động đúng."
+        ]
       },
       {
-        title: "6. Về Cookie",
-        body: "Dịch vụ có thể sử dụng cookie hoặc công nghệ tương tự, ví dụ để duy trì trạng thái đăng nhập, nhằm giúp Dịch vụ hoạt động đúng. Bạn có thể hạn chế cookie qua cài đặt trình duyệt, nhưng khi đó một số tính năng có thể không hoạt động đúng.",
+        "title": "6. Thời gian lưu trữ và xóa",
+        "paras": [
+          "Bạn có thể xóa Tips, check-in, đánh giá, ảnh và các bài đăng khác bằng chức năng xóa ở từng bài đăng.",
+          "Bạn có thể rời Dịch vụ bất cứ lúc nào bằng cách mở “Cài đặt” → “Cài đặt tài khoản” trên màn hình tài khoản và chọn “Xóa tài khoản”.",
+          "Khi rời Dịch vụ, chúng tôi xóa thông tin tài khoản, hồ sơ, bài đăng (ảnh, đánh giá, Tips, check-in, lượt thích, bình luận), các địa điểm mới bạn đã gửi và thông tin tương tự.",
+          "Tuy nhiên, tệp ảnh và ảnh đại diện có thể vẫn còn trên Cloudinary, dịch vụ lưu trữ ảnh. Chúng sẽ không còn hiển thị trong Dịch vụ, nhưng nếu bạn muốn xóa tệp ảnh hoặc muốn trao đổi về việc rời Dịch vụ, vui lòng liên hệ địa chỉ bên dưới.",
+          "Thông tin cửa hàng đã được đăng trên bản đồ vẫn còn trong Dịch vụ dưới dạng thông tin cửa hàng."
+        ]
       },
       {
-        title: "7. Công cụ phân tích truy cập",
-        body: "Để nắm tình hình sử dụng Dịch vụ (số người truy cập, tỷ lệ quay lại, các quán được xem và từ khóa được tìm kiếm, v.v.) và cải thiện Dịch vụ, chúng tôi sử dụng Google Analytics, công cụ phân tích truy cập của Google. Google Analytics dùng cookie để thu thập thông tin sử dụng dưới dạng không xác định cá nhân và gửi đến Google. Việc thu thập và xử lý tuân theo chính sách của Google. Bạn có thể ngừng việc thu thập bằng tiện ích trình duyệt (Google Analytics Opt-out Browser Add-on).",
-        list: ["Chính sách quyền riêng tư của Google: https://policies.google.com/privacy", "Google Analytics Opt-out Browser Add-on: https://tools.google.com/dlpage/gaoptout"],
+        "title": "7. Cung cấp thông tin cho bên thứ ba",
+        "paras": [
+          "Trừ trường hợp theo quy định của pháp luật hoặc tương tự, Dịch vụ không cung cấp thông tin cá nhân đã thu thập cho bên thứ ba khi chưa có sự đồng ý của bạn.",
+          "Tuy nhiên, khi sử dụng các dịch vụ bên ngoài được nêu trong chính sách này, thông tin cần thiết để cung cấp tính năng, phân tích truy cập và các mục đích tương tự có thể được gửi đến các dịch vụ đó. Về thông tin được gửi và cách xử lý, vui lòng xem phần giải thích về từng dịch vụ."
+        ]
       },
       {
-        title: "8. Liên hệ",
-        body: "Nếu bạn có câu hỏi về nội dung trang này, hoặc về cách xử lý thông tin đã thu thập, vui lòng liên hệ theo địa chỉ dưới đây.",
-        list: ["sales@compass-story.com"],
+        "title": "8. Liên hệ",
+        "paras": [
+          "Nếu bạn có câu hỏi hoặc yêu cầu về chính sách này hoặc cách Dịch vụ xử lý thông tin, vui lòng liên hệ bên dưới."
+        ],
+        "list": [
+          "Email: sales@compass-story.com"
+        ]
       },
       {
-        title: "9. Thay đổi Chính sách quyền riêng tư",
-        body: "Nội dung trang này có thể được thay đổi khi cần thiết. Nội dung sau khi thay đổi sẽ có hiệu lực kể từ khi được đăng trên trang này.",
-      },
+        "title": "9. Thay đổi chính sách",
+        "paras": [
+          "Chúng tôi có thể thay đổi chính sách này khi cần. Nội dung sau khi thay đổi có hiệu lực từ thời điểm được đăng trên trang này."
+        ]
+      }
     ],
     // Trang thông tin đơn vị vận hành
     aboutPageTitle: "Thông tin đơn vị vận hành",

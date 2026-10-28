@@ -59,6 +59,8 @@ function routeFromLocation() {
   if (id) return { name: "shop", id };
   const page = params.get(PAGE_PARAM);
   if (page && CONTENT_PAGES[page]) return { name: "content", page };
+  // プライバシーポリシー: 「/privacy」(または「?page=privacy」)
+  if (!id && !params.get("view") && /\/privacy\/?$/i.test(location.pathname)) return { name: "content", page: "privacy" };
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
@@ -85,6 +87,18 @@ function routeFromLocation() {
   if (typeof showHome === "function" && (view === "home" || (!view && isHomeDefault()))) return { name: "home" };
   return { name: "list" };
 }
+
+// 「/privacy」を直接開いたとき(privacy.html が「?page=privacy」に送る)は、表示上のURLを「/privacy」に戻す
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get(PAGE_PARAM) === "privacy" && [...params.keys()].length === 1) {
+    try {
+      history.replaceState(history.state, "", privacyUrl() + location.hash);
+    } catch (e) {
+      // 書き換えられない環境(file:// など)は、そのまま
+    }
+  }
+})();
 
 // URLを書き換えて(pushState)、表示を切り替える
 function navigate(url) {
@@ -552,15 +566,27 @@ function bindBackLinks() {
 
 // 1つの項目(見出し + 本文 + 箇条書き)のHTML。本文は、section.link があれば、メール宛先などへのリンクにする
 function renderContentSectionHtml(section) {
+  // 箇条書きの中の「https://〜」は、リンクにする
+  const linkify = (text) => esc(text).replace(/https:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+  const para = (text) => `<p>${linkify(text)}</p>`;
   const bodyHtml = !section.body
     ? ""
     : section.link
     ? `<p><a href="${esc(section.link)}">${esc(section.body)}</a></p>`
     : `<p>${esc(section.body)}</p>`;
+  const parasHtml = (section.paras || []).map(para).join("");
+  // 箇条書き: 文字だけ、または { label(太字), text }
   const listHtml = section.list
-    ? `<ul class="terms-list">${section.list.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`
+    ? `<ul class="terms-list">${section.list
+        .map((item) => (typeof item === "string" ? `<li>${linkify(item)}</li>` : `<li><strong>${esc(item.label)}</strong>${linkify(item.text)}</li>`))
+        .join("")}</ul>`
     : "";
-  return `<section class="terms-section"><h3>${esc(section.title)}</h3>${bodyHtml}${listHtml}</section>`;
+  const afterHtml = (section.after || []).map(para).join("");
+  // 小見出し(「2-1. ログイン情報」など)
+  const subsHtml = (section.subs || [])
+    .map((sub) => `<section class="terms-sub"><h4>${esc(sub.title)}</h4>${(sub.paras || []).map(para).join("")}</section>`)
+    .join("");
+  return `<section class="terms-section"><h3>${esc(section.title)}</h3>${bodyHtml}${parasHtml}${listHtml}${afterHtml}${subsHtml}</section>`;
 }
 
 function renderContentPage() {

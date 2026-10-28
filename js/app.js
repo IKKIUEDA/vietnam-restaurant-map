@@ -577,10 +577,10 @@ function createUserDotMarker(latlng) {
 const SHOP_PARAM = "shop";
 
 // 詳細ページのURL(相対URL。サイトを置く場所が変わっても、そのまま動く)。例: ?shop=viet-nhat
-// このサイトの入口のURL(ふつうは「/」)。お問い合わせ(「/contact」)を開いているときも、入口の「/」を返す
+// このサイトの入口のURL(ふつうは「/」)。お問い合わせ(「/contact」)・プライバシーポリシー(「/privacy」)を開いているときも、入口の「/」を返す
 //   (ほかのページへのURLは、すべてこれを元に作る。「/contact?view=map」のようにならないように)
 function appBase() {
-  return location.pathname.replace(/contact\/?$/i, "") || "/";
+  return location.pathname.replace(/(contact|privacy)\/?$/i, "") || "/";
 }
 function shopUrl(id) {
   return `${appBase()}?${SHOP_PARAM}=${encodeURIComponent(id)}`;
@@ -596,8 +596,10 @@ function contentPageUrl(page) {
 function termsUrl() {
   return contentPageUrl("terms");
 }
+// プライバシーポリシーのURL: 「https://vietnamfoodie.compass-story.net/privacy」
+//   (直接開いたとき・再読み込みしたときは、privacy.html が「/?page=privacy」に送り、js/detail.js で「/privacy」の表示に戻す)
 function privacyUrl() {
-  return contentPageUrl("privacy");
+  return appBase() + "privacy";
 }
 function aboutUrl() {
   return contentPageUrl("about");
