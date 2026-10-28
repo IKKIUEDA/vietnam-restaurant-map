@@ -3,7 +3,7 @@
 //   ・スマホ(幅 900px 未満)では、最初の段落だけを出し、「続きを読む」で全文を開く。PC は全文を出す
 const HOME_INTRO_TEXT = {
   ja: {
-    title: ["ベトナムのお店探しには", "ベトナムフーディー！"],
+    title: ["日本のベトナムのお店探しには、", "ベトナムフーディー！"],
     body: [
       "ベトナムフーディーは、ベトナムの料理店やカフェ、食材店を見つけられるサービスです。",
       "身近にあるベトナムの魅力を発見。新しいお店やお気に入りの味との出会いを通じて、日本にいながらベトナムスポットをもっと楽しもう。",
@@ -13,7 +13,7 @@ const HOME_INTRO_TEXT = {
     less: "閉じる",
   },
   en: {
-    title: ["Looking for Vietnamese spots?", "Try Vietnam Foodie!"],
+    title: ["Looking for Vietnamese spots in Japan?", "Try Vietnam Foodie!"],
     body: [
       "Vietnam Foodie is a service for finding Vietnamese restaurants, cafes and grocery stores.",
       "Discover the charm of Vietnam close to you. Meet new shops and new favorite flavors, and enjoy Vietnamese spots even more while in Japan.",
@@ -23,7 +23,7 @@ const HOME_INTRO_TEXT = {
     less: "Close",
   },
   vi: {
-    title: ["Tìm quán Việt Nam?", "Hãy dùng Vietnam Foodie!"],
+    title: ["Tìm quán Việt Nam tại Nhật Bản?", "Hãy dùng Vietnam Foodie!"],
     body: [
       "Vietnam Foodie là dịch vụ giúp bạn tìm nhà hàng, quán cà phê và cửa hàng thực phẩm Việt Nam.",
       "Khám phá nét hấp dẫn của Việt Nam ngay gần bạn. Qua những quán mới và hương vị yêu thích, hãy tận hưởng các địa điểm Việt Nam nhiều hơn ngay tại Nhật Bản.",
