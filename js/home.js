@@ -572,6 +572,8 @@ function renderHome() {
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
     `</section>` +
     `</div>` +
+    // ベトナムフーディーの紹介(赤い背景。js/home-intro.js)
+    (typeof homeIntroHtml === "function" ? homeIntroHtml() : "") +
     // 検索窓は、画像の下に出す(スマホでは「探す」ボタンを隠し、キーボードの「検索」で探す)
     `<form class="home-search" role="search">` +
     `<label class="visually-hidden" for="home-search-input">${esc(h.searchLabel)}</label>` +
