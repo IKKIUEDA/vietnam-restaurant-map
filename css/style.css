@@ -9607,3 +9607,18 @@ html[lang="en"] .fg-label {
 .is-drag-scrolling * {
   cursor: grabbing !important;
 }
+
+/* ===== PC: ホームを下にスクロールしたとき、写真・カードを下からふわっと出す(js/home-reveal.js) ===== */
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal.is-shown {
+    opacity: 1;
+    transform: none;
+  }
+}

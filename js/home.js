@@ -633,6 +633,7 @@ function renderHome() {
   requestAnimationFrame(updateHomeTitleColor);
   attachSwipeBars();
   updateHscrollArrows();
+  if (typeof setupHomeReveal === "function") setupHomeReveal(); // PC: スクロールで、写真やカードを浮かび上がらせる(js/home-reveal.js)
   setTimeout(updateHscrollArrows, 400); // 写真の読み込みで高さが変わることがあるので、少しあとにも合わせ直す
 }
 
