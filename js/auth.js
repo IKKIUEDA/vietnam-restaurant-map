@@ -158,12 +158,12 @@ function renderAuth() {
     // アイコン+名前を押すと、アカウント画面を開く(js/account.js)
     const who = document.createElement("a");
     who.className = "auth-user";
-    who.href = "?view=account";
+    who.href = appBase() + "?view=account";
     who.title = name;
     who.addEventListener("click", (event) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey) return;
       event.preventDefault();
-      navigate(location.pathname + "?view=account");
+      navigate(appBase() + "?view=account");
     });
     who.append(createAvatar(authUser, name));
     if (name) {

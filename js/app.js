@@ -577,8 +577,13 @@ function createUserDotMarker(latlng) {
 const SHOP_PARAM = "shop";
 
 // 詳細ページのURL(相対URL。サイトを置く場所が変わっても、そのまま動く)。例: ?shop=viet-nhat
+// このサイトの入口のURL(ふつうは「/」)。お問い合わせ(「/contact」)を開いているときも、入口の「/」を返す
+//   (ほかのページへのURLは、すべてこれを元に作る。「/contact?view=map」のようにならないように)
+function appBase() {
+  return location.pathname.replace(/contact\/?$/i, "") || "/";
+}
 function shopUrl(id) {
-  return `?${SHOP_PARAM}=${encodeURIComponent(id)}`;
+  return `${appBase()}?${SHOP_PARAM}=${encodeURIComponent(id)}`;
 }
 
 // 利用規約・プライバシーポリシー・運営者情報、固定ページへのリンクを作るための部品(表示は、detail.js)
@@ -586,7 +591,7 @@ const PAGE_PARAM = "page";
 
 // 固定ページのURL。例: ?page=terms
 function contentPageUrl(page) {
-  return `?${PAGE_PARAM}=${page}`;
+  return `${appBase()}?${PAGE_PARAM}=${page}`;
 }
 function termsUrl() {
   return contentPageUrl("terms");

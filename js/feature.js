@@ -53,7 +53,7 @@ function featureText() {
 }
 
 function featureUrl(type) {
-  return location.pathname + "?view=feature&type=" + encodeURIComponent(type);
+  return appBase() + "?view=feature&type=" + encodeURIComponent(type);
 }
 
 // いまの絞り込み(ページを開いている間だけ覚えておく)
