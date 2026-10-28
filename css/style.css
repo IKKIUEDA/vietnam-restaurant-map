@@ -9944,3 +9944,41 @@ body.view-home:has(.contact-section) #lang-select {
     margin-top: 48px;
   }
 }
+
+/* ===== 固定ページの「項目名 + 中身」の表(運営者情報) ===== */
+.terms-rows {
+  margin: 12px 0 0;
+  border-top: 1px solid #e3e5df;
+}
+.terms-row {
+  padding: 14px 0;
+  border-bottom: 1px solid #e3e5df;
+}
+.terms-row dt {
+  margin: 0 0 6px;
+  font-weight: 800;
+  color: var(--c-text);
+}
+.terms-row dd {
+  margin: 0;
+}
+.terms-row dd p {
+  margin: 0;
+  line-height: 1.8;
+}
+.terms-row dd p + p {
+  margin-top: 6px;
+}
+.terms-row dd a {
+  color: var(--c-primary-dark, #1b5e20);
+}
+@media (min-width: 700px) {
+  .terms-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+  }
+  .terms-row dt {
+    margin: 0;
+  }
+}
