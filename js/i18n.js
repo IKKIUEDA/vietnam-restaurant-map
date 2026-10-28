@@ -414,15 +414,47 @@ const ui = {
     ],
     // 運営者情報ページ
     aboutPageTitle: "運営者情報",
-    aboutIntro: "「ベトナムフーディー」を運営している事業者の情報です。",
+    aboutIntro: "",
     aboutSections: [
-      { title: "サービス名", body: "ベトナムフーディー" },
-      { title: "運営", body: "Compass Story(コンパスストーリー)" },
-      { title: "お問い合わせ", body: "sales@compass-story.com", link: "mailto:sales@compass-story.com" },
       {
-        title: "サービスについて",
-        body: "日本にあるベトナムに関するお店・スポットを、地図から探せるWebサービスです。",
+        "title": "サービス概要",
+        "rows": [
+          {
+            "label": "サービス名",
+            "value": [
+              "ベトナムフーディー（Vietnam Foodie）"
+            ]
+          },
+          {
+            "label": "運営",
+            "value": [
+              "Compass Story（コンパスストーリー）"
+            ]
+          },
+          {
+            "label": "サービス内容",
+            "value": [
+              "ベトナムフーディーは、日本国内のベトナム料理店、ベトナム食材店、カフェなど、ベトナムに関連するお店やスポットを地図から検索できるWebサービスです。",
+              "店舗情報や利用者の投稿を通じて、お店探しや新しいベトナムスポットとの出会いをサポートします。"
+            ]
+          }
+        ]
       },
+      {
+        "title": "お問い合わせ",
+        "paras": [
+          "本サービスに関するご質問、ご意見、ご要望などは、以下のメールアドレスまでお問い合わせください。"
+        ],
+        "rows": [
+          {
+            "label": "メールアドレス",
+            "value": [
+              "sales@compass-story.com"
+            ],
+            "link": "mailto:sales@compass-story.com"
+          }
+        ]
+      }
     ],
     tipsTitle: "このお店のTips",
     tipsLoading: "Tipsを読み込んでいます…",
@@ -977,15 +1009,47 @@ const ui = {
     ],
     // About page
     aboutPageTitle: "About Us",
-    aboutIntro: "Information about the operator of “Vietnam Foodie”.",
+    aboutIntro: "",
     aboutSections: [
-      { title: "Service name", body: "Vietnam Foodie" },
-      { title: "Operator", body: "Compass Story" },
-      { title: "Contact", body: "sales@compass-story.com", link: "mailto:sales@compass-story.com" },
       {
-        title: "About this service",
-        body: "A web service for finding Vietnam-related shops and spots in Japan, shown on a map.",
+        "title": "Service overview",
+        "rows": [
+          {
+            "label": "Service name",
+            "value": [
+              "Vietnam Foodie (ベトナムフーディー)"
+            ]
+          },
+          {
+            "label": "Operator",
+            "value": [
+              "Compass Story"
+            ]
+          },
+          {
+            "label": "What we offer",
+            "value": [
+              "Vietnam Foodie is a web service for finding Vietnam-related shops and spots in Japan, such as Vietnamese restaurants, Vietnamese grocery stores and cafes, on a map.",
+              "Through shop information and posts from users, we help you find shops and discover new Vietnamese spots."
+            ]
+          }
+        ]
       },
+      {
+        "title": "Contact",
+        "paras": [
+          "For questions, feedback or requests about the Service, please contact us at the email address below."
+        ],
+        "rows": [
+          {
+            "label": "Email",
+            "value": [
+              "sales@compass-story.com"
+            ],
+            "link": "mailto:sales@compass-story.com"
+          }
+        ]
+      }
     ],
     tipsTitle: "Tips for this shop",
     tipsLoading: "Loading tips…",
@@ -1539,15 +1603,47 @@ const ui = {
     ],
     // Trang thông tin đơn vị vận hành
     aboutPageTitle: "Thông tin đơn vị vận hành",
-    aboutIntro: "Thông tin về đơn vị vận hành “Vietnam Foodie”.",
+    aboutIntro: "",
     aboutSections: [
-      { title: "Tên dịch vụ", body: "Vietnam Foodie" },
-      { title: "Đơn vị vận hành", body: "Compass Story" },
-      { title: "Liên hệ", body: "sales@compass-story.com", link: "mailto:sales@compass-story.com" },
       {
-        title: "Về dịch vụ này",
-        body: "Đây là dịch vụ web giúp tìm các quán và địa điểm liên quan đến Việt Nam tại Nhật Bản, hiển thị trên bản đồ.",
+        "title": "Tổng quan dịch vụ",
+        "rows": [
+          {
+            "label": "Tên dịch vụ",
+            "value": [
+              "Vietnam Foodie (ベトナムフーディー)"
+            ]
+          },
+          {
+            "label": "Đơn vị vận hành",
+            "value": [
+              "Compass Story"
+            ]
+          },
+          {
+            "label": "Nội dung dịch vụ",
+            "value": [
+              "Vietnam Foodie là dịch vụ web giúp bạn tìm trên bản đồ các cửa hàng và địa điểm liên quan đến Việt Nam tại Nhật Bản, như nhà hàng Việt Nam, cửa hàng thực phẩm Việt Nam và quán cà phê.",
+              "Thông qua thông tin cửa hàng và bài đăng của người dùng, chúng tôi hỗ trợ bạn tìm quán và khám phá những địa điểm Việt Nam mới."
+            ]
+          }
+        ]
       },
+      {
+        "title": "Liên hệ",
+        "paras": [
+          "Nếu bạn có câu hỏi, ý kiến hoặc yêu cầu về Dịch vụ, vui lòng liên hệ qua địa chỉ email dưới đây."
+        ],
+        "rows": [
+          {
+            "label": "Email",
+            "value": [
+              "sales@compass-story.com"
+            ],
+            "link": "mailto:sales@compass-story.com"
+          }
+        ]
+      }
     ],
     tipsTitle: "Mẹo về quán này",
     tipsLoading: "Đang tải mẹo…",

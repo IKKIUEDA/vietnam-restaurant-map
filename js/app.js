@@ -577,10 +577,10 @@ function createUserDotMarker(latlng) {
 const SHOP_PARAM = "shop";
 
 // 詳細ページのURL(相対URL。サイトを置く場所が変わっても、そのまま動く)。例: ?shop=viet-nhat
-// このサイトの入口のURL(ふつうは「/」)。お問い合わせ(「/contact」)・プライバシーポリシー(「/privacy」)を開いているときも、入口の「/」を返す
+// このサイトの入口のURL(ふつうは「/」)。お問い合わせ(「/contact」)・プライバシーポリシー(「/privacy」)・運営者情報(「/about」)を開いているときも、入口の「/」を返す
 //   (ほかのページへのURLは、すべてこれを元に作る。「/contact?view=map」のようにならないように)
 function appBase() {
-  return location.pathname.replace(/(contact|privacy)\/?$/i, "") || "/";
+  return location.pathname.replace(/(contact|privacy|about)\/?$/i, "") || "/";
 }
 function shopUrl(id) {
   return `${appBase()}?${SHOP_PARAM}=${encodeURIComponent(id)}`;
@@ -601,8 +601,9 @@ function termsUrl() {
 function privacyUrl() {
   return appBase() + "privacy";
 }
+// 運営者情報のURL: 「https://vietnamfoodie.compass-story.net/about」(しくみは privacyUrl と同じ。about.html)
 function aboutUrl() {
-  return contentPageUrl("about");
+  return appBase() + "about";
 }
 
 // data.js の文字を、HTMLに埋め込んでも安全な形にする(< や & などを、ただの文字にする)
