@@ -400,17 +400,11 @@ function renderTodoSection() {
   const settings = loadMyList();
   // 機能の説明(左: 見出し・説明・ボタン / 右: 画面の例2枚)は、いつも出す
   //   画面の例の画像は、運営者が用意したもの(images/travel-list-1.jpg: お店の一覧 / images/travel-list-2.jpg: エリアと種類を選ぶ画面)
-  //   ボタン: まだ作っていない人 →「トラベル・リストを作る」/ もう作った人 →「トラベル・リストを見る」(選んだエリアを小さく出す)
-  const areaNames = settings
-    ? settings.items
-        .map((it) => myListPrefs().find((q) => q.key === it.pref))
-        .filter(Boolean)
-        .map((p) => pick(p.label))
-    : [];
+  //   ボタン: まだ作っていない人 →「トラベル・リストを作る」/ もう作った人 →「トラベル・リストを見る」
   const cta = settings
     ? `<a class="todo-new todo-intro-cta" href="${esc(myListUrl())}" data-mylist-nav>` +
       `<span class="todo-new-icon has-illust"><img src="images/mylist-create.png" alt="" width="210" height="180" decoding="async"></span>` +
-      `<span class="todo-new-text"><span>${esc(x.viewTitle)}</span><span>${esc(x.viewSub(areaNames))}</span></span>` +
+      `<span class="todo-new-text"><span>${esc(x.viewTitle)}</span></span>` +
       `<span class="todo-intro-arrow" aria-hidden="true">${homeIcon("forward", 20)}</span></a>`
     : `<a class="todo-new todo-intro-cta" href="${esc(myListEditUrl())}" data-mylist-edit>` +
       // アイコンは、運営者が用意したイラスト(images/mylist-create.png)
