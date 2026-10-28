@@ -10,7 +10,8 @@ const CONTACT_TEXT = {
     bandLead: "ベトナムフーディーへのご意見・ご要望や、お店の掲載についてのご相談は、こちらからお気軽にご連絡ください。",
     bandBtn: "お問い合わせ",
     title: "お問い合わせ",
-    lead: "お問い合わせの種類を選んで、内容を入力してください。",
+    lead: "以下の各項目について、お間違えのないようご入力のうえ、ページ下部にある「送信する」ボタンを押してください。",
+    selectPh: "選択してください",
     required: "必須",
     typeLabel: "お問い合わせの種類",
     types: {
@@ -55,7 +56,8 @@ const CONTACT_TEXT = {
     bandLead: "For feedback, requests or questions about listing a shop on Vietnam Foodie, please feel free to contact us here.",
     bandBtn: "Contact us",
     title: "Contact us",
-    lead: "Choose the type of inquiry and enter the details.",
+    lead: "Please fill in each item below correctly, then press the “Send” button at the bottom of the page.",
+    selectPh: "Please select",
     required: "Required",
     typeLabel: "Type of inquiry",
     types: {
@@ -100,7 +102,8 @@ const CONTACT_TEXT = {
     bandLead: "Mọi ý kiến, đề xuất hoặc trao đổi về việc đăng quán trên Foodie Việt Nam, vui lòng liên hệ với chúng tôi tại đây.",
     bandBtn: "Liên hệ",
     title: "Liên hệ",
-    lead: "Chọn loại câu hỏi và nhập nội dung.",
+    lead: "Vui lòng nhập chính xác từng mục dưới đây, rồi nhấn nút “Gửi” ở cuối trang.",
+    selectPh: "Vui lòng chọn",
     required: "Bắt buộc",
     typeLabel: "Loại câu hỏi",
     types: {
@@ -190,6 +193,8 @@ function renderContactPage() {
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(homeUrl())}" data-home-nav aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` +
     `<h2 class="todo-create-title">${esc(x.title)}</h2></div>`;
+  // フォームの画面では、上の帯にはタイトルを出さず、ページの中に大きく出す
+  const headBack = head.replace(/<h2 class="todo-create-title">.*?<\/h2>/, "");
   if (st.done) {
     homePage.innerHTML =
       head +
@@ -198,32 +203,43 @@ function renderContactPage() {
       `<a class="todo-primary contact-home" href="${esc(homeUrl())}" data-home-nav>${esc(x.toHome)}</a></div></section>`;
     return;
   }
+  // 見た目: 1行ずつ線で区切り、PC は左に項目名(と「必須」)、右に入力欄。スマホは項目名の下に入力欄
   const req = `<span class="contact-req">${esc(x.required)}</span>`;
-  const label = (text, forId) => `<div class="contact-label">${forId ? `<label for="${forId}">${esc(text)}</label>` : `<span>${esc(text)}</span>`}${req}</div>`;
+  const label = (text, forId) => `<div class="contact-label"><label for="${forId}">${esc(text)}</label>${req}</div>`;
+  const row = (labelHtml, inputHtml) => `<div class="contact-row">${labelHtml}<div class="contact-input">${inputHtml}</div></div>`;
   const privacyLink = `<a href="${esc(privacyUrl())}" target="_blank" rel="noopener">${esc(x.privacy)}</a>`;
   homePage.innerHTML =
-    head +
+    headBack +
     `<section class="home-section contact-section">` +
+    `<h2 class="contact-title">${esc(x.title)}</h2>` +
     `<p class="contact-lead">${esc(x.lead)}</p>` +
     `<form class="contact-form" data-contact-form novalidate>` +
-    `<fieldset class="contact-field"><legend class="contact-label"><span>${esc(x.typeLabel)}</span>${req}</legend>` +
-    CONTACT_TYPES.map(
-      (t) =>
-        `<label class="contact-radio"><input type="radio" name="type" value="${t}"${st.type === t ? " checked" : ""}>` +
-        `<span>${esc(x.types[t])}</span></label>`
-    ).join("") +
-    `</fieldset>` +
-    `<div class="contact-field">${label(x.nameLabel, "contact-name")}` +
-    `<input id="contact-name" class="acct-input" name="name" maxlength="50" autocomplete="name" placeholder="${esc(x.namePh)}" value="${esc(st.name)}"></div>` +
-    `<div class="contact-field">${label(x.emailLabel, "contact-email")}` +
-    `<input id="contact-email" class="acct-input" name="email" type="email" maxlength="254" autocomplete="email" placeholder="${esc(x.emailPh)}" value="${esc(st.email)}"></div>` +
-    `<div class="contact-field">${label(x.messageLabel, "contact-message")}` +
-    `<p class="contact-note">${esc(x.messageLead)}</p><p class="contact-warn">${esc(x.messageWarn)}</p>` +
-    `<textarea id="contact-message" class="acct-input" name="message" rows="7" maxlength="2000" placeholder="${esc(x.messagePh)}">${esc(st.message)}</textarea>` +
-    `<p class="contact-count" data-contact-count>${esc(x.count(st.message.length))}</p></div>` +
+    row(
+      label(x.typeLabel, "contact-type"),
+      `<select id="contact-type" class="contact-control" name="type">` +
+        `<option value=""${st.type ? "" : " selected"}>${esc(x.selectPh)}</option>` +
+        CONTACT_TYPES.map((t) => `<option value="${t}"${st.type === t ? " selected" : ""}>${esc(x.types[t])}</option>`).join("") +
+        `</select>`
+    ) +
+    row(
+      label(x.nameLabel, "contact-name"),
+      `<input id="contact-name" class="contact-control" name="name" maxlength="50" autocomplete="name" placeholder="${esc(x.namePh)}" value="${esc(st.name)}">`
+    ) +
+    row(
+      label(x.emailLabel, "contact-email"),
+      `<input id="contact-email" class="contact-control" name="email" type="email" maxlength="254" autocomplete="email" placeholder="${esc(x.emailPh)}" value="${esc(st.email)}">`
+    ) +
+    row(
+      label(x.messageLabel, "contact-message"),
+      `<p class="contact-note">${esc(x.messageLead)}</p><p class="contact-warn">${esc(x.messageWarn)}</p>` +
+        `<textarea id="contact-message" class="contact-control" name="message" rows="8" maxlength="2000" placeholder="${esc(x.messagePh)}">${esc(st.message)}</textarea>` +
+        `<p class="contact-count" data-contact-count>${esc(x.count(st.message.length))}</p>`
+    ) +
+    `<div class="contact-bottom">` +
     `<label class="set-check contact-agree"><input type="checkbox" name="agree"${st.agree ? " checked" : ""}><span>${x.agree(privacyLink)}</span></label>` +
     `<p class="acct-message is-error" role="alert"${st.error ? "" : " hidden"}>${esc(st.error)}</p>` +
-    `<div class="todo-actions"><button type="submit" class="todo-primary"${st.busy ? " disabled" : ""}>${esc(st.busy ? x.sending : x.send)}</button></div>` +
+    `<button type="submit" class="contact-submit"${st.busy ? " disabled" : ""}>${esc(st.busy ? x.sending : x.send)}</button>` +
+    `</div>` +
     `</form></section>`;
 }
 
@@ -231,8 +247,7 @@ function renderContactPage() {
 function keepContactInputs(form) {
   const f = form || homePage.querySelector("[data-contact-form]");
   if (!f) return;
-  const checked = f.querySelector('input[name="type"]:checked');
-  contactState.type = checked ? checked.value : contactState.type;
+  contactState.type = f.elements.type.value; // お問い合わせの種類(選択欄)
   contactState.name = f.elements.name.value;
   contactState.email = f.elements.email.value;
   contactState.message = f.elements.message.value;
