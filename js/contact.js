@@ -148,9 +148,36 @@ const CONTACT_TEXT = {
 function contactText() {
   return CONTACT_TEXT[currentLang] || CONTACT_TEXT.ja;
 }
+// お問い合わせのURL: 「https://vietnamfoodie.compass-story.net/contact」
+//   ・直接開いたとき・再読み込みしたときは、contact.html が「/?view=contact」に送り、ここで「/contact」の表示に戻す
 function contactUrl() {
-  return location.pathname + "?view=contact";
+  return appBase() + "contact";
 }
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get("view") === "contact" && [...params.keys()].length === 1) {
+    try {
+      history.replaceState(history.state, "", contactUrl() + location.hash);
+    } catch (e) {
+      // 書き換えられない環境(file:// など)は、そのまま
+    }
+  }
+})();
+// PC(幅 900px 以上・マウス)では、お問い合わせを新しいタブで開く(スマホは、今まで通り同じ画面で開く)
+function contactOpensNewTab() {
+  return window.matchMedia("(min-width: 900px) and (hover: hover)").matches;
+}
+document.addEventListener(
+  "click",
+  (event) => {
+    const link = event.target.closest && event.target.closest("a[data-contact-link]");
+    if (!link || !contactOpensNewTab()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.open(link.href, "_blank", "noopener");
+  },
+  true
+);
 
 function getContactApi() {
   if (window.contactApi) return Promise.resolve(window.contactApi);
@@ -176,7 +203,7 @@ function homeContactHtml() {
   return (
     `<section class="home-contact">` +
     `<p class="home-contact-lead">${esc(x.bandLead)}</p>` +
-    `<a class="home-contact-btn" href="${esc(contactUrl())}" data-home-nav>${esc(x.bandBtn)}${homeIcon("forward", 18)}</a>` +
+    `<a class="home-contact-btn" href="${esc(contactUrl())}" data-home-nav data-contact-link>${esc(x.bandBtn)}${homeIcon("forward", 18)}</a>` +
     `</section>`
   );
 }

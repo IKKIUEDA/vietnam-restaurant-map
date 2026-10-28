@@ -157,10 +157,10 @@ function isHomeDefault() {
   return true;
 }
 function homeUrl() {
-  return location.pathname;
+  return appBase();
 }
 function mapUrl() {
-  return location.pathname + "?view=map";
+  return appBase() + "?view=map";
 }
 
 // ---------------------------------------------------------------------
@@ -416,7 +416,7 @@ function homeAreaCardsHtml() {
     .join("");
 }
 function areaListUrl() {
-  return location.pathname + "?view=areas";
+  return appBase() + "?view=areas";
 }
 // ホームの各まとまりの見出しの上に出す、緑の小さな英語のラベル(例: 「Search By Area」)
 function homeSectionLabel(text) {
@@ -958,7 +958,7 @@ appTabs.addEventListener("click", (event) => {
   else if (key === "map") {
     navigate(mapUrl());
     if (favoritesOnly) resetFilters();
-  } else if (key === "account") navigate(location.pathname + "?view=account");
+  } else if (key === "account") navigate(appBase() + "?view=account");
   renderTabs();
 });
 
