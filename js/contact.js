@@ -258,8 +258,7 @@ function renderContactPage() {
     ) +
     row(
       label(x.messageLabel, "contact-message"),
-      `<p class="contact-note">${esc(x.messageLead)}</p><p class="contact-warn">${esc(x.messageWarn)}</p>` +
-        `<textarea id="contact-message" class="contact-control" name="message" rows="8" maxlength="2000" placeholder="${esc(x.messagePh)}">${esc(st.message)}</textarea>` +
+      `<textarea id="contact-message" class="contact-control" name="message" rows="8" maxlength="2000" placeholder="${esc(x.messagePh)}">${esc(st.message)}</textarea>` +
         `<p class="contact-count" data-contact-count>${esc(x.count(st.message.length))}</p>`
     ) +
     `<div class="contact-bottom">` +
