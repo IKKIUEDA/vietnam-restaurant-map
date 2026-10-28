@@ -9931,3 +9931,16 @@ body.is-home-top #home-page > .home-section.home-band-line {
   color: var(--c-primary-dark, #1b5e20);
   word-break: break-all;
 }
+
+/* お問い合わせのページでは、右上の言語の切り替えを出さない */
+body.view-home:has(.contact-section) #lang-select {
+  display: none;
+}
+.contact-section .contact-title:first-child {
+  margin-top: 32px;
+}
+@media (min-width: 900px) {
+  .contact-section .contact-title:first-child {
+    margin-top: 48px;
+  }
+}

@@ -216,16 +216,10 @@ let contactState = { type: "", name: "", email: "", message: "", agree: false, b
 function renderContactPage() {
   const x = contactText();
   const st = contactState;
-  const head =
-    `<div class="todo-create-head mylist-page-head">` +
-    `<a class="todo-back" href="${esc(homeUrl())}" data-home-nav aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` +
-    `<h2 class="todo-create-title">${esc(x.title)}</h2></div>`;
-  // フォームの画面では、上の帯にはタイトルを出さず、ページの中に大きく出す
-  const headBack = head.replace(/<h2 class="todo-create-title">.*?<\/h2>/, "");
+  // 左上の「戻る」は出さない(PC は新しいタブで開くため。ホームへは、下のメニューやロゴから戻れる)
   if (st.done) {
     homePage.innerHTML =
-      head +
-      `<section class="home-section contact-section"><div class="contact-done">${homeIcon("check", 28)}` +
+      `<section class="home-section contact-section"><h2 class="contact-title">${esc(x.title)}</h2><div class="contact-done">${homeIcon("check", 28)}` +
       `<h3>${esc(x.doneTitle)}</h3><p>${esc(x.doneText)}</p>` +
       `<a class="todo-primary contact-home" href="${esc(homeUrl())}" data-home-nav>${esc(x.toHome)}</a></div></section>`;
     return;
@@ -236,7 +230,6 @@ function renderContactPage() {
   const row = (labelHtml, inputHtml) => `<div class="contact-row">${labelHtml}<div class="contact-input">${inputHtml}</div></div>`;
   const privacyLink = `<a href="${esc(privacyUrl())}" target="_blank" rel="noopener">${esc(x.privacy)}</a>`;
   homePage.innerHTML =
-    headBack +
     `<section class="home-section contact-section">` +
     `<h2 class="contact-title">${esc(x.title)}</h2>` +
     `<p class="contact-lead">${esc(x.lead)}</p>` +
