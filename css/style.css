@@ -9816,3 +9816,54 @@ select.contact-control {
     font-size: 1.05rem;
   }
 }
+
+/* ===== このページをシェアする(特集の中の下): X・Facebook・LINE の丸いボタン + 共有・コピー ===== */
+.home-share {
+  margin-top: 40px;
+  padding: 0;
+  text-align: center;
+}
+.home-share-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--c-text);
+}
+.home-share-btns {
+  gap: 18px;
+  margin-top: 18px;
+}
+.home-share-sns {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.home-share-sns:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+.home-share-sns:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: 3px;
+}
+.home-share-sns.is-x { background: #000000; }
+.home-share-sns.is-line { background: #06c755; }
+.home-share-sns.is-more {
+  background: #ffffff;
+  border: 1.5px solid #c9ccc6;
+  color: #333333;
+}
+.home-share-sns.is-more svg {
+  width: 24px;
+  height: 24px;
+}

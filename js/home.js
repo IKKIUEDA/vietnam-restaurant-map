@@ -611,11 +611,12 @@ function renderHome() {
     `<div class="home-features">` +
     (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(count("cafe"))) : "") +
     feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
-    `</div></section>` +
+    `</div>` +
+    // このページをシェアする(特集の中の下)
+    homeShareHtml() +
+    `</section>` +
     // ユーザー: ほかのユーザーを見つけて、フォローする(js/people.js)
     (typeof homePeopleHtml === "function" ? homePeopleHtml() : "") +
-    // このページをシェア(X・Facebook・LINE)
-    homeShareHtml() +
     // お問い合わせ(js/contact.js)
     (typeof homeContactHtml === "function" ? homeContactHtml() : "") +
     // いちばん下: ロゴ・サイト名、利用規約などへのリンク(縦に並べる)、著作権の表示
@@ -688,37 +689,64 @@ window.addEventListener("resize", () => homePage.querySelectorAll(SWIPE_SELECTOR
 function paintHomeBands() {
   const sections = [...homePage.querySelectorAll(":scope > .home-section")].filter((el) => !el.classList.contains("home-top"));
   sections.forEach((el) => el.classList.remove("home-band-gray"));
-  // お問い合わせのすぐ上(シェア)は白、その上はグレー、…
-  for (let i = sections.length - 2, n = 0; i >= 0; i -= 1, n += 1) {
+  // お問い合わせのすぐ上(ユーザー)はグレー、その上は白、…(シェアは特集の中に入れたので、色の並びは前と同じ)
+  for (let i = sections.length - 1, n = 0; i >= 0; i -= 1, n += 1) {
     if (n % 2 === 0) sections[i].classList.add("home-band-gray");
   }
 }
 
 // ---------------------------------------------------------------------
-// このページをシェア(特集の下)
-//   ・「シェアする」ボタン1つだけ。押すと、スマホなどに最初から入っている「共有」画面(端末の機能)を開く
-//   ・どこへ送るか(LINE・メッセージ・AirDropなど)は利用者が端末の画面で選ぶ。このサイトから何かを送ったり、記録したりはしない
-//   ・共有画面が使えないブラウザ(多くのパソコン)では、ページのURLをコピーするだけ
+// このページをシェアする(特集の中の下)
+//   ・X・Facebook・LINE: 各サービスのシェア画面を新しいタブで開く(このサイトから何かを送ったり、記録したりはしない)
+//   ・いちばん右: スマホなどに最初から入っている「共有」画面を開く。使えないブラウザ(多くのパソコン)では、URLをコピーする
 // ---------------------------------------------------------------------
 const SHARE_URL = "https://vietnamfoodie.compass-story.net/";
 const SHARE_TEXT = {
-  ja: { title: "このページをシェア", button: "シェアする", text: "ベトナムフーディー｜日本の中にある、ベトナムを探そう。", copied: "URLをコピーしました", failed: "コピーできませんでした。URL: " },
-  en: { title: "Share this page", button: "Share", text: "Vietnam Foodie – Discover Vietnam-related shops in Japan", copied: "Link copied", failed: "Could not copy. URL: " },
-  vi: { title: "Chia sẻ trang này", button: "Chia sẻ", text: "Foodie Việt Nam – Tìm Việt Nam tại Nhật Bản", copied: "Đã sao chép liên kết", failed: "Không thể sao chép. URL: " },
+  ja: { title: "このページをシェアする", button: "リンクをコピー・共有", text: "ベトナムフーディー｜日本の中にある、ベトナムを探そう。", copied: "URLをコピーしました", failed: "コピーできませんでした。URL: " },
+  en: { title: "Share this page", button: "Copy link / Share", text: "Vietnam Foodie – Discover Vietnam-related shops in Japan", copied: "Link copied", failed: "Could not copy. URL: " },
+  vi: { title: "Chia sẻ trang này", button: "Sao chép / Chia sẻ", text: "Foodie Việt Nam – Tìm Việt Nam tại Nhật Bản", copied: "Đã sao chép liên kết", failed: "Không thể sao chép. URL: " },
 };
 const SHARE_ICON =
   `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
   `<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2"/></svg>`;
+// シェアのボタン(X・Facebook・LINE は各社の公式ロゴ。色・形は変えずに使う)
+//   ・押すと、各サービスの「シェアする画面」を新しいタブで開く(送るのは、このサイトのURLと短い紹介文だけ)
+//   ・いちばん右の丸: スマホの共有画面を開く(無い端末では、URLをコピー)
+const SHARE_LOGOS = {
+  x:
+    `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="#ffffff" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>`,
+  facebook:
+    `<svg viewBox="0 0 24 24" width="64" height="64" aria-hidden="true"><path fill="#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg>`,
+  line:
+    `<svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path fill="#ffffff" d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>`,
+};
+function homeShareLinks() {
+  const x = SHARE_TEXT[currentLang] || SHARE_TEXT.ja;
+  const url = encodeURIComponent(SHARE_URL);
+  const text = encodeURIComponent(x.text);
+  return [
+    { key: "x", label: "X", href: `https://x.com/intent/post?text=${text}&url=${url}` },
+    { key: "facebook", label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
+    { key: "line", label: "LINE", href: `https://social-plugins.line.me/lineit/share?url=${url}` },
+  ];
+}
+// 特集の中の下に出す
 function homeShareHtml() {
   const x = SHARE_TEXT[currentLang] || SHARE_TEXT.ja;
   return (
-    `<section class="home-section home-share">` +
-    `<h2 class="home-share-title">${esc(x.title)}</h2>` +
+    `<div class="home-share">` +
+    `<h3 class="home-share-title">${esc(x.title)}</h3>` +
     `<div class="home-share-btns">` +
-    `<button type="button" class="home-share-btn" data-home-share>${SHARE_ICON}<span>${esc(x.button)}</span></button>` +
+    homeShareLinks()
+      .map(
+        (l) =>
+          `<a class="home-share-sns is-${l.key}" href="${esc(l.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(l.label)}">${SHARE_LOGOS[l.key]}</a>`
+      )
+      .join("") +
+    `<button type="button" class="home-share-sns is-more" data-home-share aria-label="${esc(x.button)}" title="${esc(x.button)}">${SHARE_ICON}</button>` +
     `</div>` +
     `<p class="home-share-msg" role="status" aria-live="polite"></p>` +
-    `</section>`
+    `</div>`
   );
 }
 async function shareHomePage(btn) {
