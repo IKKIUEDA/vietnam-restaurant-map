@@ -631,7 +631,7 @@ function renderHome() {
     `<a href="${esc(termsUrl())}" data-home-nav>${esc(t.termsPageTitle)}</a>` +
     `</nav>` +
     // 運営会社のロゴと、権利の表示(画像は運営者から提供されたもの)
-    `<p class="site-copyright"><img src="images/compass-story-logo.png" alt="Compass Story" width="360" height="133" loading="lazy">` +
+    `<p class="site-copyright"><a class="site-copyright-logo" href="https://compass-story.net/" target="_blank" rel="noopener"><img src="images/compass-story-logo.png" alt="Compass Story" width="360" height="133" loading="lazy"></a>` +
     `<span>© Compass Story ALL RIGHTS RESERVED.</span></p>` +
     `</footer>`;
   homeEntriesRise = false;
