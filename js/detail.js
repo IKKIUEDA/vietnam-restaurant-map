@@ -59,8 +59,9 @@ function routeFromLocation() {
   if (id) return { name: "shop", id };
   const page = params.get(PAGE_PARAM);
   if (page && CONTENT_PAGES[page]) return { name: "content", page };
-  // プライバシーポリシー: 「/privacy」(または「?page=privacy」)
-  if (!id && !params.get("view") && /\/privacy\/?$/i.test(location.pathname)) return { name: "content", page: "privacy" };
+  // プライバシーポリシー・運営者情報: 「/privacy」「/about」(または「?page=privacy」「?page=about」)
+  const cleanPage = location.pathname.match(/\/(privacy|about)\/?$/i);
+  if (!id && !params.get("view") && cleanPage) return { name: "content", page: cleanPage[1].toLowerCase() };
   // ホーム(js/home.js): URL に何も付いていないとき、または「?view=home」のとき
   const view = params.get("view");
   if (view === "map") return { name: "list" };
@@ -88,12 +89,13 @@ function routeFromLocation() {
   return { name: "list" };
 }
 
-// 「/privacy」を直接開いたとき(privacy.html が「?page=privacy」に送る)は、表示上のURLを「/privacy」に戻す
+// 「/privacy」「/about」を直接開いたとき(privacy.html・about.html が「?page=〜」に送る)は、表示上のURLを「/privacy」「/about」に戻す
 (function () {
   const params = new URLSearchParams(location.search);
-  if (params.get(PAGE_PARAM) === "privacy" && [...params.keys()].length === 1) {
+  const page = params.get(PAGE_PARAM);
+  if ((page === "privacy" || page === "about") && [...params.keys()].length === 1) {
     try {
-      history.replaceState(history.state, "", privacyUrl() + location.hash);
+      history.replaceState(history.state, "", (page === "privacy" ? privacyUrl() : aboutUrl()) + location.hash);
     } catch (e) {
       // 書き換えられない環境(file:// など)は、そのまま
     }
@@ -582,11 +584,30 @@ function renderContentSectionHtml(section) {
         .join("")}</ul>`
     : "";
   const afterHtml = (section.after || []).map(para).join("");
+  // 項目名と中身の表(事業者情報など): { label, value: [段落…], link(メールなど)/ contact(お問い合わせフォームへ) }
+  const rowsHtml = section.rows
+    ? `<dl class="terms-rows">${section.rows
+        .map(
+          (r) =>
+            `<div class="terms-row"><dt>${esc(r.label)}</dt><dd>` +
+            (r.value || [])
+              .map((v) =>
+                r.contact
+                  ? `<p><a href="${esc(contactUrl())}" data-contact-link>${esc(v)}</a></p>` // お問い合わせフォーム(PC は新しいタブ)
+                  : r.link
+                  ? `<p><a href="${esc(r.link)}">${esc(v)}</a></p>`
+                  : `<p>${esc(v)}</p>`
+              )
+              .join("") +
+            `</dd></div>`
+        )
+        .join("")}</dl>`
+    : "";
   // 小見出し(「2-1. ログイン情報」など)
   const subsHtml = (section.subs || [])
     .map((sub) => `<section class="terms-sub"><h4>${esc(sub.title)}</h4>${(sub.paras || []).map(para).join("")}</section>`)
     .join("");
-  return `<section class="terms-section"><h3>${esc(section.title)}</h3>${bodyHtml}${parasHtml}${listHtml}${afterHtml}${subsHtml}</section>`;
+  return `<section class="terms-section"><h3>${esc(section.title)}</h3>${bodyHtml}${parasHtml}${rowsHtml}${listHtml}${afterHtml}${subsHtml}</section>`;
 }
 
 function renderContentPage() {
@@ -600,7 +621,7 @@ function renderContentPage() {
     <a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>
     <article>
       <h2 class="terms-title">${esc(t[meta.titleKey])}</h2>
-      <p class="terms-intro">${esc(t[meta.introKey])}</p>
+      ${t[meta.introKey] ? `<p class="terms-intro">${esc(t[meta.introKey])}</p>` : ""}
       ${sectionsHtml}
     </article>`;
 
