@@ -9622,3 +9622,37 @@ html[lang="en"] .fg-label {
     transform: none;
   }
 }
+
+/* ===== PC でも、地図の画面の左側(お店の一覧・絞り込み)は出さず、地図を横幅いっぱいに使う =====
+   ・一覧の仕組み(#shop-list)は残したまま、見えないようにするだけ
+   ・一覧はスマホと同じく、地図の下の「〇件をリストで見る」ボタンで開く(#scan-overlay)
+   ・絞り込みは、地図の上のボタン(エリア・料理店・カフェ・食材店。js/map-quick.js)で行う */
+#shop-list {
+  display: none;
+}
+#list-overlay-panel {
+  display: block;
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  z-index: 900;
+  transform: translateX(-50%);
+}
+#list-overlay-panel[hidden] {
+  display: none;
+}
+#list-overlay-button {
+  padding: 11px 22px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  background: #2e7d32;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+#list-overlay-button:hover {
+  background: #1b5e20;
+}

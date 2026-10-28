@@ -1894,9 +1894,8 @@ narrowScreen.addEventListener("change", () => {
   //   ・PC 側になったときは、「list」(検索・絞り込み・ボタンで開いた)一覧オーバーレイなら閉じる(#shop-list に、その場で表示されるため)。
   //     「scan」(🔍スキャンする)で開いたものは、PC でも、これまで通り表示したままにする
   //   ・スマホ側になったときは、いまの絞り込み条件に合わせて、開くべきなら開く
-  if (!narrowScreen.matches) {
-    if (scanOverlayOpen && scanOverlayReason === "list") closeScanOverlay();
-  } else {
+  //   (PC でも左の一覧は出さなくなったので、PC 側になったときも、開いている一覧はそのままにする)
+  if (narrowScreen.matches) {
     syncMobileListOverlay();
   }
 });
