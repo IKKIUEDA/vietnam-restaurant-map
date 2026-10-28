@@ -30,6 +30,7 @@ const HOME_TEXT = {
     recTitle: "あなたへのおすすめ",
     recSub: "おすすめのベトナム料理店やカフェをご紹介",
     reviewCount: (n) => `レビュー ${n}件`,
+    categoryTitle: "カテゴリーから探す",
     areaTitle: "エリアから探す",
     areaPrev: "前のエリア",
     areaNext: "次のエリア",
@@ -74,6 +75,7 @@ const HOME_TEXT = {
     recTitle: "Picked for you",
     recSub: "Vietnamese restaurants and cafes we think you'll like",
     reviewCount: (n) => (n === 1 ? "1 review" : `${n} reviews`),
+    categoryTitle: "Browse by category",
     areaTitle: "Browse by area",
     areaPrev: "Previous areas",
     areaNext: "More areas",
@@ -118,6 +120,7 @@ const HOME_TEXT = {
     recTitle: "Gợi ý cho bạn",
     recSub: "Giới thiệu nhà hàng và quán cà phê Việt dành cho bạn",
     reviewCount: (n) => `${n} đánh giá`,
+    categoryTitle: "Tìm theo danh mục",
     areaTitle: "Tìm theo khu vực",
     areaPrev: "Khu vực trước",
     areaNext: "Khu vực tiếp",
@@ -582,6 +585,8 @@ function renderHome() {
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
     // カテゴリのボタン: ページを開いて最初にホームを出したときだけ、下からふわっと順番に出す(描き直しのたびには動かさない)
+    // カテゴリーから探す(見出し。緑の英語は、英語の画面では出さない)
+    `<div class="home-entries-head">${homeSectionLabel("Search By Category")}<h2 class="home-h2">${esc(h.categoryTitle)}</h2></div>` +
     `<nav class="home-entries${homeEntriesRise ? " is-rise" : ""}" aria-label="${esc(h.entriesLabel)}">` +
     // 入口は4つ: レストラン・カフェ・食材店(地図でその種類だけを出す)と、近くのお店(現在地のまわり)
     entryButton("restaurant", h.entryRestaurant) +
