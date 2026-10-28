@@ -199,12 +199,16 @@ function getContactApi() {
 }
 
 // ホームの一番下の帯(js/home.js の renderHome が呼ぶ)
+const CONTACT_OPEN_ICON =
+  `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">` +
+  `<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>`;
 function homeContactHtml() {
   const x = contactText();
   return (
     `<section class="home-contact">` +
     `<p class="home-contact-lead">${esc(x.bandLead)}</p>` +
-    `<a class="home-contact-btn" href="${esc(contactUrl())}" data-home-nav data-contact-link>${esc(x.bandBtn)}${homeIcon("forward", 18)}</a>` +
+    // ボタン: 白地に細い黒の線の四角。右に「別の画面で開く」アイコン(↗)
+    `<a class="home-contact-btn" href="${esc(contactUrl())}" data-home-nav data-contact-link><span>${esc(x.bandBtn)}</span>${CONTACT_OPEN_ICON}</a>` +
     `</section>`
   );
 }
