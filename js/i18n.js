@@ -413,7 +413,7 @@ const ui = {
       }
     ],
     // 運営者情報ページ
-    aboutPageTitle: "運営者情報",
+    aboutPageTitle: "事業者情報",
     aboutIntro: "",
     aboutSections: [
       {
@@ -443,7 +443,7 @@ const ui = {
       {
         "title": "お問い合わせ",
         "paras": [
-          "本サービスに関するご質問、ご意見、ご要望などは、以下のメールアドレスまでお問い合わせください。"
+          "本サービスに関するご質問、ご意見、ご要望などは、以下のメールアドレスまたはお問い合わせフォームからお問い合わせください。"
         ],
         "rows": [
           {
@@ -452,7 +452,14 @@ const ui = {
               "sales@compass-story.com"
             ],
             "link": "mailto:sales@compass-story.com"
-          }
+          },
+              {
+                "label": "お問い合わせフォーム",
+                "value": [
+                  "お問い合わせフォームはこちら"
+                ],
+                "contact": true
+              }
         ]
       }
     ],
@@ -1008,7 +1015,7 @@ const ui = {
       }
     ],
     // About page
-    aboutPageTitle: "About Us",
+    aboutPageTitle: "Business Information",
     aboutIntro: "",
     aboutSections: [
       {
@@ -1038,7 +1045,7 @@ const ui = {
       {
         "title": "Contact",
         "paras": [
-          "For questions, feedback or requests about the Service, please contact us at the email address below."
+          "For questions, feedback or requests about the Service, please contact us by email or through the contact form below."
         ],
         "rows": [
           {
@@ -1047,7 +1054,14 @@ const ui = {
               "sales@compass-story.com"
             ],
             "link": "mailto:sales@compass-story.com"
-          }
+          },
+              {
+                "label": "Contact form",
+                "value": [
+                  "Open the contact form"
+                ],
+                "contact": true
+              }
         ]
       }
     ],
@@ -1602,7 +1616,7 @@ const ui = {
       }
     ],
     // Trang thông tin đơn vị vận hành
-    aboutPageTitle: "Thông tin đơn vị vận hành",
+    aboutPageTitle: "Thông tin doanh nghiệp",
     aboutIntro: "",
     aboutSections: [
       {
@@ -1632,7 +1646,7 @@ const ui = {
       {
         "title": "Liên hệ",
         "paras": [
-          "Nếu bạn có câu hỏi, ý kiến hoặc yêu cầu về Dịch vụ, vui lòng liên hệ qua địa chỉ email dưới đây."
+          "Nếu bạn có câu hỏi, ý kiến hoặc yêu cầu về Dịch vụ, vui lòng liên hệ qua địa chỉ email hoặc biểu mẫu liên hệ dưới đây."
         ],
         "rows": [
           {
@@ -1641,7 +1655,14 @@ const ui = {
               "sales@compass-story.com"
             ],
             "link": "mailto:sales@compass-story.com"
-          }
+          },
+              {
+                "label": "Biểu mẫu liên hệ",
+                "value": [
+                  "Mở biểu mẫu liên hệ"
+                ],
+                "contact": true
+              }
         ]
       }
     ],

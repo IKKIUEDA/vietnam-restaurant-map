@@ -584,13 +584,21 @@ function renderContentSectionHtml(section) {
         .join("")}</ul>`
     : "";
   const afterHtml = (section.after || []).map(para).join("");
-  // 項目名と中身の表(運営者情報など): { label, value: [段落…], link }
+  // 項目名と中身の表(事業者情報など): { label, value: [段落…], link(メールなど)/ contact(お問い合わせフォームへ) }
   const rowsHtml = section.rows
     ? `<dl class="terms-rows">${section.rows
         .map(
           (r) =>
             `<div class="terms-row"><dt>${esc(r.label)}</dt><dd>` +
-            (r.value || []).map((v) => (r.link ? `<p><a href="${esc(r.link)}">${esc(v)}</a></p>` : `<p>${esc(v)}</p>`)).join("") +
+            (r.value || [])
+              .map((v) =>
+                r.contact
+                  ? `<p><a href="${esc(contactUrl())}" data-contact-link>${esc(v)}</a></p>` // お問い合わせフォーム(PC は新しいタブ)
+                  : r.link
+                  ? `<p><a href="${esc(r.link)}">${esc(v)}</a></p>`
+                  : `<p>${esc(v)}</p>`
+              )
+              .join("") +
             `</dd></div>`
         )
         .join("")}</dl>`

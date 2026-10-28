@@ -171,10 +171,11 @@ document.addEventListener(
   "click",
   (event) => {
     const link = event.target.closest && event.target.closest("a[data-contact-link]");
-    if (!link || !contactOpensNewTab()) return;
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
     event.preventDefault();
     event.stopPropagation();
-    window.open(link.href, "_blank", "noopener");
+    if (contactOpensNewTab()) window.open(link.href, "_blank", "noopener");
+    else navigate(contactUrl()); // スマホ: 同じ画面のまま、お問い合わせへ
   },
   true
 );
