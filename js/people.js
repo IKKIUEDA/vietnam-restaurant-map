@@ -29,7 +29,7 @@ function peopleText() {
   return PEOPLE_TEXT[currentLang] || PEOPLE_TEXT.ja;
 }
 function peopleUrl() {
-  return location.pathname + "?view=people";
+  return appBase() + "?view=people";
 }
 
 const peopleState = {

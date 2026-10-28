@@ -265,10 +265,10 @@ function accountText() {
 }
 
 function accountUrl() {
-  return location.pathname + "?view=account";
+  return appBase() + "?view=account";
 }
 function userUrl(uid) {
-  return location.pathname + "?user=" + encodeURIComponent(uid);
+  return appBase() + "?user=" + encodeURIComponent(uid);
 }
 
 // Firebase の準備ができたら profileApi を返す(getReviewsApi と同じ仕組み)
@@ -455,7 +455,7 @@ function accountHeader(title, backHref) {
 //   ・お店の保存マークで保存したお店の一覧。アカウントごとに保存する(ログインが必要。js/app.js の favorites)
 // ---------------------------------------------------------------------
 function savedUrl() {
-  return location.pathname + "?view=saved";
+  return appBase() + "?view=saved";
 }
 function savedEntries() {
   // 新しく保存したお店を上に
@@ -670,14 +670,14 @@ function renderAccountSettings() {
   );
 }
 function accountSettingsUrl() {
-  return location.pathname + "?view=account&settings=1";
+  return appBase() + "?view=account&settings=1";
 }
 const ACCOUNT_GEAR_ICON = typeof TODO_GEAR_ICON !== "undefined" ? TODO_GEAR_ICON : homeIcon("sparkle", 22);
 
 // プロフィールをシェア: スマホなどは、端末のシェア画面(LINE・メールなど)。使えないときは、リンクをコピー
 function shareMyProfile() {
   const x = accountText();
-  const url = location.origin + location.pathname + "?user=" + encodeURIComponent(authUser.uid);
+  const url = location.origin + appBase() + "?user=" + encodeURIComponent(authUser.uid);
   const name = accountDisplayName(accountData, resolveAuthName(authUser));
   if (navigator.share) {
     navigator.share({ title: x.shareTitle(name), url }).catch(() => {}); // やめたときは、何もしない
@@ -888,7 +888,7 @@ window.addEventListener("auth-changed", () => {
   followListCache.clear();
 });
 function followListUrl(uid, kind) {
-  return location.pathname + "?user=" + encodeURIComponent(uid) + "&list=" + kind;
+  return appBase() + "?user=" + encodeURIComponent(uid) + "&list=" + kind;
 }
 //   myCheckins: 自分のアカウント画面では、読み込んだ自分のチェックインの数をそのまま出す
 function userStatsHtml(uid, myCheckins) {

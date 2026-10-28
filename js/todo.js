@@ -298,13 +298,13 @@ function myListPrefImage(prefKey) {
 }
 
 function myListAreaUrl(prefKey) {
-  return location.pathname + "?view=todo&area=" + encodeURIComponent(prefKey);
+  return appBase() + "?view=todo&area=" + encodeURIComponent(prefKey);
 }
 function myListEditUrl(prefKey) {
-  return location.pathname + "?view=todo&edit=1" + (prefKey ? "&pref=" + encodeURIComponent(prefKey) : "");
+  return appBase() + "?view=todo&edit=1" + (prefKey ? "&pref=" + encodeURIComponent(prefKey) : "");
 }
 function myListUrl() {
-  return location.pathname + "?view=todo";
+  return appBase() + "?view=todo";
 }
 
 function todoStars(id) {

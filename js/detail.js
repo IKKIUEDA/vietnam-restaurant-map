@@ -49,7 +49,7 @@ let listMapNeedsFit = false; // 一覧の地図を、最初に見せるときに
 
 // 一覧のURL(いまのページの、「?」より前の部分)
 function listUrl() {
-  return location.pathname;
+  return appBase();
 }
 
 // いまのURLから、「一覧」か「詳細ページ」か「固定ページ(利用規約など)」かを判断する
@@ -68,8 +68,9 @@ function routeFromLocation() {
   if (view === "account" && typeof showHome === "function") return { name: "home", mode: "account" };
   // 保存したお店(js/account.js): 「?view=saved」
   if (view === "saved" && typeof showHome === "function") return { name: "home", mode: "saved" };
-  // お問い合わせ(js/contact.js): 「?view=contact」
-  if (view === "contact" && typeof showHome === "function") return { name: "home", mode: "contact" };
+  // お問い合わせ(js/contact.js): 「/contact」(または「?view=contact」)
+  const onContactPath = /\/contact\/?$/i.test(location.pathname);
+  if ((view === "contact" || (onContactPath && !view)) && typeof showHome === "function") return { name: "home", mode: "contact" };
   // エリアの一覧(js/home.js): 「?view=areas」
   if (view === "areas" && typeof showHome === "function") return { name: "home", mode: "areas" };
   // ユーザーを探す(js/people.js): 「?view=people」
@@ -593,7 +594,7 @@ async function shareShopReview(btn) {
   const entry = entries.find((e) => e.shop.id === currentShopId);
   if (!entry) return;
   const name = pick(entry.shop.name);
-  const url = location.origin + location.pathname + shopUrl(entry.shop.id);
+  const url = location.origin + shopUrl(entry.shop.id);
   const myUid = authUser && authUser.uid;
   const mine = myUid && reviewsState && reviewsState.shopId === entry.shop.id ? reviewsState.reviews.find((r) => r.id === myUid && !r.hidden) : null;
   const stars = mine ? "★".repeat(Math.max(0, Math.min(5, Number(mine.rating) || 0))) : "";
@@ -1562,7 +1563,7 @@ async function shareCheckin(state, shop) {
   const t = ui[currentLang];
   const name = pick(shop.name);
   const text = t.checkinShareText(name);
-  const url = `${location.origin}${location.pathname}${shopUrl(shop.id)}`;
+  const url = `${location.origin}${shopUrl(shop.id)}`;
 
   if (navigator.share) {
     try {
@@ -3414,7 +3415,7 @@ function userLinkHtml(uid, name, className, opts = {}) {
   if (!valid || typeof renderUserPage !== "function") {
     return `<span class="${cls}">${avatarHtml}${nameHtml}</span>`;
   }
-  return `<a class="${cls} user-link" href="?user=${encodeURIComponent(uid)}" data-user-link="${esc(uid)}">${avatarHtml}${nameHtml}</a>`;
+  return `<a class="${cls} user-link" href="${appBase()}?user=${encodeURIComponent(uid)}" data-user-link="${esc(uid)}">${avatarHtml}${nameHtml}</a>`;
 }
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[data-user-link]");
@@ -3423,7 +3424,7 @@ document.addEventListener("click", (event) => {
   // 押した名前を控えておく(まだプロフィールを作っていない人でも、名前は出せるように。js/account.js)
   const nameEl = link.querySelector("[data-user-name]");
   window.lastUserLink = { uid: link.dataset.userLink, name: (nameEl || link).textContent };
-  navigate(location.pathname + "?user=" + encodeURIComponent(link.dataset.userLink));
+  navigate(appBase() + "?user=" + encodeURIComponent(link.dataset.userLink));
 });
 
 
@@ -3672,7 +3673,7 @@ function bindPhotoViewer(box, state, visiblePhotos) {
       const v = photoViewerText();
       const entry = entries.find((e) => e.shop.id === state.shopId);
       const name = entry ? pick(entry.shop.name) : "";
-      const url = location.origin + location.pathname + shopUrl(state.shopId);
+      const url = location.origin + shopUrl(state.shopId);
       const text = v.shareText(name);
       if (navigator.share) {
         try {

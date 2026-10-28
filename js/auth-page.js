@@ -60,10 +60,10 @@ function authPageText() {
   return AUTH_PAGE_TEXT[currentLang] || AUTH_PAGE_TEXT.ja;
 }
 function authSignupUrl() {
-  return location.pathname + "?view=account&signup=1";
+  return appBase() + "?view=account&signup=1";
 }
 function authLoginUrl() {
-  return location.pathname + "?view=account";
+  return appBase() + "?view=account";
 }
 function isAuthSignupMode() {
   return new URLSearchParams(location.search).get("signup") === "1";
