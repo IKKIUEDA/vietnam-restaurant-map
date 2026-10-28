@@ -9585,3 +9585,25 @@ html[lang="en"] .fg-label {
     display: none;
   }
 }
+
+/* ===== PC(マウス)で、横に並んだ写真・カードを引っ張ってスライドする(js/drag-scroll.js) ===== */
+@media (hover: hover) and (pointer: fine) {
+  .home-areas,
+  .home-rec-cards,
+  .home-features,
+  .people-row,
+  .mylist-carousel,
+  .fg-cards {
+    cursor: grab;
+  }
+}
+.is-drag-scrolling {
+  cursor: grabbing !important;
+  scroll-snap-type: none !important;
+  scroll-behavior: auto !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.is-drag-scrolling * {
+  cursor: grabbing !important;
+}
