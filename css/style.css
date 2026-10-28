@@ -9498,3 +9498,90 @@ html[lang="en"] .home-label,
 html[lang="en"] .fg-label {
   display: none;
 }
+
+/* ===== ホーム: トップ画像の下の「ベトナムフーディーの紹介」(js/home-intro.js) =====
+   赤(ロゴの赤より少し濃くして、白い文字を読みやすくした色)に白い文字 */
+.home-intro {
+  margin: 16px 0 0;
+  padding: 32px 24px 28px;
+  background: #c62d22;
+  color: #ffffff;
+}
+.home-intro-inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.home-intro-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.home-intro-logo img {
+  width: auto;
+  height: 46px;
+}
+.home-intro-title {
+  margin: 0 0 18px;
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+.home-intro-title span {
+  display: block;
+}
+.home-intro-text {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.95;
+}
+.home-intro-rest .home-intro-text:last-child {
+  margin-bottom: 0;
+}
+/* スマホ: 最初の段落だけ。「続きを読む」で全文 */
+.home-intro-rest {
+  display: none;
+}
+.home-intro.is-open .home-intro-rest {
+  display: block;
+}
+.home-intro-more {
+  margin-top: 4px;
+  padding: 8px 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.home-intro.is-open .home-intro-more {
+  margin-top: 18px;
+}
+@media (min-width: 900px) {
+  /* PC: 上の写真と同じく、画面の横幅いっぱいに出し、写真のすぐ下につなげる */
+  .home-intro {
+    margin: 0 calc(50% - 50vw);
+    padding: 64px 32px 60px;
+  }
+  .home-intro-title {
+    font-size: 2.3rem;
+  }
+  .home-intro-text {
+    font-size: 1.02rem;
+  }
+  .home-intro-rest {
+    display: block;
+  }
+  .home-intro-more {
+    display: none;
+  }
+}
