@@ -9908,3 +9908,26 @@ body.is-home-top #home-page > .home-section.home-band-line {
     padding-top: 44px;
   }
 }
+
+/* ===== 固定ページ(プライバシーポリシーなど)の小見出し「2-1. 〜」 ===== */
+.terms-sub {
+  margin: 18px 0 0;
+}
+.terms-sub h4 {
+  margin: 0 0 6px;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--c-text);
+}
+.terms-sub p {
+  margin: 0 0 8px;
+  line-height: 1.8;
+}
+.terms-section > p + p {
+  margin-top: 8px;
+}
+.terms-list a,
+.terms-section p a {
+  color: var(--c-primary-dark, #1b5e20);
+  word-break: break-all;
+}
