@@ -9991,3 +9991,30 @@ body.view-home:has(.contact-section) #lang-select {
 .site-copyright-logo:hover {
   opacity: 0.7;
 }
+
+/* ===== ホームの一番下の「お問い合わせ」ボタン: 白地に細い黒の線の四角いボタン + 右に ↗ アイコン ===== */
+.home-contact-btn {
+  gap: 14px;
+  box-sizing: border-box;
+  width: min(360px, 100%);
+  min-width: 0;
+  min-height: 64px;
+  padding: 0 24px;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 0;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.home-contact-btn:hover {
+  box-shadow: none;
+  background: #1a1a1a;
+  color: #ffffff;
+}
+.home-contact-btn svg {
+  flex: none;
+}
