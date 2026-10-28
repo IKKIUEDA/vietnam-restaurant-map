@@ -9656,3 +9656,20 @@ html[lang="en"] .fg-label {
 #list-overlay-button:hover {
   background: #1b5e20;
 }
+
+/* ===== ホーム: レストラン・カフェ・食材店・近くのお店の上の見出し「カテゴリーから探す」 ===== */
+.home-entries-head {
+  padding: 22px 20px 0;
+}
+.home-entries-head .home-h2 {
+  margin: 0;
+}
+.home-entries-head + .home-entries {
+  padding-top: 12px;
+}
+@media (min-width: 900px) {
+  /* PC: 見出しの左端を、下のボタン・ほかのセクションの見出しとそろえる */
+  .home-entries-head {
+    padding: 40px 0 0;
+  }
+}
