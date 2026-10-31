@@ -9932,10 +9932,6 @@ body.is-home-top #home-page > .home-section.home-band-line {
   word-break: break-all;
 }
 
-/* お問い合わせのページでは、右上の言語の切り替えを出さない */
-body.view-home:has(.contact-section) #lang-select {
-  display: none;
-}
 .contact-section .contact-title:first-child {
   margin-top: 32px;
 }
