@@ -10036,3 +10036,102 @@ body.view-home:has(.contact-section) #lang-select {
 .home-intro-inner > .home-intro-text:last-child {
   margin-bottom: 0;
 }
+
+/* ===== スマホ: 長めの文章を書くための全画面(js/text-editor.js) ===== */
+.txed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100dvh;
+  z-index: 6000; /* 写真の全画面表示・レビューの画面などより手前 */
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+.txed[hidden] {
+  display: none;
+}
+.txed-head {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
+  border-bottom: 1px solid #e3e5df;
+}
+.txed-title {
+  margin: 0;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--c-text);
+}
+.txed-cancel,
+.txed-done {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.txed-cancel {
+  color: #555555;
+}
+.txed-done {
+  background: #2e7d32;
+  color: #ffffff;
+  font-weight: 800;
+}
+.txed-area {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: #ffffff;
+  color: var(--c-text);
+  font: inherit;
+  font-size: 16px; /* 16px 未満だと、iPhone が画面を勝手に拡大するため */
+  line-height: 1.75;
+}
+.txed-count {
+  flex: none;
+  margin: 0;
+  padding: 6px 16px 10px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6b6f68;
+}
+body.is-txed-open {
+  overflow: hidden;
+}
+
+/* ===== スマホ: 入力欄の文字を 16px に(iPhone で画面が勝手に拡大されないように)。入力中は下のメニューを隠す ===== */
+@media (max-width: 899px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="password"],
+  input[type="url"],
+  input[type="tel"],
+  input:not([type]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  body.is-typing #app-tabs,
+  body.is-txed-open #app-tabs {
+    display: none;
+  }
+}
