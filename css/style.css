@@ -10173,3 +10173,11 @@ img.is-img-loading {
 .home-feature-sub {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
+
+/* PC: 赤い紹介の欄のすぐ下に、薄い青緑の帯(できること)をすき間なくつなげる
+   (PC では、その間の検索窓は上の帯にあるので隠れている) */
+@media (min-width: 900px) {
+  body.is-home-top #home-page > .home-search + .home-section.home-band {
+    margin-top: 0;
+  }
+}
