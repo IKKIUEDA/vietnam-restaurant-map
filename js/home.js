@@ -45,8 +45,8 @@ const HOME_TEXT = {
     featureCafeTitle: "千葉にあるベトナムコーヒーで\nひと休み",
     featureCafeSub: (n) => `千葉のベトナムカフェ ${n}件`,
     featureGroceryTag: "食材店",
-    featureGroceryTitle: "生麺・ハーブ・調味料\nベトナムの食材が買えるお店",
-    featureGrocerySub: (n) => `関東のベトナム食材店 ${n}件`,
+    featureGroceryTitle: "千葉でベトナムの\n食材が買えるお店",
+    featureGrocerySub: (n) => `千葉のベトナム食材店 ${n}件`,
     typeLabel: { restaurant: "料理店", grocery: "食材店", cafe: "カフェ" },
     tabsLabel: "メインメニュー",
     tabHome: "ホーム",
@@ -90,8 +90,8 @@ const HOME_TEXT = {
     featureCafeTitle: "Take a break with\nVietnamese coffee in Chiba",
     featureCafeSub: (n) => `${n} Vietnamese cafes in Chiba`,
     featureGroceryTag: "Groceries",
-    featureGroceryTitle: "Fresh noodles, herbs\nand Vietnamese groceries",
-    featureGrocerySub: (n) => `${n} Vietnamese grocery stores in Kanto`,
+    featureGroceryTitle: "Shops in Chiba to buy\nVietnamese groceries",
+    featureGrocerySub: (n) => `${n} Vietnamese grocery stores in Chiba`,
     typeLabel: { restaurant: "Restaurant", grocery: "Grocery", cafe: "Cafe" },
     tabsLabel: "Main menu",
     tabHome: "Home",
@@ -135,8 +135,8 @@ const HOME_TEXT = {
     featureCafeTitle: "Nghỉ chân với\ncà phê Việt ở Chiba",
     featureCafeSub: (n) => `${n} quán cà phê Việt ở Chiba`,
     featureGroceryTag: "Tạp hóa",
-    featureGroceryTitle: "Bún tươi, rau thơm\nvà gia vị Việt",
-    featureGrocerySub: (n) => `${n} tiệm tạp hóa Việt ở Kanto`,
+    featureGroceryTitle: "Nơi mua thực phẩm Việt\nở Chiba",
+    featureGrocerySub: (n) => `${n} tiệm tạp hóa Việt ở Chiba`,
     typeLabel: { restaurant: "Nhà hàng", grocery: "Tạp hóa", cafe: "Cà phê" },
     tabsLabel: "Menu chính",
     tabHome: "Trang chủ",
@@ -613,7 +613,7 @@ function renderHome() {
     `<p class="home-section-sub">${esc(h.featureSub)}</p>` +
     `<div class="home-features">` +
     (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(restaurants.filter((r) => shopType(r) === "cafe" && r.prefecture === "千葉県").length)) : "") +
-    feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
+    feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(restaurants.filter((r) => shopType(r) === "grocery" && r.prefecture === "千葉県").length)) +
     `</div>` +
     // このページをシェアする(特集の中の下)
     homeShareHtml() +
