@@ -605,6 +605,8 @@ function renderHome() {
     `<div class="home-divider"></div>` +
     // あなたへのおすすめ(レビューの評価を読み終えたら、ここだけ描き直す)
     `<div id="home-rec-slot">${homeRecSectionHtml()}</div>` +
+    // ユーザー(あなたへのおすすめの下、特集の上): ほかのユーザーを見つけて、フォローする(js/people.js)
+    (typeof homePeopleHtml === "function" ? homePeopleHtml() : "") +
     `<section class="home-section">` +
     homeSectionLabel("Special Feature") +
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
@@ -616,8 +618,6 @@ function renderHome() {
     // このページをシェアする(特集の中の下)
     homeShareHtml() +
     `</section>` +
-    // ユーザー: ほかのユーザーを見つけて、フォローする(js/people.js)
-    (typeof homePeopleHtml === "function" ? homePeopleHtml() : "") +
     // お問い合わせ(js/contact.js)
     (typeof homeContactHtml === "function" ? homeContactHtml() : "") +
     // いちばん下: ロゴ・サイト名、利用規約などへのリンク(縦に並べる)、著作権の表示
