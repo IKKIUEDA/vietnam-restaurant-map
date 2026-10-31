@@ -1,10 +1,10 @@
-// ホームの「ベトナムフーディーでおすすめの機能」(「エリアから探す」と「トラベル・リスト」の間)
+// ホームの「ベトナムフーディーでできること」(「エリアから探す」と「トラベル・リスト」の間)
 //   ・4枚のカード(番号・絵・英語の小見出し・機能の名前・説明)。押しても何も起きない(説明を見せるだけ)
 //   ・PC は横に4枚、スマホは横にスクロール
 //   ・絵は運営者が用意した画像(images/features/feature-1〜4.jpg)
 const FEATURE_GUIDE_TEXT = {
   ja: {
-    title: "ベトナムフーディーでおすすめの機能",
+    title: "ベトナムフーディーでできること",
     items: [
       ["マップからお店を探す", "地図や駅名から、近くのベトナム料理店・カフェ・食材店などを検索することができます。現在地や旅行先で、気になるベトナムのスポットを見つけられます。"],
       ["Tips・レビューでお店選び", "お店ごとのTipsやレビューを参考に料理や雰囲気、おすすめのポイントをチェックしましょう。あなたに合ったお店選びに役立てられます。"],
@@ -13,7 +13,7 @@ const FEATURE_GUIDE_TEXT = {
     ],
   },
   en: {
-    title: "Recommended features of Vietnam Foodie",
+    title: "What you can do with Vietnam Foodie",
     items: [
       ["Find shops on the map", "Search for nearby Vietnamese restaurants, cafes and grocery stores by map or station name. Discover Vietnamese spots around you or wherever you travel."],
       ["Choose shops with Tips & reviews", "Check the food, atmosphere and highlights of each shop through Tips and reviews, and find the shop that suits you."],
@@ -22,7 +22,7 @@ const FEATURE_GUIDE_TEXT = {
     ],
   },
   vi: {
-    title: "Các tính năng nổi bật của Vietnam Foodie",
+    title: "Những điều bạn có thể làm với Vietnam Foodie",
     items: [
       ["Tìm quán trên bản đồ", "Tìm nhà hàng, quán cà phê và cửa hàng thực phẩm Việt Nam gần bạn theo bản đồ hoặc tên ga. Khám phá các địa điểm Việt Nam ở nơi bạn đang ở hoặc nơi bạn du lịch."],
       ["Chọn quán qua Tips & đánh giá", "Xem món ăn, không khí và điểm nổi bật của từng quán qua Tips và đánh giá để chọn quán phù hợp với bạn."],
