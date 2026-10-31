@@ -75,15 +75,16 @@ function renderFeaturePage(type) {
     if (typeof recordTypePick === "function") recordTypePick(type);
     featureState.filter = "all";
     featureState.error = false;
-    if (type === "cafe") {
-      cafeFx.filters = CAFE_FX_DEFAULT(); // 開き直したら、はじめの「千葉県」に戻す
+    // 特集を開き直したら、はじめの「千葉県」に戻す(カフェ・食材店とも)
+    {
+      cafeFx.filters = CAFE_FX_DEFAULT();
       cafeFx.sort = "rec";
       cafeFx.sheet = null;
     }
   }
   const all = entries.filter((e) => shopType(e.shop) === type);
-  // カフェの特集は、絞り込みと並び順のついた一覧(下の renderCafeFeature)
-  if (type === "cafe") return renderCafeFeature(all);
+  // 特集(カフェ・食材店)は、絞り込みと並び順のついた一覧(下の renderCafeFeature)
+  return renderCafeFeature(all, type);
   // その特集にお店があるエリアだけ(お店の多い順 → 名前の順)
   const areaMap = new Map();
   all.forEach((e) => {
@@ -189,7 +190,7 @@ homePage.addEventListener("click", (event) => {
 });
 
 // =====================================================================
-// カフェの特集(「千葉にあるベトナムコーヒーでひと休み」): 絞り込みと並び順
+// 特集(カフェ「千葉にあるベトナムコーヒーでひと休み」・食材店「千葉でベトナムの食材が買えるお店」): 絞り込みと並び順
 //   ・上の並び: 絞り込みボタン(選んでいる条件の数つき)/ 選んでいる条件(× で外せる)/ 並び順
 //   ・絞り込み: エリア(都道府県 → その中のエリア)/ 現在地から近いお店だけ(10km以内)/ レビューがあるお店だけ
 //   ・並び順: おすすめ順(評価が高い順)/ 近い順 / レビューが多い順
@@ -262,7 +263,7 @@ function cafeFxSort(list) {
 }
 const cafeFxNeedsLocation = (f, sort) => (f.near || sort === "near") && !featureState.pos;
 
-function renderCafeFeature(all) {
+function renderCafeFeature(all, type) {
   const x = featureText();
   const fx = cafeFxText();
   const h = homeText();
@@ -282,13 +283,16 @@ function renderCafeFeature(all) {
   }
   if (f.near) active.push({ key: "near", label: fx.nearChip });
   if (f.reviewed) active.push({ key: "reviewed", label: fx.reviewedChip });
-  const title = h.featureCafeTitle.replace(/\n/g, " ");
+  const isCafe = type === "cafe";
+  // カードでの改行は、日本語ではつなげる(英語・ベトナム語は空白を入れる)
+  const title = (isCafe ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, currentLang === "ja" ? "" : " ");
+  const tag = isCafe ? h.featureCafeTag : h.featureGroceryTag;
 
   homePage.innerHTML =
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(homeUrl())}" data-feature-back aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` +
-    `<h2 class="todo-create-title">${esc(h.featureCafeTag)}</h2></div>` +
-    `<div class="feature-band feature-band-cafe"><span class="feature-band-icon">${homeIcon("cafe", 30)}</span>` +
+    `<h2 class="todo-create-title">${esc(tag)}</h2></div>` +
+    `<div class="feature-band feature-band-${type}"><span class="feature-band-icon">${homeIcon(type, 30)}</span>` +
     `<span class="feature-band-text"><span class="feature-band-title">${esc(title)}</span>` +
     `<span class="feature-band-count">${esc(x.count(list.length))}</span></span></div>` +
     `<section class="home-section feature-section fx-section">` +
@@ -389,7 +393,7 @@ function cafeFxRerender() {
   homeView.scrollTop = y;
 }
 homePage.addEventListener("click", (event) => {
-  if (featureState.type !== "cafe" || homeMode !== "feature") return;
+  if (!FEATURE_TYPES.includes(featureState.type) || homeMode !== "feature") return;
   const t = event.target;
   const open = t.closest("[data-fx-open]");
   if (open) {
