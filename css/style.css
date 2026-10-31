@@ -10135,3 +10135,15 @@ body.is-txed-open {
     display: none;
   }
 }
+
+/* ===== 写真を読み込んでいる間: 写真の場所に、ゆっくり回るベトナムフーディーのロゴ(js/img-loading.js) ===== */
+img.is-img-loading {
+  background: #eef2ec url("../images/loading-logo.svg") center / min(44px, 45%) no-repeat;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 動きを減らす設定の端末では、回さない(止まったロゴ) */
+  img.is-img-loading {
+    background-image: url("../images/logo.png");
+    background-size: auto min(40px, 40%);
+  }
+}
