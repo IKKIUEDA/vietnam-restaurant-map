@@ -10018,3 +10018,16 @@ body.view-home:has(.contact-section) #lang-select {
 .home-contact-btn svg {
   flex: none;
 }
+
+/* スマホ: 上の写真と赤い紹介の欄の間の白いすき間をなくす
+   (写真の下の丸い角の後ろにも赤が見えるよう、赤い欄を写真の下にもぐりこませる) */
+@media (max-width: 899px) {
+  .home-top {
+    z-index: 1;
+  }
+  .home-top + .home-intro {
+    position: relative;
+    margin-top: -28px;
+    padding-top: 60px;
+  }
+}
