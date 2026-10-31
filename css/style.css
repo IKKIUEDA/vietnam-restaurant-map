@@ -9527,7 +9527,7 @@ html[lang="en"] .fg-label {
 }
 .home-intro-title {
   margin: 0 0 18px;
-  font-size: min(1.6rem, calc((100vw - 48px) / 16.6)); /* スマホでも1行目(15文字)が1行に収まる大きさ */
+  font-size: min(1.6rem, calc((100vw - 48px) / 17.6)); /* スマホでも1行目(16文字)が1行に収まる大きさ */
   font-weight: 900;
   line-height: 1.45;
   letter-spacing: 0.02em;
