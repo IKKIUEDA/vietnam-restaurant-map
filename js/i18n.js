@@ -314,7 +314,7 @@ const ui = {
             "title": "2-12. フォロー情報・チェックイン数",
             "paras": [
               "フォローした相手やフォローした日時などの情報を、フォロー・フォロワーの一覧や件数の表示に利用します。誰が誰をフォローしているかは、ほかの利用者も閲覧できます。",
-              "フォローはいつでも解除できます。アカウントを削除した場合、フォロー情報も削除します。",
+              "新しくアカウントを登録したときは、運営からのお知らせを見やすくするため、本サービスの運営者の公式アカウントを自動でフォローします。フォローはいつでも解除でき、解除した後に自動で再びフォローすることはありません。アカウントを削除した場合、フォロー情報も削除します。",
               "また、チェックインの件数をプロフィールに表示します。チェックインした店舗の一覧は、本人にのみ公開します。"
             ]
           },
@@ -916,7 +916,7 @@ const ui = {
             "title": "2-12. Follows and number of check-ins",
             "paras": [
               "Information such as who you follow and when is used to show follow and follower lists and counts. Other users can see who follows whom.",
-              "You can unfollow at any time. If you delete your account, your follow information is also deleted.",
+              "When you create a new account, you automatically follow the official account of the Service's operator so you can easily see news from us. You can unfollow at any time, and we will not follow again automatically after you do. If you delete your account, your follow information is also deleted.",
               "The number of your check-ins is shown on your profile. The list of shops you checked in to is visible only to you."
             ]
           },
@@ -1517,7 +1517,7 @@ const ui = {
             "title": "2-12. Theo dõi và số lần check-in",
             "paras": [
               "Thông tin như người bạn theo dõi và thời điểm theo dõi được dùng để hiển thị danh sách và số lượng Đang theo dõi / Người theo dõi. Người dùng khác cũng xem được ai theo dõi ai.",
-              "Bạn có thể bỏ theo dõi bất cứ lúc nào. Nếu xóa tài khoản, thông tin theo dõi cũng bị xóa.",
+              "Khi bạn tạo tài khoản mới, bạn sẽ tự động theo dõi tài khoản chính thức của đơn vị vận hành Dịch vụ để dễ xem thông báo. Bạn có thể bỏ theo dõi bất cứ lúc nào và chúng tôi sẽ không tự động theo dõi lại sau khi bạn bỏ. Nếu xóa tài khoản, thông tin theo dõi cũng bị xóa.",
               "Số lần check-in được hiển thị trên hồ sơ. Danh sách quán đã check-in chỉ công khai cho riêng bạn."
             ]
           },
