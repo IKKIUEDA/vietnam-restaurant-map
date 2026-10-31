@@ -424,3 +424,12 @@ homePage.addEventListener("click", (event) => {
       .then(() => renderHomeMode());
   }
 });
+
+// 言語を切り替えたときも、入力中の内容が消えないように控えておく(画面を描き直す前に)
+document.getElementById("lang-select").addEventListener(
+  "change",
+  () => {
+    if (homePage.querySelector("[data-contact-form]")) keepContactInputs();
+  },
+  true
+);
