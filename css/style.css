@@ -10147,3 +10147,29 @@ img.is-img-loading {
     background-size: auto min(40px, 40%);
   }
 }
+
+/* ===== 特集のカード: 背景に写真(カフェ・食材店)。文字が読めるよう、下と左を暗くする ===== */
+.home-feature-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-feature-cafe .home-feature-photo { object-position: 70% 55%; }
+.home-feature-grocery .home-feature-photo { object-position: 60% 50%; }
+.home-feature-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.18) 55%, rgba(0, 0, 0, 0.05) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 60%);
+}
+.home-feature-tag,
+.home-feature-text {
+  z-index: 1;
+}
+.home-feature-title,
+.home-feature-sub {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
