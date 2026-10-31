@@ -584,6 +584,9 @@ function renderHome() {
     `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(narrowScreen ? h.searchPlaceholderShort : h.searchPlaceholder)}" enterkeyhint="search">` +
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
+    // ベトナムフーディーでできること(js/feature-guide.js)と、トラベル・リスト(js/todo.js): 検索窓のすぐ下、カテゴリーから探すの上
+    (typeof featureGuideHtml === "function" ? featureGuideHtml() : "") +
+    (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     // カテゴリのボタン: ページを開いて最初にホームを出したときだけ、下からふわっと順番に出す(描き直しのたびには動かさない)
     // カテゴリーから探す(見出し。緑の英語は、英語の画面では出さない)
     `<div class="home-entries-head">${homeSectionLabel("Search By Category")}<h2 class="home-h2">${esc(h.categoryTitle)}</h2></div>` +
@@ -598,10 +601,6 @@ function renderHome() {
     // エリアから探す(駅のまわりのお店。カードを押すと、地図で「○○駅」を検索)
     renderHomeAreas() +
     `<div class="home-divider"></div>` +
-    // ベトナムフーディーでおすすめの機能(js/feature-guide.js)
-    (typeof featureGuideHtml === "function" ? featureGuideHtml() : "") +
-    // トラベル・リスト(js/todo.js)
-    (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
     // あなたへのおすすめ(レビューの評価を読み終えたら、ここだけ描き直す)
     `<div id="home-rec-slot">${homeRecSectionHtml()}</div>` +
     `<section class="home-section">` +
