@@ -464,15 +464,6 @@ function savedEntries() {
     .filter((e) => isFavorite(e.shop))
     .sort((a, b) => order.indexOf(favoriteKey(b.shop)) - order.indexOf(favoriteKey(a.shop)));
 }
-function accountSavedRowHtml() {
-  const x = accountText();
-  const n = entries.filter((e) => isFavorite(e.shop)).length;
-  return (
-    `<a class="acct-row acct-saved-row" href="${esc(savedUrl())}" data-acct-nav>` +
-    `<span class="acct-saved-label">${SAVE_ICON_ON}<span>${esc(x.savedTitle)}</span></span>` +
-    `<span class="acct-row-value">${esc(x.savedCount(n))}${homeIcon("forward", 18)}</span></a>`
-  );
-}
 // 保存したお店の1行: 写真・名前・エリア、保存ボタン(押すと外せる)、→(お店のページへ)
 function savedRowHtml(entry) {
   const shop = entry.shop;
@@ -562,7 +553,7 @@ function renderAccountPage() {
     `<button type="button" class="acct-pill" data-acct-action="share">${esc(x.shareProfile)}</button>` +
     `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
     `</div>` +
-    accountSavedRowHtml() +
+    // 「保存したお店」の行は出さない(下のタブの「保存」から開ける)
     accountPostsHtml(data, ["photos", "reviews", "checkins"], { savedLink: true }) +
     `</section>`;
 }
