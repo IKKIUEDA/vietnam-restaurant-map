@@ -42,8 +42,8 @@ const HOME_TEXT = {
     featureTitle: "特集",
     featureSub: "テーマ別・目的別でベトナムの魅力を発掘しよう",
     featureCafeTag: "カフェ",
-    featureCafeTitle: "ベトナムコーヒーで\nひと休み",
-    featureCafeSub: (n) => `関東のベトナムカフェ ${n}件`,
+    featureCafeTitle: "千葉にあるベトナムコーヒーで\nひと休み",
+    featureCafeSub: (n) => `千葉のベトナムカフェ ${n}件`,
     featureGroceryTag: "食材店",
     featureGroceryTitle: "生麺・ハーブ・調味料\nベトナムの食材が買えるお店",
     featureGrocerySub: (n) => `関東のベトナム食材店 ${n}件`,
@@ -87,8 +87,8 @@ const HOME_TEXT = {
     featureTitle: "Features",
     featureSub: "Discover Vietnam by theme and purpose",
     featureCafeTag: "Cafes",
-    featureCafeTitle: "Take a break with\nVietnamese coffee",
-    featureCafeSub: (n) => `${n} Vietnamese cafes in Kanto`,
+    featureCafeTitle: "Take a break with\nVietnamese coffee in Chiba",
+    featureCafeSub: (n) => `${n} Vietnamese cafes in Chiba`,
     featureGroceryTag: "Groceries",
     featureGroceryTitle: "Fresh noodles, herbs\nand Vietnamese groceries",
     featureGrocerySub: (n) => `${n} Vietnamese grocery stores in Kanto`,
@@ -132,8 +132,8 @@ const HOME_TEXT = {
     featureTitle: "Chủ đề",
     featureSub: "Khám phá nét hấp dẫn của Việt Nam theo chủ đề và mục đích",
     featureCafeTag: "Cà phê",
-    featureCafeTitle: "Nghỉ chân với\ncà phê Việt",
-    featureCafeSub: (n) => `${n} quán cà phê Việt ở Kanto`,
+    featureCafeTitle: "Nghỉ chân với\ncà phê Việt ở Chiba",
+    featureCafeSub: (n) => `${n} quán cà phê Việt ở Chiba`,
     featureGroceryTag: "Tạp hóa",
     featureGroceryTitle: "Bún tươi, rau thơm\nvà gia vị Việt",
     featureGrocerySub: (n) => `${n} tiệm tạp hóa Việt ở Kanto`,
@@ -612,7 +612,7 @@ function renderHome() {
     `<h2 class="home-h2">${esc(h.featureTitle)}</h2>` +
     `<p class="home-section-sub">${esc(h.featureSub)}</p>` +
     `<div class="home-features">` +
-    (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(count("cafe"))) : "") +
+    (hasCafe ? feature("cafe", h.featureCafeTag, h.featureCafeTitle, h.featureCafeSub(restaurants.filter((r) => shopType(r) === "cafe" && r.prefecture === "千葉県").length)) : "") +
     feature("grocery", h.featureGroceryTag, h.featureGroceryTitle, h.featureGrocerySub(count("grocery"))) +
     `</div>` +
     // このページをシェアする(特集の中の下)
