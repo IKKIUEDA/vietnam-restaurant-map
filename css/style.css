@@ -10181,3 +10181,40 @@ img.is-img-loading {
     margin-top: 0;
   }
 }
+
+/* ===== スマホのホームも PC と同じく、上に白い帯(ロゴ・サイト名・言語の切り替え)を固定する =====
+   ・スクロールしても帯は上に出たまま。サイト名も消さない
+   ・帯に検索バーは入れない(スマホの検索窓は、赤い紹介の欄の下のまま)
+   ・トップ画像は、帯の下から始める */
+@media (max-width: 899px) {
+  body.is-home-top header {
+    height: calc(60px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 14px 0;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #ecefe9;
+    pointer-events: auto;
+  }
+  body.is-home-top header .header-titles,
+  body.is-home-top header.is-scrolled .header-titles {
+    opacity: 1;
+    visibility: visible;
+  }
+  body.is-home-top header.is-on-photo #app-title {
+    color: var(--c-text);
+    text-shadow: none;
+  }
+  body.is-home-top .app-logo {
+    height: 44px;
+    filter: none;
+  }
+  body.is-home-top #lang-select {
+    background-color: #ffffff;
+    border-color: #dfe3dc;
+    box-shadow: none;
+  }
+  body.is-home-top .home-top {
+    margin-top: calc(60px + env(safe-area-inset-top));
+    padding-top: 28px;
+  }
+}
