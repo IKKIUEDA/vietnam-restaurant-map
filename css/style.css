@@ -10031,3 +10031,8 @@ body.view-home:has(.contact-section) #lang-select {
     padding-top: 60px;
   }
 }
+
+/* 紹介の欄: スマホでも、はじめから全文を出す(最後の段落の下の余白をそろえる) */
+.home-intro-inner > .home-intro-text:last-child {
+  margin-bottom: 0;
+}
