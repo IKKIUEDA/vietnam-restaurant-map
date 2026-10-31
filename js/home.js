@@ -562,7 +562,9 @@ function renderHome() {
 
   const feature = (key, tag, title, sub) =>
     `<button type="button" class="home-feature home-feature-${key}" data-home-action="${key}">` +
-    `<span class="home-feature-art">${homeIcon(key, 150)}</span>` +
+    // 写真(運営者が用意した画像: images/feature-cafe.jpg・images/feature-grocery.jpg)と、文字を読みやすくする暗い影
+    `<img class="home-feature-photo" src="images/feature-${key}.jpg?v=1" alt="" loading="lazy" decoding="async" width="1280" height="853">` +
+    `<span class="home-feature-shade" aria-hidden="true"></span>` +
     `<span class="home-feature-tag">${esc(tag)}</span>` +
     `<span class="home-feature-text"><span class="home-feature-title">${esc(title)}</span>` +
     `<span class="home-feature-sub">${esc(sub)}</span></span></button>`;
