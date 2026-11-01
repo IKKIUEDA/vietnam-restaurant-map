@@ -10685,3 +10685,14 @@ img.is-img-loading {
   font-size: 0.78rem;
   color: #6b6f68;
 }
+
+/* 特集のカードの見出し: 「|」で区切ったかたまりの途中では改行しない(js/home.js) */
+.home-feature-phrase {
+  display: inline-block;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .home-feature-title {
+    font-size: 1.08rem; /* スマホでも「ベトナムコーヒーでひと休み」が1行に収まる大きさ */
+  }
+}

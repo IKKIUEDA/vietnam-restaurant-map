@@ -42,10 +42,10 @@ const HOME_TEXT = {
     featureTitle: "特集",
     featureSub: "テーマ別・目的別でベトナムの魅力を発掘しよう",
     featureCafeTag: "カフェ",
-    featureCafeTitle: "千葉にあるベトナムコーヒーで\nひと休み",
+    featureCafeTitle: "千葉にある|ベトナムコーヒーでひと休み",
     featureCafeSub: (n) => `千葉のベトナムカフェ ${n}件`,
     featureGroceryTag: "食材店",
-    featureGroceryTitle: "千葉でベトナムの\n食材が買えるお店",
+    featureGroceryTitle: "千葉でベトナムの|食材が買えるお店",
     featureGrocerySub: (n) => `千葉のベトナム食材店 ${n}件`,
     typeLabel: { restaurant: "料理店", grocery: "食材店", cafe: "カフェ" },
     tabsLabel: "メインメニュー",
@@ -566,7 +566,11 @@ function renderHome() {
     `<img class="home-feature-photo" src="images/feature-${key}.jpg?v=1" alt="" loading="lazy" decoding="async" width="1280" height="853">` +
     `<span class="home-feature-shade" aria-hidden="true"></span>` +
     `<span class="home-feature-tag">${esc(tag)}</span>` +
-    `<span class="home-feature-text"><span class="home-feature-title">${esc(title)}</span>` +
+    // 見出しの「|」は、改行してよい場所。それ以外の場所では改行しない(「ベトナムコーヒーで / ひと休み」のように分かれないように)
+    `<span class="home-feature-text"><span class="home-feature-title">${title
+      .split("|")
+      .map((part) => `<span class="home-feature-phrase">${esc(part)}</span>`)
+      .join("")}</span>` +
     `<span class="home-feature-sub">${esc(sub)}</span></span></button>`;
 
   homePage.innerHTML =
