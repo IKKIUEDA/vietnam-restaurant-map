@@ -547,8 +547,8 @@ const SHOP_PIN_STYLES = {
 function shopPhotoLabelHtml(shop) {
   const cover = window.shopCovers && window.shopCovers.get(shop.id);
   if (!cover || !cover.secure_url) return "";
-  const thumb = String(cover.secure_url).replace("/image/upload/", "/image/upload/c_fill,w_96,h_96,q_auto,f_auto/");
-  return `<span class="shop-photo-label"><img src="${esc(thumb)}" alt="" width="32" height="32" loading="lazy"><span>${esc(pick(shop.name))}</span></span>`;
+  const thumb = String(cover.secure_url).replace("/image/upload/", "/image/upload/c_fill,w_132,h_132,q_auto,f_auto/");
+  return `<span class="shop-photo-label"><img src="${esc(thumb)}" alt="" width="44" height="44" loading="lazy"><span>${esc(pick(shop.name))}</span></span>`;
 }
 function createShopIcon(shop, withPhoto) {
   const style = SHOP_PIN_STYLES[shopType(shop || {})] || SHOP_PIN_STYLES.restaurant;
