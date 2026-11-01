@@ -121,7 +121,7 @@ function renderFeaturePage(type) {
   const chip = (key, label, extra) =>
     `<button type="button" class="todo-chip feature-chip${featureState.filter === key ? " is-on" : ""}" aria-pressed="${featureState.filter === key}" data-feature-filter="${esc(key)}">` +
     `${extra || ""}${esc(label)}</button>`;
-  const title = (type === "cafe" ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, " ");
+  const title = (type === "cafe" ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, " ").replace(/\|/g, "");
   const tag = type === "cafe" ? h.featureCafeTag : h.featureGroceryTag;
 
   homePage.innerHTML =
@@ -285,7 +285,7 @@ function renderCafeFeature(all, type) {
   if (f.reviewed) active.push({ key: "reviewed", label: fx.reviewedChip });
   const isCafe = type === "cafe";
   // カードでの改行は、日本語ではつなげる(英語・ベトナム語は空白を入れる)
-  const title = (isCafe ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, currentLang === "ja" ? "" : " ");
+  const title = (isCafe ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, currentLang === "ja" ? "" : " ").replace(/\|/g, "");
   const tag = isCafe ? h.featureCafeTag : h.featureGroceryTag;
 
   homePage.innerHTML =
