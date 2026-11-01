@@ -9036,8 +9036,8 @@ body.view-detail.is-review-writing { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 190px;
-  padding: 4px 12px 4px 4px;
+  max-width: 210px;
+  padding: 5px 12px 5px 5px;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.2;
@@ -9051,10 +9051,10 @@ body.view-detail.is-review-writing { overflow: hidden; }
 }
 .shop-photo-label img {
   flex: none;
-  width: 32px;
-  height: 32px;
+  width: 44px; /* 写真を見やすく(32px → 44px) */
+  height: 44px;
   object-fit: cover;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #eef4ee;
 }
 .shop-photo-label span { overflow: hidden; text-overflow: ellipsis; }
@@ -9177,12 +9177,12 @@ body.view-detail.is-review-writing { overflow: hidden; }
 @media (max-width: 600px) {
   .shop-photo-label {
     gap: 6px;
-    max-width: 150px;
-    padding: 3px 9px 3px 3px;
+    max-width: 180px;
+    padding: 4px 10px 4px 4px;
     font-size: 12px;
-    border-radius: 9px;
+    border-radius: 10px;
   }
-  .shop-photo-label img { width: 26px; height: 26px; border-radius: 6px; }
+  .shop-photo-label img { width: 44px; height: 44px; border-radius: 8px; } /* 写真を見やすく(26px → 44px) */
 }
 
 
