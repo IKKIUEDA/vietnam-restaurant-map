@@ -1777,6 +1777,22 @@ const restaurants = [
     // 公式Facebook: https://www.facebook.com/thaiduongmart82.chibaeki/
   },
   {
+    id: "sieu-thi-mini-tun-jp", // 2026-11 追加(公式サイトで店名・住所・電話番号を確認)。営業時間・定休日は公式サイトで確認できなかったため、載せていない
+    type: "grocery",
+    name: { ja: "Siêu Thị Mini Tũn JP(ミニ トゥン JP)", en: "Siêu Thị Mini Tũn JP", vi: "Siêu Thị Mini Tũn JP" },
+    address: {
+      ja: "千葉県千葉市中央区弁天2-8-2",
+      en: "2-8-2 Benten, Chuo-ku, Chiba, Chiba",
+      vi: "2-8-2 Benten, Quận Chuo, Chiba, Chiba",
+    },
+    lat: 35.6159740,
+    lng: 140.1149750,
+    prefecture: "千葉県",
+    area: { ja: "千葉・弁天", en: "Chiba / Benten", vi: "Chiba / Benten" },
+    category: "ベトナム食材店",
+    // 公式サイト: https://sieuthiminitunjp.com/
+  },
+  {
     id: "dung-huyen-shin-matsudo",
     type: "grocery",
     name: "ベトナム食材 ズンフェン (Quan Dung Huyen)",
