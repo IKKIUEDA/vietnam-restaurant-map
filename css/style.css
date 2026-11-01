@@ -7869,7 +7869,6 @@ header input,
   appearance: auto;
   background: #ffffff;
 }
-=======
 .acct-small.set-warn {
   color: #b3261e;
   font-weight: 600;
@@ -10697,7 +10696,6 @@ img.is-img-loading {
   }
 }
 
-<<<<<<< HEAD
 /* iPhone では、ボタンの文字が青くなるので、絞り込みの画面のボタンの文字色をはっきり決める */
 .fx-pill,
 .fx-reset,
@@ -10714,7 +10712,8 @@ img.is-img-loading {
 .fx-chip.is-on,
 .fx-option.is-on {
   color: #1b5e20;
-=======
+}
+
 /* ===== 特集のページの上の帯: ホームの特集のカードと同じ写真を背景に ===== */
 .feature-band.has-photo {
   position: relative;
@@ -10746,5 +10745,4 @@ img.is-img-loading {
 }
 @media (max-width: 600px) {
   .feature-band.has-photo .feature-band-title { font-size: 1.08rem; }
->>>>>>> feature-band-photo
 }
