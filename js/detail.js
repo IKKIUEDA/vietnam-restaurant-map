@@ -345,7 +345,7 @@ function renderDetail() {
 
       <!-- ⭐ レビュー(Firebase Firestore。中身は renderReviews が作る) -->
       <section class="detail-section" id="detail-reviews">
-        <h3>${esc(t.reviewsTitle)}</h3>
+        <div class="rvx-sec-head"><h3>${esc(t.reviewsTitle)}</h3><span id="review-write-slot"></span></div>
         <div id="reviews-body"></div>
       </section>
 
@@ -2997,6 +2997,53 @@ function starsText(rating) {
   return "★".repeat(n) + "☆".repeat(5 - n);
 }
 
+// レビュー欄の文言
+const REVIEW_LIST_TEXT = {
+  ja: { count: (n) => `レビュー ${n}件`, mine: "あなた", menu: "メニュー", more: "もっと見る", less: "閉じる", once: "レビューは、1人につきお店ごとに1回です" },
+  en: { count: (n) => (n === 1 ? "1 review" : `${n} reviews`), mine: "You", menu: "Menu", more: "Read more", less: "Show less", once: "You can post one review per shop" },
+  vi: { count: (n) => `${n} đánh giá`, mine: "Bạn", menu: "Menu", more: "Xem thêm", less: "Thu gọn", once: "Mỗi người chỉ đánh giá một lần cho mỗi quán" },
+};
+// 星(★5つ。0.5以上は切り上げずに、塗った星と薄い星で表す)
+function reviewStarsHtml(rating) {
+  const n = Math.max(0, Math.min(5, Math.floor((Number(rating) || 0) + 0.25))); // 4.5 → ★4つ(平均点の数字は横に出す)
+  return `${"★".repeat(n)}<span class="rvx-star-off">${"★".repeat(5 - n)}</span>`;
+}
+// レビューを書いた人ごとの件数(このページを開いている間だけ覚える)
+let reviewerCounts = null; // { uid: 件数 } | "loading" | "failed"
+function loadReviewerCounts() {
+  if (reviewerCounts || typeof getReviewsApi !== "function") return;
+  reviewerCounts = "loading";
+  getReviewsApi()
+    .then((api) => (typeof api.fetchReviewerCounts === "function" ? api.fetchReviewerCounts() : Promise.reject(new Error("no api"))))
+    .then((map) => {
+      reviewerCounts = map || {};
+      document.querySelectorAll("[data-rv-meta]").forEach((el) => (el.textContent = reviewerMetaText(el.dataset.rvMeta)));
+    })
+    .catch(() => (reviewerCounts = "failed"));
+}
+// 名前の下の小さな文字: 「レビュー 7件 ・ 🇯🇵 日本出身」(分かるものだけ)
+function reviewerMetaText(uid) {
+  const x = REVIEW_LIST_TEXT[currentLang] || REVIEW_LIST_TEXT.ja;
+  const parts = [];
+  const n = reviewerCounts && typeof reviewerCounts === "object" ? reviewerCounts[uid] : 0;
+  if (n) parts.push(x.count(n));
+  const p = userProfileCache.get(uid);
+  if (p && typeof validCountry === "function" && typeof peopleText === "function") {
+    const home = validCountry(p.homeCountry);
+    const live = validCountry(p.liveCountry);
+    if (home) parts.push(`${countryFlag(home)} ${peopleText().from(countryName(home))}`);
+    else if (live) parts.push(`${countryFlag(live)} ${peopleText().live(countryName(live))}`);
+  }
+  return parts.join(" ・ ");
+}
+// どこか別の場所を押したら、「⋯」のメニューを閉じる
+document.addEventListener("click", (event) => {
+  if (!reviewsState || !reviewsState.menuFor) return;
+  if (event.target.closest && event.target.closest(".rvx-menu, [data-rvx-menu]")) return;
+  reviewsState.menuFor = null;
+  renderReviews();
+});
+
 function renderReviews() {
   const box = detailPage.querySelector("#reviews-body");
   if (!box) return;
@@ -3016,45 +3063,69 @@ function renderReviews() {
   }
 
   // 平均点と件数(非表示にされたレビューは、計算に入れない。1件も無ければ、その旨を出す)
+  //   見た目: 大きな平均点 + 星 + 「レビュー 〇件」。右上(見出しの横)に「✎ レビューを書く」
+  const x = REVIEW_LIST_TEXT[currentLang] || REVIEW_LIST_TEXT.ja;
   const isAdmin = !!(authUser && isAdminUser(authUser));
   const publicReviews = state.reviews.filter((r) => !r.hidden);
   const count = publicReviews.length;
   const average = count > 0 ? publicReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / count : 0;
   const summaryHtml =
     count > 0
-      ? `<p class="reviews-summary">${esc(t.reviewsAverage(average.toFixed(1), count))}</p>`
+      ? `<div class="rvx-sum"><b class="rvx-avg">${esc(average.toFixed(1))}</b>` +
+        `<span class="rvx-sum-side"><span class="rvx-stars" aria-label="${esc(t.reviewRatingLabel)}: ${esc(average.toFixed(1))}/5">${reviewStarsHtml(average)}</span>` +
+        `<span class="rvx-sum-count">${esc(x.count(count))}</span></span></div>`
       : `<p class="detail-placeholder">${esc(t.reviewsEmpty)}</p>`;
 
   // 自分が、すでに投稿しているか(読み込んだ一覧の中に、自分の uid と同じ id があるか)
   const myUid = authUser ? authUser.uid : null;
   const myReview = myUid ? state.reviews.find((r) => r.id === myUid) : null;
+  loadReviewerCounts();
 
-  // レビュー一覧(新しい順。fetchReviews が、すでに新しい順で返す)
-  //   ・管理者は、非表示にしたレビューも、そのまま一覧に含めて見える(「非表示中」の印+元に戻すボタン付き)
-  //   ・管理者以外は、非表示のレビューは、一覧から除く
-  //   ・自分が投稿したレビューには、削除ボタンを付ける(管理者の非表示ボタンとは、別の操作)
+  // レビュー一覧(新しい順)。1件ずつ細い線で区切る
+  //   ・上: アイコン・名前(自分なら「あなた」)・その人のレビュー件数と出身/在住、右端に「⋯」(自分の削除・管理者の非表示)
+  //   ・星と投稿した日(例: 3日前)、本文(長いときは3行まで →「もっと見る」)、外国語なら「翻訳する」
+  //   ・管理者は、非表示にしたレビューも見える(「非表示中」の印)
   const shownReviews = isAdmin ? state.reviews : publicReviews;
   const listHtml = shownReviews.length
-    ? `<ul class="review-list">${shownReviews
+    ? `<ul class="review-list rvx-list">${shownReviews
         .map((r) => {
           const isMine = myUid && r.id === myUid;
+          const hasMenu = isMine || isAdmin;
+          const menuOpen = hasMenu && state.menuFor === r.id;
+          const expanded = state.expanded && state.expanded.has(r.id);
           return (
-            `<li class="review-item${r.hidden ? " is-hidden" : ""}">` +
-            `<div class="review-head">${userLinkHtml(r.id, r.authorName, "review-author", { avatar: 32 })}` +
-            `<span class="review-head-right">` +
-            `<span class="review-stars" aria-label="${esc(t.reviewRatingLabel)}: ${Number(r.rating) || 0}/5">${starsText(r.rating)}</span>` +
-            (r.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
-            `</span></div>` +
-            (r.comment ? `<p class="review-comment-text">${esc(r.comment)}</p>` + translateButtonHtml(r.comment) : "") +
-            (isMine
-              ? `<button type="button" class="btn btn-small btn-warn review-delete-btn" ${state.deleting ? "disabled" : ""}>${esc(
-                  state.deleting ? t.deleting : t.deleteButton
-                )}</button>`
+            `<li class="review-item rvx-item${r.hidden ? " is-hidden" : ""}" data-rvx="${esc(r.id)}">` +
+            `<div class="rvx-top">` +
+            `<span class="rvx-line1">` +
+            userLinkHtml(r.id, r.authorName, "review-author rvx-author", { avatar: 40 }) +
+            (isMine ? `<span class="rvx-mine">${esc(x.mine)}</span>` : "") +
+            `</span>` +
+            `<span class="rvx-meta" data-rv-meta="${esc(r.id)}">${esc(reviewerMetaText(r.id))}</span>` +
+            (hasMenu
+              ? `<button type="button" class="rvx-more" data-rvx-menu="${esc(r.id)}" aria-label="${esc(x.menu)}" aria-expanded="${menuOpen}">⋯</button>`
               : "") +
-            (isAdmin
-              ? `<button type="button" class="btn btn-small admin-toggle-btn" data-uid="${esc(r.id)}" ${
-                  state.adminBusy.has(r.id) ? "disabled" : ""
-                }>${esc(r.hidden ? t.adminRestore : t.adminHide)}</button>`
+            (menuOpen
+              ? `<div class="rvx-menu" role="menu">` +
+                (isAdmin
+                  ? `<button type="button" role="menuitem" class="admin-toggle-btn" data-uid="${esc(r.id)}" ${state.adminBusy.has(r.id) ? "disabled" : ""}>` +
+                    `${esc(r.hidden ? t.adminRestore : t.adminHide)}</button>`
+                  : "") +
+                (isMine
+                  ? `<button type="button" role="menuitem" class="review-delete-btn is-danger" ${state.deleting ? "disabled" : ""}>${esc(
+                      state.deleting ? t.deleting : t.deleteButton
+                    )}</button>`
+                  : "") +
+                `</div>`
+              : "") +
+            `</div>` +
+            `<div class="rvx-rate"><span class="rvx-stars" aria-label="${esc(t.reviewRatingLabel)}: ${Number(r.rating) || 0}/5">${reviewStarsHtml(r.rating)}</span>` +
+            `<span class="rvx-age">${esc(photoAgeText(r.createdAt))}</span>` +
+            (r.hidden ? `<span class="admin-hidden-badge">${esc(t.adminHiddenBadge)}</span>` : "") +
+            `</div>` +
+            (r.comment
+              ? `<p class="review-comment-text rvx-text${expanded ? " is-open" : ""}">${esc(r.comment)}</p>` +
+                translateButtonHtml(r.comment) +
+                `<button type="button" class="rvx-toggle" data-rvx-toggle="${esc(r.id)}" hidden>${esc(expanded ? x.less : x.more)}</button>`
               : "") +
             `</li>`
           );
@@ -3120,11 +3191,22 @@ function renderReviews() {
 
   // 投稿のところ: ログイン中で、投稿済みだと分かっているときだけ、その表示にする。
   //   それ以外(未ログインを含む)は、いつもフォームを出す(送信したときに、ログインを求める)
-  const actionHtml =
-    authUser && myReview
-      ? `<p class="detail-note tips-posted">✅ ${esc(t.reviewPosted)}</p>`
-      : `<button type="button" class="btn btn-primary" id="review-open" aria-expanded="${state.formOpen}" aria-controls="review-form">✏️ ${esc(t.reviewWrite)}</button>` +
-        formHtml;
+  //   「レビューを書く」は、見出しの右(#review-write-slot)に出す。下には「1人につき1回」の案内だけ
+  const canWrite = !(authUser && myReview);
+  const writeSlot = detailPage.querySelector("#review-write-slot");
+  if (writeSlot) {
+    writeSlot.innerHTML = canWrite
+      ? `<button type="button" class="rvx-write" id="review-open" aria-expanded="${state.formOpen}" aria-controls="review-form">✎ ${esc(t.reviewWrite)}</button>`
+      : "";
+    const openBtn = writeSlot.querySelector("#review-open");
+    if (openBtn)
+      openBtn.addEventListener("click", () => {
+        state.formOpen = true;
+        state.message = null;
+        renderReviews();
+      });
+  }
+  const actionHtml = `<p class="rvx-once">${esc(x.once)}</p>` + (canWrite ? formHtml : "");
 
   const adminMessageHtml = state.adminMessage
     ? `<p class="detail-note tips-message${state.adminMessage.error ? " is-error" : ""}" role="status">${esc(t[state.adminMessage.key])}</p>`
@@ -3138,10 +3220,28 @@ function renderReviews() {
     const el = box.querySelector(selector);
     if (el) el.addEventListener("click", handler);
   };
-  bind("#review-open", () => {
-    state.formOpen = true;
-    state.message = null;
-    renderReviews();
+  // 「⋯」: 自分のレビューの削除・管理者の非表示のメニューを開く / 閉じる
+  box.querySelectorAll("[data-rvx-menu]").forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.menuFor = state.menuFor === btn.dataset.rvxMenu ? null : btn.dataset.rvxMenu;
+      renderReviews();
+    });
+  });
+  // 本文が3行より長いときだけ「もっと見る」を出す
+  box.querySelectorAll(".rvx-item").forEach((li) => {
+    const text = li.querySelector(".rvx-text");
+    const toggle = li.querySelector("[data-rvx-toggle]");
+    if (!text || !toggle) return;
+    const long = text.classList.contains("is-open") || text.scrollHeight > text.clientHeight + 2;
+    toggle.hidden = !long;
+    toggle.addEventListener("click", () => {
+      if (!state.expanded) state.expanded = new Set();
+      const id = toggle.dataset.rvxToggle;
+      if (state.expanded.has(id)) state.expanded.delete(id);
+      else state.expanded.add(id);
+      renderReviews();
+    });
   });
   // 管理者の「非表示にする」「元に戻す」ボタン(フォームが開いていないときも、必ずバインドする)
   box.querySelectorAll(".admin-toggle-btn[data-uid]").forEach((btn) => {
@@ -3467,6 +3567,7 @@ function applyUserProfile(uid) {
   document.querySelectorAll(sel("data-user-name")).forEach((el) => {
     if (p.displayName) el.textContent = p.displayName;
   });
+  document.querySelectorAll(sel("data-rv-meta")).forEach((el) => (el.textContent = reviewerMetaText(uid)));
   document.querySelectorAll(sel("data-user-avatar")).forEach((el) => {
     el.innerHTML = userAvatarHtml(p.photoURL, p.displayName || el.dataset.name || "", Number(el.dataset.size) || 32);
   });
