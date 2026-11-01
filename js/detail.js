@@ -2004,6 +2004,27 @@ function renderPhotoComposerHtml(state, t) {
   </div>`;
 }
 
+// 写真が投稿されてから、どのくらいたったか(例: 今日・昨日・3日前・2か月前・1年前)
+const PHOTO_AGE_TEXT = {
+  ja: { today: "今日", days: (n) => (n === 1 ? "昨日" : `${n}日前`), months: (n) => `${n}か月前`, years: (n) => `${n}年前` },
+  en: { today: "Today", days: (n) => (n === 1 ? "Yesterday" : `${n} days ago`), months: (n) => (n === 1 ? "1 month ago" : `${n} months ago`), years: (n) => (n === 1 ? "1 year ago" : `${n} years ago`) },
+  vi: { today: "Hôm nay", days: (n) => (n === 1 ? "Hôm qua" : `${n} ngày trước`), months: (n) => `${n} tháng trước`, years: (n) => `${n} năm trước` },
+};
+function photoAgeText(ts) {
+  let d = null;
+  if (ts && typeof ts.toDate === "function") d = ts.toDate();
+  else if (ts instanceof Date) d = ts;
+  else if (ts && typeof ts.seconds === "number") d = new Date(ts.seconds * 1000);
+  if (!d) d = new Date(); // 投稿した直後(サーバーの日時がまだ届いていないとき)は「今日」
+  const x = PHOTO_AGE_TEXT[currentLang] || PHOTO_AGE_TEXT.ja;
+  const startOf = (t) => new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+  const days = Math.max(0, Math.round((startOf(new Date()) - startOf(d)) / 86400000)); // 日付が変わった回数
+  if (days === 0) return x.today;
+  if (days < 30) return x.days(days);
+  if (days < 365) return x.months(Math.floor(days / 30));
+  return x.years(Math.floor(days / 365));
+}
+
 function renderPhotos() {
   const box = detailPage.querySelector("#photos-body");
   if (!box) return;
@@ -2041,6 +2062,7 @@ function renderPhotos() {
             (categoryLabel ? `<span class="photo-category-label">${esc(categoryLabel)}</span>` : "") +
             `<span class="photo-like-badge${liked ? " is-liked" : ""}">` +
             `<span aria-hidden="true">${liked ? "♥" : "♡"}</span>${esc(String(p.likeCount || 0))}</span>` +
+            `<span class="photo-age-badge">${esc(photoAgeText(p.createdAt))}</span>` + // 投稿してからの日数
             (isAdmin && p.isCover ? `<span class="photo-grid-badge">${esc(coverText().badge)}</span>` : "") +
             (p.hidden ? `<span class="photo-grid-badge is-hidden">${esc(t.adminHiddenBadge)}</span>` : "") +
             `</button>` +
@@ -2128,6 +2150,7 @@ function renderPhotos() {
       </div>
       <div class="pv-info">
         <div class="pv-author">${userLinkHtml(lp.uid, lp.authorName, "photo-author", { avatar: 36 })}
+          <span class="pv-age">${esc(photoAgeText(lp.createdAt))}</span>
           ${categoryLabel ? `<span class="pv-chip">${esc(categoryLabel)}</span>` : ""}
           ${isAdmin && lp.isCover ? `<span class="pv-chip is-cover">${esc(coverText().badge)}</span>` : ""}
           ${lp.hidden ? `<span class="pv-chip is-hidden">${esc(t.adminHiddenBadge)}</span>` : ""}
