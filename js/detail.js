@@ -1980,13 +1980,7 @@ function renderPhotoComposerHtml(state, t) {
     </label>
     ${shopCardHtml}
     ${categoryHtml}
-    <div class="photo-notice">
-      <p class="photo-notice-title">${esc(t.photosNoticeTitle)}</p>
-      <ul class="photo-notice-list">${t.photosNoticeLines.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
-      <p class="photo-notice-footer">${esc(t.photosNoticeFooterPrefix)}<a href="${esc(termsUrl())}" target="_blank" rel="noopener noreferrer">${esc(
-        t.termsPageTitle
-      )}</a>${esc(t.photosNoticeFooterSuffix)}</p>
-    </div>
+    <p class="photo-notice-short">${esc(t.photosNoticeShort)}</p>
     ${consentHtml}
     <button type="button" class="btn btn-primary photo-submit-btn" id="photos-submit" ${canSubmit ? "" : "disabled"}>${esc(
     state.sending
