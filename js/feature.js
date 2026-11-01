@@ -285,15 +285,23 @@ function renderCafeFeature(all, type) {
   if (f.reviewed) active.push({ key: "reviewed", label: fx.reviewedChip });
   const isCafe = type === "cafe";
   // カードでの改行は、日本語ではつなげる(英語・ベトナム語は空白を入れる)
-  const title = (isCafe ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, currentLang === "ja" ? "" : " ").replace(/\|/g, "");
+  const rawTitle = (isCafe ? h.featureCafeTitle : h.featureGroceryTitle).replace(/\n/g, currentLang === "ja" ? "" : " ");
+  // 見出しの「|」の場所だけで改行する(言葉の途中で切れないように。ホームのカードと同じ)
+  const titleHtml = rawTitle
+    .split("|")
+    .map((part) => `<span class="home-feature-phrase">${esc(part)}</span>`)
+    .join("");
   const tag = isCafe ? h.featureCafeTag : h.featureGroceryTag;
 
   homePage.innerHTML =
     `<div class="todo-create-head mylist-page-head">` +
     `<a class="todo-back" href="${esc(homeUrl())}" data-feature-back aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` +
     `<h2 class="todo-create-title">${esc(tag)}</h2></div>` +
-    `<div class="feature-band feature-band-${type}"><span class="feature-band-icon">${homeIcon(type, 30)}</span>` +
-    `<span class="feature-band-text"><span class="feature-band-title">${esc(title)}</span>` +
+    // 上の帯: ホームの特集のカードと同じ写真(images/feature-cafe.jpg・feature-grocery.jpg)を背景にする
+    `<div class="feature-band feature-band-${type} has-photo">` +
+    `<img class="feature-band-photo" src="images/feature-${type}.jpg?v=1" alt="" decoding="async">` +
+    `<span class="feature-band-shade" aria-hidden="true"></span>` +
+    `<span class="feature-band-text"><span class="feature-band-title">${titleHtml}</span>` +
     `<span class="feature-band-count">${esc(x.count(list.length))}</span></span></div>` +
     `<section class="home-section feature-section fx-section">` +
     `<div class="fx-bar" role="group" aria-label="${esc(fx.filter)}">` +
