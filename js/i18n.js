@@ -104,6 +104,8 @@ const ui = {
     photoCommentDeleted: "コメントを削除しました。",
     photoCommentDeleteError: "コメントを削除できませんでした。もう一度お試しください。",
     // 投稿画面の、簡潔な注意事項
+    // 投稿画面の、1行だけの注意(詳しいルールは利用規約に書いてある)
+    photosNoticeShort: "※ 自分で撮影した写真を投稿してください。写真はお店のトップ画像に使うことがあります。",
     photosNoticeTitle: "📷 写真を投稿する前に",
     photosNoticeLines: [
       "自分が撮影した写真、または自分が投稿する権利を持っている写真を投稿してください",
@@ -706,6 +708,7 @@ const ui = {
     photoCommentDeleted: "Comment deleted.",
     photoCommentDeleteError: "Couldn't delete the comment. Please try again.",
     // Short notice shown on the posting screen
+    photosNoticeShort: "* Please post photos you took yourself. Photos may be used as the shop's cover image.",
     photosNoticeTitle: "📷 Before you post a photo",
     photosNoticeLines: [
       "Only post photos you took yourself, or that you have the right to post",
@@ -1307,6 +1310,7 @@ const ui = {
     photoCommentDeleted: "Đã xóa bình luận.",
     photoCommentDeleteError: "Không thể xóa bình luận. Vui lòng thử lại.",
     // Lưu ý ngắn gọn hiển thị trên màn hình đăng ảnh
+    photosNoticeShort: "* Vui lòng đăng ảnh do bạn tự chụp. Ảnh có thể được dùng làm ảnh đại diện của quán.",
     photosNoticeTitle: "📷 Trước khi đăng ảnh",
     photosNoticeLines: [
       "Chỉ đăng ảnh do chính bạn chụp, hoặc ảnh bạn có quyền đăng",

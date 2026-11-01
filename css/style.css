@@ -10746,3 +10746,11 @@ img.is-img-loading {
 .fx-option.is-on {
   color: #1b5e20;
 }
+
+/* 投稿画面の注意: 黄色い箱をやめて、1行だけの小さな注意文に(詳しいルールは利用規約) */
+.photo-notice-short {
+  margin: 14px 2px 8px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #6b756e;
+}
