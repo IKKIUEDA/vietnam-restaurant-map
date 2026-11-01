@@ -390,6 +390,23 @@ const restaurants = [
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%82%A4%E3%83%B3%E3%82%BB%E3%82%AA%E3%82%B5%E3%82%A4%E3%82%B4%E3%83%B3+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA%E6%9C%89%E6%A5%BD%E7%94%BA2-7-1",
   },
   {
+    id: "vietnam-alice-ginza", // 2026-11 追加(公式サイトで確認)
+    name: { ja: "ヴェトナム・アリス 銀座店", en: "Vietnam Alice Ginza", vi: "Vietnam Alice Ginza" },
+    address: {
+      ja: "東京都中央区銀座2-2-14 マロニエゲート銀座1 11F",
+      en: "Marronnier Gate Ginza 1 11F, 2-2-14 Ginza, Chuo-ku, Tokyo",
+      vi: "Marronnier Gate Ginza 1 11F, 2-2-14 Ginza, Quận Chuo, Tokyo",
+    },
+    lat: 35.6743660,
+    lng: 139.7653050,
+    prefecture: "東京都",
+    area: { ja: "銀座", en: "Ginza", vi: "Ginza" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+    hours: { ja: "11:00~23:00", en: "11:00–23:00", vi: "11:00–23:00" },
+    closed: { ja: "不定休(マロニエゲート銀座1に準ずる)", en: "Irregular (follows Marronnier Gate Ginza 1)", vi: "Không cố định (theo Marronnier Gate Ginza 1)" },
+  },
+  {
     id: "vietnamese-cyclo-hibiya",
     name: "ベトナミーズ・シクロ 東京ミッドタウン日比谷",
     address: {
@@ -831,6 +848,21 @@ const restaurants = [
     category: "ベトナム料理",
   },
   {
+    id: "tra-my-quan-shinmatsudo", // 2026-11 追加。階数・営業時間・定休日は情報が食い違っていたため、載せていない
+    name: { ja: "TRA MY QUAN(チャミクアン)", en: "Tra My Quan", vi: "Trà My Quán" },
+    address: {
+      ja: "千葉県松戸市新松戸2-31-2 若しばビル",
+      en: "Wakashiba Bldg., 2-31-2 Shin-Matsudo, Matsudo, Chiba",
+      vi: "Wakashiba Bldg., 2-31-2 Shin-Matsudo, Matsudo, Chiba",
+    },
+    lat: 35.8248670,
+    lng: 139.9206090,
+    prefecture: "千葉県",
+    area: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+  },
+  {
     id: "sai-gon-247",
     name: "SAI GON 247",
     address: {
@@ -949,6 +981,23 @@ const restaurants = [
     area: { ja: "柏駅", en: "Kashiwa Station", vi: "Kashiwa Station" },
     dishes: ["ベトナム料理"],
     category: "ベトナム料理",
+  },
+  {
+    id: "co-do-hue-kisarazu", // 2026-11 追加(食べログ・地元の紹介記事で確認)。電話番号は情報が食い違っていたため、載せていない
+    name: { ja: "コードーフエ", en: "Co Do Hue", vi: "Cố Đô Huế" },
+    address: {
+      ja: "千葉県木更津市瓜倉845-1",
+      en: "845-1 Uriura, Kisarazu, Chiba",
+      vi: "845-1 Uriura, Kisarazu, Chiba",
+    },
+    lat: 35.4256550,
+    lng: 139.9168700,
+    prefecture: "千葉県",
+    area: { ja: "木更津・巌根", en: "Kisarazu / Iwane", vi: "Kisarazu / Iwane" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+    hours: { ja: "11:00~22:00(L.O. 21:30)", en: "11:00–22:00 (last order 21:30)", vi: "11:00–22:00 (gọi món cuối 21:30)" },
+    closed: { ja: "月曜日(祝日の場合は翌火曜日)", en: "Monday (Tuesday if Monday is a holiday)", vi: "Thứ Hai (thứ Ba nếu thứ Hai là ngày lễ)" },
   },
   {
     id: "pho-links-kashiwa",
@@ -1711,6 +1760,22 @@ const restaurants = [
 
   // ---- ここから ベトナム食材店(type: "grocery")----
   // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(金田東6丁目のお店は「丁目」までの精度)。
+  {
+    id: "thai-duong-mart-82-chiba-eki", // 2026-11 追加(2026年9月5日オープン。住所は運営者が確認した情報)
+    type: "grocery",
+    name: { ja: "Thái Dương Mart 82 – Chiba Eki(タイズオンマート千葉駅店)", en: "Thái Dương Mart 82 – Chiba Eki", vi: "Thái Dương Mart 82 – Chiba Eki" },
+    address: {
+      ja: "千葉県千葉市中央区登戸1-13-22 シテイファイブビル A棟1F-103号",
+      en: "City Five Bldg. A 1F-103, 1-13-22 Nobuto, Chuo-ku, Chiba, Chiba",
+      vi: "City Five Bldg. A 1F-103, 1-13-22 Nobuto, Quận Chuo, Chiba, Chiba",
+    },
+    lat: 35.6099930,
+    lng: 140.1101840,
+    prefecture: "千葉県",
+    area: { ja: "千葉・登戸", en: "Chiba / Nobuto", vi: "Chiba / Nobuto" },
+    category: "ベトナム食材店",
+    // 公式Facebook: https://www.facebook.com/thaiduongmart82.chibaeki/
+  },
   {
     id: "dung-huyen-shin-matsudo",
     type: "grocery",
