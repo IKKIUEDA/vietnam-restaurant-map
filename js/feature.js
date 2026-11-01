@@ -192,7 +192,7 @@ homePage.addEventListener("click", (event) => {
 // =====================================================================
 // 特集(カフェ「千葉にあるベトナムコーヒーでひと休み」・食材店「千葉でベトナムの食材が買えるお店」): 絞り込みと並び順
 //   ・上の並び: 絞り込みボタン(選んでいる条件の数つき)/ 選んでいる条件(× で外せる)/ 並び順
-//   ・絞り込み: エリア(都道府県 → その中のエリア)/ 現在地から近いお店だけ(10km以内)/ レビューがあるお店だけ
+//   ・絞り込み: エリア(都道府県 → その中のエリア)/ 現在地から近いお店だけ(10km以内)
 //   ・並び順: おすすめ順(評価が高い順)/ 近い順 / レビューが多い順
 //   ・はじめは「千葉県」で絞り込んだ状態。× で外すと、関東のすべてのカフェ
 //   ・現在地は、「近い」を選んだときだけ、その場で使う。保存しない
@@ -378,7 +378,6 @@ function cafeFxSheetHtml(all) {
       : "") +
     `<h4 class="fx-h4">${esc(fx.conditions)}</h4>` +
     `<label class="fx-check"><input type="checkbox" data-fx-check="near"${d.near ? " checked" : ""}><span>${esc(fx.near)}</span></label>` +
-    `<label class="fx-check"><input type="checkbox" data-fx-check="reviewed"${d.reviewed ? " checked" : ""}><span>${esc(fx.reviewed)}</span></label>` +
     `</div>` +
     `<div class="fx-sheet-foot">` +
     `<button type="button" class="fx-reset" data-fx-reset>${esc(fx.reset)}</button>` +
