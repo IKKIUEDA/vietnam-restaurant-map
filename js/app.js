@@ -2430,18 +2430,53 @@ window.addEventListener("shop-covers-ready", refreshShopImages);
   new MutationObserver(syncMeta).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   syncMeta();
   // iPhone(Safari): 2本指のつまむ操作を止める
+  //   ・ただし、すでに拡大されてしまっているときは止めない(指で縮めて、元に戻せるように)
+  const zoomed = () => !!(window.visualViewport && window.visualViewport.scale > 1.01);
   document.addEventListener(
     "touchmove",
     (event) => {
-      if (event.touches.length > 1 && inHome()) event.preventDefault();
+      if (event.touches.length > 1 && inHome() && !zoomed()) event.preventDefault();
     },
     { passive: false }
   );
   ["gesturestart", "gesturechange"].forEach((name) =>
     document.addEventListener(name, (event) => {
-      if (inHome()) event.preventDefault();
+      if (inHome() && !zoomed()) event.preventDefault();
     })
   );
+})();
+
+// スマホ: ホーム・アカウントの画面で、画面が勝手に拡大されたままになったら、元の大きさ(等倍)に戻す
+//   ・お店のページや地図などから拡大したまま戻ってきたとき、何かの拍子に拡大されたときなどに起きる
+//   ・ページの設定(viewport)を一度書きかえると、ブラウザが拡大を元に戻す。ホーム・アカウント以外の画面は、何もしない
+(function resetZoomOnHome() {
+  const vv = window.visualViewport;
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (!vv || !meta) return;
+  const isTarget = () => {
+    const c = document.body.classList;
+    return c.contains("view-home") && (c.contains("is-home-top") || c.contains("is-account-view"));
+  };
+  let timer = null;
+  const reset = () => {
+    if (!isTarget() || vv.scale <= 1.01) return;
+    const now = meta.getAttribute("content");
+    // いったん別の内容にしてから、元に戻す(同じ内容のままだと、ブラウザが読み直さないため)
+    meta.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0");
+    requestAnimationFrame(() => requestAnimationFrame(() => meta.setAttribute("content", now)));
+  };
+  // 指を離してから少し待って確かめる(指で操作している途中には戻さない)
+  const later = (ms) => {
+    clearTimeout(timer);
+    timer = setTimeout(reset, ms);
+  };
+  vv.addEventListener("resize", () => later(400));
+  document.addEventListener("touchend", (event) => {
+    if (event.touches.length === 0) later(400);
+  });
+  new MutationObserver(() => later(50)).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  window.addEventListener("pageshow", () => later(50));
+  window.addEventListener("orientationchange", () => later(400));
 })();
 
 // 地図を引いて(広い範囲を)見ているときは、写真つきの札を隠す(札どうしが重なって、見えにくくならないように)
