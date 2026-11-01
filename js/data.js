@@ -1693,6 +1693,22 @@ const restaurants = [
     price: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
     hours: { ja: "準備中", en: "Coming soon", vi: "Sắp cập nhật" },
   },
+  {
+    id: "min-min-milk-tea-food", // ※ 一度カフェにしたが、実際に行ってみたら料理店だったので、料理店に戻した(2026-11)。URL が変わらないよう、ID はそのまま
+    name: { ja: "Min Min Milk Tea Food(ミンミン ミルクティー フード)", en: "Min Min Milk Tea Food", vi: "Min Min Milk Tea Food" },
+    address: {
+      ja: "千葉県千葉市中央区登戸1-1-17 2F",
+      en: "2F, 1-1-17 Nobuto, Chuo-ku, Chiba, Chiba",
+      vi: "2F, 1-1-17 Nobuto, Quận Chuo, Chiba, Chiba",
+    },
+    lat: 35.6098560,
+    lng: 140.1105960,
+    prefecture: "千葉県",
+    area: { ja: "千葉・登戸", en: "Chiba / Nobuto", vi: "Chiba / Nobuto" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+  },
+
   // ---- ここから ベトナム食材店(type: "grocery")----
   // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(金田東6丁目のお店は「丁目」までの精度)。
   {
@@ -2682,21 +2698,6 @@ const restaurants = [
 
   // ---- ここから ベトナムカフェ(type: "cafe")----
   // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(南花園のお店は「番」までの精度)。
-  {
-    id: "min-min-milk-tea-food", // ※ 以前は料理店として登録していたお店。URL が変わらないよう、ID はそのまま
-    type: "cafe",
-    name: { ja: "Min Min Milk Tea Food(ミンミン ミルクティー フード)", en: "Min Min Milk Tea Food", vi: "Min Min Milk Tea Food" },
-    address: {
-      ja: "千葉県千葉市中央区登戸1-1-17 2F",
-      en: "2F, 1-1-17 Nobuto, Chuo-ku, Chiba, Chiba",
-      vi: "2F, 1-1-17 Nobuto, Quận Chuo, Chiba, Chiba",
-    },
-    lat: 35.6098560,
-    lng: 140.1105960,
-    prefecture: "千葉県",
-    area: { ja: "千葉・登戸", en: "Chiba / Nobuto", vi: "Chiba / Nobuto" },
-    category: "ベトナムカフェ・軽食",
-  },
   {
     id: "tiem-tra-bo-chan-funabashi",
     type: "cafe",
