@@ -10696,3 +10696,21 @@ img.is-img-loading {
     font-size: 1.08rem; /* スマホでも「ベトナムコーヒーでひと休み」が1行に収まる大きさ */
   }
 }
+
+/* iPhone では、ボタンの文字が青くなるので、絞り込みの画面のボタンの文字色をはっきり決める */
+.fx-pill,
+.fx-reset,
+.fx-sheet-close,
+.fx-option,
+.fx-chip,
+.fx-filter-btn {
+  color: var(--c-text);
+}
+.fx-pill.is-on,
+.fx-apply {
+  color: #ffffff;
+}
+.fx-chip.is-on,
+.fx-option.is-on {
+  color: #1b5e20;
+}
