@@ -10483,3 +10483,22 @@ img.is-img-loading {
 .fx-list .todo-tag {
   white-space: nowrap;
 }
+
+/* ===== お店の写真: 投稿してからの日数(例: 3日前) ===== */
+.photo-age-badge {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.photo-grid-badge.is-hidden { bottom: 26px; }
+.pv-age {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.82);
+}
