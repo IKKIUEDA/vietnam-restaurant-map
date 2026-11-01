@@ -1793,6 +1793,21 @@ const restaurants = [
     // 公式サイト: https://sieuthiminitunjp.com/
   },
   {
+    id: "c-hao-mart-chiba", // 2026-11 追加(旧 XUÂN SHOP 千葉店。住所は紹介記事、店名はお店のFacebookページ名で確認)。営業時間・定休日は確認できなかったため、載せていない
+    type: "grocery",
+    name: { ja: "C.Hào Mart I(チャオマート/旧 XUÂN SHOP 千葉店)", en: "C.Hào Mart I (formerly Xuân Shop Chiba)", vi: "C.Hào Mart I (Xuân Shop ga Chiba cũ)" },
+    address: {
+      ja: "千葉県千葉市中央区弁天1-8-8",
+      en: "1-8-8 Benten, Chuo-ku, Chiba, Chiba",
+      vi: "1-8-8 Benten, Quận Chuo, Chiba, Chiba",
+    },
+    lat: 35.6165770,
+    lng: 140.1107330,
+    prefecture: "千葉県",
+    area: { ja: "千葉・弁天", en: "Chiba / Benten", vi: "Chiba / Benten" },
+    category: "ベトナム食材店",
+  },
+  {
     id: "dung-huyen-shin-matsudo",
     type: "grocery",
     name: "ベトナム食材 ズンフェン (Quan Dung Huyen)",
