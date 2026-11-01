@@ -2455,26 +2455,51 @@ syncPhotoLabelZoom();
 
 // 写真つきの札どうしが重ならないようにする
 //   ・画面に出ている札を上から順に見て、すでに出した札と重なる札は隠す(ピンは、そのまま出す)
+//   ・ほかのお店のピンが すぐ近くにあって札と重なるときは、隠す前に、札を少し上や横にずらして出せないか試す
+//     (同じビル・となりのビルにお店が2つあるときも、写真の札が消えないように)
 //   ・地図を動かす・拡大する・お店の絞り込みが変わるたびに、置き直す(拡大すると、隠れていた札も出てくる)
 function layoutPhotoLabels() {
   const box = map.getContainer();
   if (box.classList.contains("hide-photo-labels")) return;
   const labels = [...box.querySelectorAll(".shop-photo-label")];
-  labels.forEach((el) => el.classList.remove("is-overlapped"));
-  // お店のピンは、いつも見えるようにする(札がほかのお店のピンに重なるときも、札のほうを隠す)
+  labels.forEach((el) => {
+    el.classList.remove("is-overlapped");
+    el.style.removeProperty("--lbl-dx");
+    el.style.removeProperty("--lbl-dy");
+  });
+  // お店のピンは、いつも見えるようにする(札がほかのお店のピンに重なるときも、札のほうをずらすか隠す)
   const pins = [...box.querySelectorAll(".shop-pin")].map((pin) => ({ pin, r: pin.getBoundingClientRect() })).filter((x) => x.r.width > 0);
   const shown = [];
   const PAD = 4; // 札と札のあいだに、少しすき間をあける
+  const MAX_LIFT = 28; // 上にずらすのは、ここまで(離れすぎると、どのピンの札か分かりにくくなる)
+  const meet = (r, s, pad) => r.left < s.right + pad && r.right + pad > s.left && r.top < s.bottom + pad && r.bottom + pad > s.top;
   labels
     .map((el) => ({ el, r: el.getBoundingClientRect() }))
     .filter((x) => x.r.width > 0)
     .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)
     .forEach(({ el, r }) => {
-      const meet = (s, pad) => r.left < s.right + pad && r.right + pad > s.left && r.top < s.bottom + pad && r.bottom + pad > s.top;
       const own = el.parentElement && el.parentElement.querySelector(".shop-pin");
-      const hit = shown.some((s) => meet(s, PAD)) || pins.some((x) => x.pin !== own && meet(x.r, 0));
-      if (hit) el.classList.add("is-overlapped");
-      else shown.push(r);
+      const others = pins.filter((x) => x.pin !== own);
+      const hitAt = (dx, dy) => {
+        const m = { left: r.left + dx, right: r.right + dx, top: r.top + dy, bottom: r.bottom + dy };
+        return shown.some((s) => meet(m, s, PAD)) || others.some((x) => meet(m, x.r, 0));
+      };
+      // 試す位置: そのまま → 上へ → 右・左へ(札の端が、自分のピンの上に残るくらいまで) → 斜め上
+      const lift = Math.ceil(Math.max(0, ...others.filter((x) => meet(r, x.r, 0)).map((x) => r.bottom - x.r.top + 3)));
+      const side = Math.max(0, Math.floor(r.width / 2 - 24));
+      const tries = [[0, 0]];
+      if (lift > 0 && lift <= MAX_LIFT) tries.push([0, -lift]);
+      if (side > 0) tries.push([side, 0], [-side, 0]);
+      if (side > 0 && lift > 0 && lift <= MAX_LIFT) tries.push([side, -lift], [-side, -lift]);
+      const ok = tries.find(([dx, dy]) => !hitAt(dx, dy));
+      if (!ok) {
+        el.classList.add("is-overlapped");
+        return;
+      }
+      const [dx, dy] = ok;
+      if (dx) el.style.setProperty("--lbl-dx", dx + "px");
+      if (dy) el.style.setProperty("--lbl-dy", dy + "px");
+      shown.push({ left: r.left + dx, right: r.right + dx, top: r.top + dy, bottom: r.bottom + dy });
     });
 }
 var photoLabelTimer = null; // var: 読み込みの途中(renderFilters)から呼ばれても、エラーにならないように

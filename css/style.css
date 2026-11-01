@@ -9046,7 +9046,8 @@ body.view-detail.is-review-writing { overflow: hidden; }
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
-  transform: translateX(-50%);
+  /* --lbl-dx / --lbl-dy: 近くのピンと重なるときに、少しずらす(js/app.js の layoutPhotoLabels) */
+  transform: translate(calc(-50% + var(--lbl-dx, 0px)), var(--lbl-dy, 0px));
   cursor: pointer;
 }
 .shop-photo-label img {
