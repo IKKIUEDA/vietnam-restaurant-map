@@ -1127,10 +1127,23 @@ function ensureHeaderSearch() {
         if (document.activeElement !== input && !input.value.trim()) close();
       }, 150);
     });
+    // PC: 上の検索窓を押すと、検索窓だけを明るく残して、ほかを暗くする(CSS は幅 900px 以上のときだけ)
+    //   暗いところを押す・Esc・探すと、元に戻る(暗いところを押しても、下のボタンは押されない)
+    const shade = document.createElement("div");
+    shade.className = "hsearch-shade";
+    shade.setAttribute("aria-hidden", "true");
+    header.appendChild(shade);
+    shade.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      input.blur();
+    });
+    input.addEventListener("focus", () => document.body.classList.add("is-hsearch-focus"));
+    input.addEventListener("blur", () => document.body.classList.remove("is-hsearch-focus"));
   }
   const label = form.querySelector("label");
   label.textContent = h.searchLabel;
-  form.querySelector("input").placeholder = h.searchLabel;
+  // PC(幅 900px 以上)では、上の帯にいつも出ているので、例つきの長い案内にする
+  form.querySelector("input").placeholder = window.matchMedia("(min-width: 900px)").matches ? h.searchPlaceholder : h.searchLabel;
   btn.setAttribute("aria-label", h.searchLabel);
   btn.setAttribute("aria-controls", "hsearch");
   btn.title = h.searchLabel;
