@@ -179,6 +179,8 @@ function renderAuth() {
   }
   // ログイン状態がまだ分からないときは、何も出さない
 
+  renderHeaderAccount();
+
   // アカウント画面(js/account.js)も、ログイン状態に合わせて描き直す
   if (typeof onAccountAuthChanged === "function") onAccountAuthChanged();
 
@@ -229,3 +231,46 @@ function watchAuth() {
 
 renderAuth();
 watchAuth();
+
+// PC だけ: 上の帯の右側(言語の切り替えの左)に「ログイン」(ログイン中は、アイコン +「アカウント」)を出す
+//   ・押すと、画面の下の「アカウント」タブと同じ画面(ログインしていなければ、ログインの画面)を開く
+//   ・スマホでは出さない(CSS。スマホは今まで通り、下の「アカウント」タブから)
+function renderHeaderAccount() {
+  // (ファイルの読み込み途中にも呼ばれるので、文言・アイコンは関数の中に置く)
+  const HEADER_ACCOUNT_TEXT = {
+    ja: { login: "ログイン", account: "アカウント" },
+    en: { login: "Log in", account: "Account" },
+    vi: { login: "Đăng nhập", account: "Tài khoản" },
+  };
+  const HEADER_ACCOUNT_ICON =
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
+  const actions = document.querySelector("header .header-actions");
+  const lang = document.getElementById("lang-select");
+  if (!actions || !lang) return;
+  let link = document.getElementById("header-account");
+  if (!link) {
+    link = document.createElement("a");
+    link.id = "header-account";
+    link.className = "header-account";
+    link.href = appBase() + "?view=account";
+    link.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return; // 新しいタブで開く操作は、そのまま
+      event.preventDefault();
+      navigate(appBase() + "?view=account");
+    });
+    actions.insertBefore(link, lang);
+  }
+  const x = HEADER_ACCOUNT_TEXT[currentLang] || HEADER_ACCOUNT_TEXT.ja;
+  link.replaceChildren();
+  const label = document.createElement("span");
+  label.className = "header-account-label";
+  if (authUser) {
+    link.append(createAvatar(authUser, resolveAuthName(authUser)));
+    label.textContent = x.account;
+  } else {
+    link.insertAdjacentHTML("afterbegin", HEADER_ACCOUNT_ICON);
+    label.textContent = x.login;
+  }
+  link.append(label);
+  link.hidden = authUser === undefined && authApiStatus !== "failed"; // ログイン状態がまだ分からない間は出さない
+}
