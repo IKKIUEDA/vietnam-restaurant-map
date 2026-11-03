@@ -10826,4 +10826,111 @@ body.is-home-top .header-search-icon:active { background: rgba(0, 0, 0, 0.06); }
   padding: 0 22px;
   border-radius: 9px;
   box-shadow: none;
+
+/* ===== チェックインしたお店の「はいかがでしたか?」(js/review-prompt.js) =====
+   スマホは下から出る白い画面、PCは真ん中の小さな画面 */
+.rp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.25s ease;
+}
+.rp-backdrop.is-open { background: rgba(0, 0, 0, 0.4); }
+.rp-sheet {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  padding: 28px 20px calc(20px + env(safe-area-inset-bottom));
+  text-align: center;
+  color: #1d2a22;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+}
+.rp-backdrop.is-open .rp-sheet { transform: translateY(0); }
+@media (min-width: 768px) {
+  .rp-backdrop { align-items: center; }
+  .rp-sheet { max-width: 400px; border-radius: 20px; transform: translateY(24px); opacity: 0; transition: transform 0.25s ease, opacity 0.25s ease; }
+  .rp-backdrop.is-open .rp-sheet { opacity: 1; }
+}
+.rp-photo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 14px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #eef4ee;
+}
+.rp-title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.rp-title strong { font-weight: 800; }
+.rp-sub {
+  margin: 0 0 22px;
+  font-size: 0.8rem;
+  color: #8a938c;
+}
+.rp-tap {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: #6b756e;
+}
+.rp-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 26px;
+}
+.rp-star {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: #d5d9d6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.rp-star.is-on { color: #f5a623; }
+.rp-star:active { transform: scale(0.9); }
+.rp-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 10px;
+}
+.rp-later,
+.rp-rate {
+  min-height: 48px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.rp-later {
+  color: #1d2a22;
+  background: #ffffff;
+  border: 1.5px solid #cfd6d1;
+}
+.rp-rate {
+  color: #ffffff;
+  background: #2e7d32;
+  border: 1.5px solid #2e7d32;
+}
+.rp-rate:disabled {
+  color: #ffffff;
+  background: #d5d9d6;
+  border-color: #d5d9d6;
+  cursor: default;
 }

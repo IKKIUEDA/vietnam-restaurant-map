@@ -2966,6 +2966,18 @@ function loadReviews(state) {
     .then((reviews) => {
       state.reviews = Array.isArray(reviews) ? reviews : [];
       state.status = "ready";
+      // チェックインしたお店の「はいかがでしたか?」(js/review-prompt.js)で星を選んで来たときは、
+      //   その星を入れた状態で、レビューを書く画面を開く(まだ書いていないときだけ)
+      const pending = window.pendingReviewOpen;
+      if (pending && pending.shopId === state.shopId) {
+        window.pendingReviewOpen = null;
+        const mine = authUser && state.reviews.some((r) => r.id === authUser.uid);
+        if (!mine) {
+          state.rating = pending.rating;
+          state.formOpen = true;
+          state.message = null;
+        }
+      }
     })
     .catch((error) => {
       console.warn("レビューの読み込みに失敗:", error);
