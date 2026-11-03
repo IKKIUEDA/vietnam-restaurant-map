@@ -11257,3 +11257,48 @@ body.is-home-top #home-page > .home-intro + .home-section.home-band { margin-top
     border-radius: 50%;
   }
 }
+
+/* ===== ユーザーランク(称号)のバッジと、次のランクまでの進み具合(js/user-rank.js) ===== */
+.urank {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+.urank-name { overflow: hidden; text-overflow: ellipsis; }
+.urank.is-small { padding: 1px 8px; font-size: 0.7rem; }
+.urank-beginner { color: #4f5b53; background: #eef1ee; }
+.urank-explorer { color: #1f5e23; background: #e3f1e4; }
+.urank-contributor { color: #0b5f6b; background: #dff3f5; }
+.urank-expert { color: #8a4b00; background: #fff0d6; }
+.urank-ambassador { color: #ffffff; background: linear-gradient(90deg, #c62d22, #e0702a); }
+.acct-rank { margin: 4px 0 6px; }
+.urank-slot { display: inline-flex; margin-left: 6px; vertical-align: middle; }
+.urank-slot:empty { display: none; }
+.urank-progress {
+  grid-column: 1 / -1;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #ecefe9;
+}
+.urank-progress-title { margin: 0 0 8px; font-size: 0.9rem; font-weight: 800; color: #1d2a22; }
+.urank-progress-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+.urank-progress-name { font-weight: 700; color: #1d2a22; }
+.urank-progress-num { color: #6b756e; }
+.urank-bar { height: 8px; overflow: hidden; background: #eef1ee; border-radius: 4px; }
+.urank-bar span { display: block; height: 100%; background: #2e7d32; border-radius: 4px; }
+.urank-progress-note { margin: 8px 0 0; font-size: 0.8rem; color: #4f5b53; }
+.urank-progress-how { margin: 4px 0 0; font-size: 0.72rem; color: #8a938c; }
+.acct-profile .urank-progress { flex: 0 0 100%; margin-top: 2px; }

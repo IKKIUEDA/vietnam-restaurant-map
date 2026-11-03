@@ -209,7 +209,11 @@ const ui = {
         body: "本サービスに掲載されている情報・写真・レビューの内容については、可能な限り正確な情報を心がけていますが、その正確性・最新性を完全に保証するものではありません。本サービスの利用によって生じたトラブルについて、運営者は責任を負いかねますので、あらかじめご了承ください。",
       },
       {
-        title: "11. 規約の変更について",
+        title: "11. ユーザーランク(称号)について",
+        body: "本サービスでは、公開されているレビュー・写真の投稿数に応じて、ユーザーランク(称号)を自動で表示します(同じお店・同じ日の写真は、まとめて1件として数えます)。非表示になった投稿や削除された投稿は数えず、ランクはその時点の投稿数で決まります。ランクの基準は、予告なく変更することがあります。不正な投稿や、ランクを上げることだけを目的とした投稿があった場合は、その投稿を数えず、称号を取り消すことがあります。称号は投稿の実績を表すもので、運営者を代表したり、運営者が特定の方を推薦したりするものではありません。また、称号に応じた特典はありません。",
+      },
+      {
+        title: "12. 規約の変更について",
         body: "本規約の内容は、必要に応じて変更することがあります。変更後の規約は、本ページに掲載した時点から効力を持ちます。",
       },
     ],
@@ -812,7 +816,11 @@ const ui = {
         body: "We try to keep the information, photos, and reviews on this Service accurate, but we cannot fully guarantee their accuracy or that they are up to date. We are not responsible for any trouble arising from your use of the Service.",
       },
       {
-        title: "11. Changes to these Terms",
+        title: "11. User ranks (titles)",
+        body: "The Service automatically shows a user rank (title) based on the number of public reviews and photos you have posted (photos at the same shop on the same day count as one). Hidden or deleted posts are not counted, and your rank reflects your current number of posts. The criteria may change without notice. If posts are found to be improper or made only to raise a rank, we may exclude them from the count and revoke the title. Titles reflect posting activity only; they do not mean that the holder represents the operator or is endorsed by the operator, and no benefits are attached to them.",
+      },
+      {
+        title: "12. Changes to these Terms",
         body: "These Terms may be changed as needed. Any changes take effect once posted on this page.",
       },
     ],
@@ -1414,7 +1422,11 @@ const ui = {
         body: "Chúng tôi cố gắng đảm bảo thông tin, ảnh và đánh giá trên Dịch vụ là chính xác, nhưng không thể đảm bảo hoàn toàn về tính chính xác hay tính cập nhật của chúng. Chúng tôi không chịu trách nhiệm về bất kỳ rắc rối nào phát sinh từ việc sử dụng Dịch vụ.",
       },
       {
-        title: "11. Thay đổi Điều khoản",
+        title: "11. Hạng người dùng (danh hiệu)",
+        body: "Dịch vụ tự động hiển thị hạng người dùng (danh hiệu) theo số đánh giá và ảnh công khai mà bạn đã đăng (ảnh ở cùng quán trong cùng ngày được tính là 1). Bài đăng bị ẩn hoặc đã xóa không được tính, và hạng được xác định theo số bài đăng hiện tại. Tiêu chí có thể thay đổi mà không báo trước. Nếu phát hiện bài đăng không phù hợp hoặc chỉ nhằm mục đích lên hạng, chúng tôi có thể không tính các bài đó và thu hồi danh hiệu. Danh hiệu chỉ thể hiện thành tích đăng bài, không có nghĩa là người đó đại diện cho đơn vị vận hành hoặc được đơn vị vận hành giới thiệu, và không đi kèm quyền lợi nào.",
+      },
+      {
+        title: "12. Thay đổi Điều khoản",
         body: "Điều khoản này có thể được thay đổi khi cần thiết. Điều khoản sau khi thay đổi sẽ có hiệu lực kể từ khi được đăng trên trang này.",
       },
     ],
