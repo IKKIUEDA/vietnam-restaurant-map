@@ -9256,10 +9256,11 @@ body.view-detail.is-review-writing { overflow: hidden; }
 }
 
 
-/* ===== 横にスライドする並びの「‹ ›」(PC だけ): 写真の左右の端・縦の真ん中に重ねる(js/home.js の hscrollHtml) ===== */
+/* ===== 横にスライドする並びの「‹ ›」(PC だけ): 写真の左右の端・縦の真ん中に重ねる(js/home.js の hscrollHtml) =====
+   ・マウスで操作する画面(PC)なら、ウィンドウを小さくしても出す(指で操作するスマホ・タブレットは、指で横にスクロール) */
 .hscroll { position: relative; }
 .hscroll-arrow { display: none; }
-@media (hover: hover) and (min-width: 900px) {
+@media (hover: hover) and (pointer: fine) {
   .hscroll-arrow {
     position: absolute;
     top: var(--hscroll-mid, 40%);
