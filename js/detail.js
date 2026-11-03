@@ -3105,6 +3105,8 @@ function renderReviews() {
             `<span class="rvx-line1">` +
             userLinkHtml(r.id, r.authorName, "review-author rvx-author", { avatar: 40 }) +
             (isMine ? `<span class="rvx-mine">${esc(x.mine)}</span>` : "") +
+            // ユーザーランクのバッジ(js/user-rank.js。その人の公開されている投稿を数えて、読み終わったら出す)
+            (typeof userRankSlotHtml === "function" ? userRankSlotHtml(r.id) : "") +
             `</span>` +
             `<span class="rvx-meta" data-rv-meta="${esc(r.id)}">${esc(reviewerMetaText(r.id))}</span>` +
             (hasMenu

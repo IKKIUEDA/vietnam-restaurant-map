@@ -309,6 +309,12 @@ function setAccountMessage(text) {
 let accountAdminMessage = "";
 let accountGoodbye = ""; // アカウントを削除したあとのお知らせ(ログアウトした画面に出す)
 
+// プロフィールの名前の下に出す、ユーザーランクのバッジ(js/user-rank.js。読み込みが終わってから出す)
+function accountRankBadge(data) {
+  if (!data || data.status !== "ready" || typeof userRankFor !== "function") return "";
+  return `<div class="acct-rank">${userRankBadgeHtml(userRankFor(countUserPosts(data.photos, data.reviews)))}</div>`;
+}
+
 function loadAccountData(uid, withCheckins) {
   if (accountData && accountData.uid === uid && accountData.withCheckins === withCheckins) return;
   const data = { uid, withCheckins, status: "loading", profile: null, photos: [], reviews: [], checkins: [] };
@@ -543,9 +549,11 @@ function renderAccountPage() {
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${countriesHtml(data.profile)}${userStatsHtml(uid, data.checkins.length)}</div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${accountRankBadge(data)}${countriesHtml(data.profile)}${userStatsHtml(uid, data.checkins.length)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
+    // ユーザーランク: 次のランクまでの進み具合(自分のプロフィールだけ。js/user-rank.js)
+    (data.status === "ready" && typeof userRankProgressHtml === "function" ? userRankProgressHtml(countUserPosts(data.photos, data.reviews)) : "") +
     `</div>` +
     // プロフィールの編集 / シェア / アカウント設定(歯車)
     `<div class="acct-action-row">` +
@@ -984,7 +992,7 @@ function renderUserPage(uid) {
     accountHeader(name || x.title, backHref) +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
-    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${countriesHtml(data.profile)}${userStatsHtml(uid)}</div>` +
+    `<div class="acct-profile-body"><h3 class="acct-name">${esc(name)}</h3>${accountRankBadge(data)}${countriesHtml(data.profile)}${userStatsHtml(uid)}</div>` +
     // 自己紹介は、アイコンと名前の下に、カードの幅いっぱいで出す
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
