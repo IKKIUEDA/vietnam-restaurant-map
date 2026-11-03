@@ -11228,3 +11228,32 @@ body.is-home-top #home-page > .home-intro + .home-section.home-band { margin-top
   /* トップ画像のすぐ下に、赤い紹介の欄をつなげる(灰色の帯がなくなった分) */
   body.is-home-top .home-intro { margin-top: 0; }
 }
+
+/* ===== PC だけ: 上の帯の右側の「ログイン」/ ログイン中は アイコン +「アカウント」(js/auth.js の renderHeaderAccount) ===== */
+.header-account { display: none; }
+@media (min-width: 900px) {
+  .header-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1d2a22;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: 20px;
+    pointer-events: auto;
+  }
+  .header-account:hover { background: rgba(0, 0, 0, 0.05); }
+  .header-account[hidden] { display: none; }
+  .header-account .auth-avatar,
+  .header-account img,
+  .header-account > span:first-child:not(.header-account-label) {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+}
