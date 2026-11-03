@@ -11193,3 +11193,37 @@ body.is-home-search-focus .home-search-band .home-search-box {
 }
 /* 赤い紹介の欄のすぐ下の薄い青緑の帯(できること)は、すき間なくつなげる(スマホ・PC 共通) */
 body.is-home-top #home-page > .home-intro + .home-section.home-band { margin-top: 0; }
+
+/* ===== PC(幅 900px 以上)のホーム: 上の帯のロゴの右に、いつも検索窓を出す(js/home.js の ensureHeaderSearch)
+   ・右上の🔍と、トップ画像の下の検索窓(灰色の帯)は出さない(スマホは今まで通り)
+   ・検索窓を押すと、検索窓だけを明るく残して、ほかを暗くする ===== */
+.hsearch-shade { display: none; }
+@media (min-width: 900px) {
+  body.is-home-top .header-search-icon { display: none; }
+  body.is-home-top .home-search-band { display: none; }
+  body.is-home-top .hsearch {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    max-width: 640px;
+    margin: 0 auto 0 8px;
+    pointer-events: auto;
+  }
+  body.is-home-top .hsearch-box { height: 44px; padding: 0 16px; border-radius: 10px; }
+  body.is-home-top.is-hsearch-focus .hsearch-shade {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    background: rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+    animation: home-shade-in 0.18s ease-out;
+  }
+  body.is-home-top .hsearch { position: relative; z-index: 2; }
+  body.is-home-top.is-hsearch-focus .hsearch-box {
+    background: #ffffff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  }
+  /* トップ画像のすぐ下に、赤い紹介の欄をつなげる(灰色の帯がなくなった分) */
+  body.is-home-top .home-intro { margin-top: 0; }
+}
