@@ -838,6 +838,41 @@ function loadUserStats(uid, force) {
     });
   return st;
 }
+// 新しく登録した人は、運営者の公式アカウントを自動でフォローする(フォローはいつでも解除できる)
+//   ・「新しく登録した」= アカウントを作ってから10分以内に、はじめてこの処理を通ったとき
+//   ・一度処理したアカウントは、この端末に印を付けて(localStorage「vf_autofollow_ユーザーID」)、二度とフォローし直さない
+//     (自分で解除した人を、またフォローしてしまわないように)
+//   ・運営者がログインしたときは、公式アカウントとして自分の uid を登録する
+function autoFollowOfficial() {
+  const user = authUser;
+  if (!user) return;
+  if (typeof isAdminUser === "function" && isAdminUser(user)) {
+    getProfileApi()
+      .then((api) => api.registerOfficialUid())
+      .catch((error) => console.warn("公式アカウントの登録に失敗:", error));
+    return;
+  }
+  const created = Date.parse((user.metadata && user.metadata.creationTime) || "");
+  if (!created || Date.now() - created > 10 * 60 * 1000) return;
+  const key = "vf_autofollow_" + user.uid;
+  try {
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+  } catch (e) {
+    return; // 覚えておけない環境では、やり直しを防げないので、しない
+  }
+  getProfileApi()
+    .then(async (api) => {
+      const official = await api.fetchOfficialUid();
+      if (!official || official === user.uid || !authUser || authUser.uid !== user.uid) return;
+      await api.follow(official);
+      userStatsCache.clear();
+      followListCache.clear();
+    })
+    .catch((error) => console.warn("公式アカウントのフォローに失敗:", error));
+}
+window.addEventListener("auth-changed", autoFollowOfficial);
+
 // ログイン状態が変わったら(フォロー中かどうかが変わるので)、数と一覧を読み直せるようにする
 window.addEventListener("auth-changed", () => {
   userStatsCache.clear();
