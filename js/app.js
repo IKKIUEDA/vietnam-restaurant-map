@@ -800,6 +800,11 @@ const entries = restaurants.map((shop) => {
   // ポップアップが開いたお店(ピンをクリックした場合も含む)を「選択中」にする。閉じたら解除する
   //   ポップアップが開いている間だけ、一覧に has-selection を付けて、選択中でないカードを薄くする(CSS)
   marker.on("popupopen", (event) => {
+    // スマホの地図で、下にお店のカードが出ているとき(js/map-cards.js)は、吹き出しの代わりに、そのお店のカードへ移る
+    if (typeof window.mapCardsHandlePin === "function" && window.mapCardsHandlePin(entry)) {
+      marker.closePopup();
+      return;
+    }
     // 選んだお店を、地図の真ん中に動かす(ポップアップの大きさが決まってから)
     requestAnimationFrame(() => centerOnSelectedShop(marker, event.popup));
     if (typeof recordRecentShop === "function") recordRecentShop(shop.id); // ホームの「あなたへのおすすめ」のため(このブラウザの中だけ)
