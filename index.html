@@ -54,7 +54,7 @@
     <!-- このアプリ独自のスタイル -->
     <!-- ?v=… は、更新したときに、ブラウザが古いファイルを使い回さないための番号。
          ファイルを直して公開するときは、この番号(css と js すべて)を新しくしてください -->
-    <link rel="stylesheet" href="css/style.css?v=20261101zd" />
+    <link rel="stylesheet" href="css/style.css?v=20261103b" />
   </head>
   <body>
     <!-- 開いたときに、地図の画面が一瞬だけ見えないようにする
@@ -109,6 +109,83 @@
         var el = document.getElementById("app-loading");
         if (el) el.classList.add("is-done");
       }, 10000);
+    </script>
+
+    <!-- トップページを開いた最初だけ: 赤い背景に、ベトナムフーディーのロゴを約2秒出してから、ふわっと消す
+         ・同じタブで、もう一度ホームに戻ったとき・再読み込みしたときは出さない(sessionStorage に記録)
+         ・お店のページ・地図・お問い合わせなど、トップ以外のURLで開いたときは出さない
+         ・画面をタップすると、すぐに消える -->
+    <style>
+      #vf-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 5001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #c62d22;
+        animation: vf-splash-out 0.4s ease 1.6s forwards;
+      }
+      #vf-splash.is-skip {
+        animation: vf-splash-out 0.25s ease forwards;
+      }
+      #vf-splash .vf-splash-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 136px;
+        height: 136px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+        animation: vf-splash-in 0.4s ease both;
+      }
+      #vf-splash .vf-splash-logo img {
+        width: auto;
+        height: 98px;
+      }
+      @keyframes vf-splash-in {
+        from { opacity: 0; transform: scale(0.85); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes vf-splash-out {
+        to { opacity: 0; visibility: hidden; }
+      }
+      /* 動きを減らす設定の人には、大きさの変化をなくす(表示して消えるだけ) */
+      @media (prefers-reduced-motion: reduce) {
+        #vf-splash .vf-splash-logo { animation: none; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          // トップページ(パスがサイトの最初で、URLに ?shop= などが付いていない)かどうか
+          if (/(contact|privacy|about)(\.html)?\/?$/i.test(location.pathname)) return;
+          var params = new URLSearchParams(location.search);
+          var other = false;
+          params.forEach(function (v, k) {
+            if (!/^(utm_.*|fbclid|gclid)$/i.test(k)) other = true;
+          });
+          if (other) return;
+          if (sessionStorage.getItem("vf_splash_shown")) return;
+          sessionStorage.setItem("vf_splash_shown", "1");
+        } catch (e) {
+          return; // 記録が使えない環境では、毎回出ないように、出さない
+        }
+        var el = document.createElement("div");
+        el.id = "vf-splash";
+        el.setAttribute("aria-hidden", "true");
+        el.innerHTML = '<span class="vf-splash-logo"><img src="images/logo.png" width="158" height="208" alt="" /></span>';
+        document.body.appendChild(el);
+        var remove = function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        };
+        el.addEventListener("click", function () {
+          el.classList.add("is-skip");
+          setTimeout(remove, 300);
+        });
+        setTimeout(remove, 2100);
+      })();
     </script>
 
     <header>
@@ -265,48 +342,48 @@
 
     <!-- ピンをまとめて表示するプラグイン Leaflet.markercluster(Leaflet 本体のあとに読み込む) -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script src="js/gl-map.js?v=20261101zd"></script>
+    <script src="js/gl-map.js?v=20261103b"></script>
 
     <!-- 読み込む順番が大事: 言語の部品 → データ → アプリ本体 → 詳細ページ -->
-    <script src="js/i18n.js?v=20261101zd"></script>
-    <script src="js/data.js?v=20261101zd"></script>
-    <script src="js/app.js?v=20261101zd"></script>
-    <script src="js/live-location.js?v=20261101zd"></script>
-    <script src="js/map-guide.js?v=20261101zd"></script>
-    <script src="js/tour.js?v=20261101zd"></script>
+    <script src="js/i18n.js?v=20261103b"></script>
+    <script src="js/data.js?v=20261103b"></script>
+    <script src="js/app.js?v=20261103b"></script>
+    <script src="js/live-location.js?v=20261103b"></script>
+    <script src="js/map-guide.js?v=20261103b"></script>
+    <script src="js/tour.js?v=20261103b"></script>
     <!-- 地図の目印(大きな駅・大学・観光地・空港の名前。クリックしても開かない) -->
     <!-- 駅の鉄道会社の札 -->
-    <script src="js/station-lines.js?v=20261101zd"></script>
-    <script src="js/landmark-areas.js?v=20261101zd"></script>
-    <script src="js/landmarks.js?v=20261101zd"></script>
+    <script src="js/station-lines.js?v=20261103b"></script>
+    <script src="js/landmark-areas.js?v=20261103b"></script>
+    <script src="js/landmarks.js?v=20261103b"></script>
     <!-- ヘッダーのログイン表示(Firebase の準備ができたら window.authApi を使う。i18n.js と app.js のあと、detail.js の前に読み込む) -->
-    <script src="js/auth.js?v=20261101zd"></script>
+    <script src="js/auth.js?v=20261103b"></script>
     <!-- ログインのモーダル(Google / メールアドレス+パスワード)。auth.js のあと、detail.js の前に読み込む -->
-    <script src="js/auth-modal.js?v=20261101zd"></script>
+    <script src="js/auth-modal.js?v=20261103b"></script>
     <!-- 店舗詳細ページとURLルーティング(app.js・auth.js・auth-modal.js の部品を使うので、それらのあとに読み込む) -->
     <!-- ホーム(トップページ)。detail.js(ページの切り替え)より前に読み込む -->
-    <script src="js/home.js?v=20261101zd"></script>
-<script src="js/feature-guide.js?v=20261101zd"></script>
-<script src="js/home-intro.js?v=20261101zd"></script>
-<script src="js/drag-scroll.js?v=20261101zd"></script>
-<script src="js/home-reveal.js?v=20261101zd"></script>
-<script src="js/text-editor.js?v=20261101zd"></script>
-<script src="js/img-loading.js?v=20261101zd"></script>
-    <script src="js/map-quick.js?v=20261101zd"></script>
+    <script src="js/home.js?v=20261103b"></script>
+<script src="js/feature-guide.js?v=20261103b"></script>
+<script src="js/home-intro.js?v=20261103b"></script>
+<script src="js/drag-scroll.js?v=20261103b"></script>
+<script src="js/home-reveal.js?v=20261103b"></script>
+<script src="js/text-editor.js?v=20261103b"></script>
+<script src="js/img-loading.js?v=20261103b"></script>
+    <script src="js/map-quick.js?v=20261103b"></script>
     <!-- マイリスト(行きたいエリアと、探したいお店の種類)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/todo.js?v=20261101zd"></script>
+    <script src="js/todo.js?v=20261103b"></script>
     <!-- アカウント・プロフィール(画面の下の「アカウント」タブ・「?user=ID」)。home.js のあと、detail.js より前に読み込む -->
-    <script src="js/avatar-crop.js?v=20261101zd"></script>
-    <script src="js/account.js?v=20261101zd"></script>
-    <script src="js/auth-page.js?v=20261101zd"></script>
-    <script src="js/people.js?v=20261101zd"></script>
-    <script src="js/settings.js?v=20261101zd"></script>
+    <script src="js/avatar-crop.js?v=20261103b"></script>
+    <script src="js/account.js?v=20261103b"></script>
+    <script src="js/auth-page.js?v=20261103b"></script>
+    <script src="js/people.js?v=20261103b"></script>
+    <script src="js/settings.js?v=20261103b"></script>
     <!-- 特集のページ(近く・エリアで絞り込み)。todo.js のあとに読み込む(お店のカードを使う) -->
-    <script src="js/feature.js?v=20261101zd"></script>
-    <script src="js/contact.js?v=20261101zd"></script>
-    <script src="js/translate.js?v=20261101zd"></script>
-    <script src="js/detail.js?v=20261101zd"></script>
-    <script src="js/onboard.js?v=20261101zd"></script>
+    <script src="js/feature.js?v=20261103b"></script>
+    <script src="js/contact.js?v=20261103b"></script>
+    <script src="js/translate.js?v=20261103b"></script>
+    <script src="js/detail.js?v=20261103b"></script>
+    <script src="js/onboard.js?v=20261103b"></script>
 
     <!--
       Firebase(Authentication・Firestore)との接続: プロジェクトは vietnam-foodie です。
