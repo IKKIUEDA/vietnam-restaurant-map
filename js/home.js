@@ -39,6 +39,7 @@ const HOME_TEXT = {
     areaListLead: "エリアを選ぶと、その駅の近くのお店を地図で探せます",
     back: "戻る",
     areaCount: (n) => `${n}件`,
+    areaSpotCount: (n) => `ベトナムスポット ${n}件`,
     featureTitle: "特集",
     featureSub: "テーマ別・目的別でベトナムの魅力を発掘しよう",
     featureCafeTag: "カフェ",
@@ -84,6 +85,7 @@ const HOME_TEXT = {
     areaListLead: "Pick an area to find shops near that station on the map",
     back: "Back",
     areaCount: (n) => (n === 1 ? "1 shop" : `${n} shops`),
+    areaSpotCount: (n) => (n === 1 ? "1 Vietnamese spot" : `${n} Vietnamese spots`),
     featureTitle: "Features",
     featureSub: "Discover Vietnam by theme and purpose",
     featureCafeTag: "Cafes",
@@ -129,6 +131,7 @@ const HOME_TEXT = {
     areaListLead: "Chọn khu vực để tìm quán gần ga đó trên bản đồ",
     back: "Quay lại",
     areaCount: (n) => `${n} quán`,
+    areaSpotCount: (n) => `${n} địa điểm Việt Nam`,
     featureTitle: "Chủ đề",
     featureSub: "Khám phá nét hấp dẫn của Việt Nam theo chủ đề và mục đích",
     featureCafeTag: "Cà phê",
@@ -392,11 +395,14 @@ function typeIllustHtml(key, px) {
     `onerror="this.replaceWith(document.createRange().createContextualFragment(${esc(JSON.stringify(homeIcon(key, Math.round(px * 0.6))))}))"></span>`
   );
 }
-function homeAreaCount(area) {
+function homeAreaShops(area) {
   const word = normalizeText(area.station + "駅");
   return restaurants.filter(
     (shop) => getSearchText(shop).includes(word) || distanceMeters(area.lat, area.lng, shop.lat, shop.lng) <= SEARCH_NEAR_STATION_M
-  ).length;
+  );
+}
+function homeAreaCount(area) {
+  return homeAreaShops(area).length;
 }
 // エリアのカード(ホームの横並びと、「もっと見る」の一覧で同じものを使う)
 function homeAreaCardsHtml() {
@@ -478,8 +484,45 @@ function renderAreaListPage() {
     `<h2 class="todo-create-title">${esc(h.areaListTitle)}</h2></div>` +
     `<section class="home-section area-list-section">` +
     `<p class="area-list-lead">${esc(h.areaListLead)}</p>` +
-    `<ul class="area-list-grid">${homeAreaCardsHtml()}</ul>` +
+    `<ul class="area-list-grid">${areaListItemsHtml()}</ul>` +
     `</section>`;
+}
+// エリア一覧のページのカード: 写真 → エリア名 → ベトナムスポットの合計 → 内訳(レストラン・カフェ・食材店の丸いボタン)
+//   ・写真・エリア名を押すと、今まで通り地図で「○○駅」を検索(全部の種類)
+//   ・内訳のボタンを押すと、地図で「○○駅」を検索して、その種類だけを出す。0件の種類は出さない
+function areaListItemsHtml() {
+  const h = homeText();
+  const kinds = [
+    ["restaurant", h.entryRestaurant],
+    ["cafe", h.entryCafe],
+    ["grocery", h.entryGrocery],
+  ];
+  return HOME_AREAS.map((a) => ({ a, shops: homeAreaShops(a) }))
+    .filter((x) => x.shops.length > 0)
+    .map(({ a, shops }) => {
+      const chips = kinds
+        .map(([key, label]) => [key, label, shops.filter((shop) => shopType(shop) === key).length])
+        .filter(([, , n]) => n > 0)
+        .map(
+          ([key, label, n]) =>
+            `<button type="button" class="area-chip" data-area-station="${esc(a.station)}" data-area-type="${key}">${esc(label)}<span class="area-chip-n">${n}</span></button>`
+        )
+        .join("");
+      return (
+        `<li class="area-item">` +
+        `<button type="button" class="area-item-main" data-home-area="${esc(a.station)}">` +
+        `<span class="area-item-photo" style="background-color:${a.color}">` +
+        (a.image ? `<img src="${esc(a.image)}" alt="" loading="lazy" width="480" height="336">` : "") +
+        (a.image && a.credit ? `<span class="home-area-credit">${esc(a.credit)}</span>` : "") +
+        `</span>` +
+        `<span class="area-item-name">${esc(pick(a.name))}</span>` +
+        `<span class="area-item-count">${esc(h.areaSpotCount(shops.length))}</span>` +
+        `</button>` +
+        (chips ? `<div class="area-chips">${chips}</div>` : "") +
+        `</li>`
+      );
+    })
+    .join("");
 }
 // 地図の画面に移って、「○○駅」で検索する(ホームの検索窓から探したときと同じ)
 function openMapWithSearch(q) {
@@ -853,6 +896,13 @@ homePage.addEventListener("click", (event) => {
   if (arrow) {
     const list = homePage.querySelector(".home-areas");
     if (list) list.scrollBy({ left: Number(arrow.dataset.areaScroll) * list.clientWidth * 0.8, behavior: "smooth" });
+    return;
+  }
+  // エリア一覧の内訳のボタン: その駅のまわりの、その種類のお店だけを地図で出す
+  const areaChip = event.target.closest("[data-area-type]");
+  if (areaChip) {
+    openMapWithSearch(areaChip.dataset.areaStation + "駅");
+    selectType(areaChip.dataset.areaType);
     return;
   }
   const areaBtn = event.target.closest("[data-home-area]");
