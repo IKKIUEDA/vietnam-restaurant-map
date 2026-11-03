@@ -10826,6 +10826,7 @@ body.is-home-top .header-search-icon:active { background: rgba(0, 0, 0, 0.06); }
   padding: 0 22px;
   border-radius: 9px;
   box-shadow: none;
+}
 
 /* ===== チェックインしたお店の「はいかがでしたか?」(js/review-prompt.js) =====
    スマホは下から出る白い画面、PCは真ん中の小さな画面 */
