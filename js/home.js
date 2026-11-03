@@ -952,6 +952,7 @@ homePage.addEventListener("submit", (event) => {
   if (!q) return;
   openMapWithSearch(q);
   input.value = "";
+  input.blur(); // 暗くした画面を元に戻す
 });
 
 // ---------------------------------------------------------------------
@@ -1062,34 +1063,99 @@ document.getElementById("lang-select").addEventListener("change", () => {
 });
 
 // ホームのトップだけ: 画面の右上(言語の切り替えの左)に、🔍 のボタンを出す(スマホ・PC 共通。CSS で、ホームのトップのときだけ見える)
-//   ・押すと、トップ画像の下の検索バーまで移って、すぐ文字を打てる状態にする(下にスクロールしていても使える)
+//   ・押すと、その場(ロゴの右)に検索欄が出て、すぐ文字を打てる。Enter(スマホはキーボードの「検索」)で、地図の画面で探す
+//   ・もう一度 🔍 を押す: 文字が入っていれば探す / 空なら閉じる。Esc・空のままほかを押したときも閉じる
 function ensureHeaderSearch() {
+  const header = document.querySelector("header");
+  const brand = document.getElementById("brand-link");
   const actions = document.querySelector("header .header-actions");
-  if (!actions) return;
+  if (!header || !brand || !actions) return;
   const h = homeText();
   let btn = document.getElementById("header-search-btn");
+  let form = document.getElementById("hsearch");
   if (!btn) {
+    form = document.createElement("form");
+    form.id = "hsearch";
+    form.className = "hsearch";
+    form.setAttribute("role", "search");
+    form.innerHTML =
+      `<label class="visually-hidden" for="hsearch-input"></label>` +
+      `<span class="hsearch-box">${homeIcon("search", 18)}<input id="hsearch-input" type="search" autocomplete="off" enterkeyhint="search"></span>`;
+    brand.insertAdjacentElement("afterend", form);
     btn = document.createElement("button");
     btn.type = "button";
     btn.id = "header-search-btn";
     btn.className = "header-search-icon";
     btn.innerHTML = homeIcon("search", 24);
     actions.insertBefore(btn, actions.firstChild);
+    const input = form.querySelector("input");
+    const open = () => {
+      document.body.classList.add("is-hsearch-open");
+      btn.setAttribute("aria-expanded", "true");
+      input.focus(); // iPhone でキーボードが出るよう、押したその場で focus する
+    };
+    const close = () => {
+      document.body.classList.remove("is-hsearch-open");
+      btn.setAttribute("aria-expanded", "false");
+      input.value = "";
+      input.blur();
+    };
+    const search = () => {
+      const q = input.value.trim();
+      if (!q) return;
+      close();
+      openMapWithSearch(q);
+    };
+    // 🔍 を押したとき、検索欄から先に focus が外れて閉じてしまわないように
+    btn.addEventListener("mousedown", (event) => {
+      if (document.body.classList.contains("is-hsearch-open")) event.preventDefault();
+    });
     btn.addEventListener("click", () => {
-      const input = document.getElementById("home-search-input");
-      if (!input) return;
-      // iPhone では、押したその場で focus しないとキーボードが出ないので、先に focus してから位置を合わせる
-      input.focus({ preventScroll: true });
-      // ホームは #home-view の中でスクロールする(その中で、検索バーの帯が上の帯のすぐ下に来るまで動かす)
-      const band = input.closest(".home-search-band") || input;
-      const header = document.querySelector("header");
-      const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
-      const delta = band.getBoundingClientRect().top - Math.max(0, headerBottom);
-      const view = document.getElementById("home-view");
-      const scroller = view && view.scrollHeight > view.clientHeight ? view : window;
-      scroller.scrollBy({ top: delta, behavior: "smooth" });
+      if (!document.body.classList.contains("is-hsearch-open")) open();
+      else if (input.value.trim()) search();
+      else close();
+    });
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      search();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") close();
+    });
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (document.activeElement !== input && !input.value.trim()) close();
+      }, 150);
     });
   }
+  const label = form.querySelector("label");
+  label.textContent = h.searchLabel;
+  form.querySelector("input").placeholder = h.searchLabel;
   btn.setAttribute("aria-label", h.searchLabel);
+  btn.setAttribute("aria-controls", "hsearch");
   btn.title = h.searchLabel;
 }
+
+// ホームの真ん中の検索窓: 押すと、検索窓だけを明るく残して、ほかを暗くする(ほかを押す・Esc・探すと、元に戻る)
+(function homeSearchSpotlight() {
+  const shade = document.createElement("div");
+  shade.className = "home-search-shade";
+  shade.setAttribute("aria-hidden", "true");
+  document.body.appendChild(shade);
+  const isInput = (el) => el && el.id === "home-search-input";
+  // 暗いところを押したら、元に戻す(下にあるボタンなどは押されないように)
+  shade.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    const input = document.getElementById("home-search-input");
+    if (input) input.blur();
+  });
+  document.addEventListener("focusin", (event) => {
+    if (isInput(event.target)) document.body.classList.add("is-home-search-focus");
+  });
+  document.addEventListener("focusout", (event) => {
+    if (isInput(event.target)) document.body.classList.remove("is-home-search-focus");
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isInput(event.target)) event.target.blur();
+  });
+})();
