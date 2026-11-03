@@ -581,15 +581,19 @@ function renderHome() {
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
     `</section>` +
     `</div>` +
-    // ベトナムフーディーの紹介(赤い背景。js/home-intro.js)
-    (typeof homeIntroHtml === "function" ? homeIntroHtml() : "") +
-    // 検索窓は、画像の下に出す(スマホでは「探す」ボタンを隠し、キーボードの「検索」で探す)
+    // 検索窓: トップ画像のすぐ下。薄い灰色の帯の上に、白い角丸の検索バー(スマホ・PC 共通)
+    //   ・右上の🔍(ensureHeaderSearch)を押すと、ここに移って、すぐ入力できる
+    //   ・スマホでは「探す」ボタンを隠し、キーボードの「検索」で探す
+    `<div class="home-search-band">` +
     `<form class="home-search" role="search">` +
     `<label class="visually-hidden" for="home-search-input">${esc(h.searchLabel)}</label>` +
     `<span class="home-search-box">${homeIcon("search", 20)}` +
     `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(narrowScreen ? h.searchPlaceholderShort : h.searchPlaceholder)}" enterkeyhint="search">` +
     `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
     `</form>` +
+    `</div>` +
+    // ベトナムフーディーの紹介(赤い背景。js/home-intro.js)
+    (typeof homeIntroHtml === "function" ? homeIntroHtml() : "") +
     // ベトナムフーディーでできること(js/feature-guide.js)と、トラベル・リスト(js/todo.js): 検索窓のすぐ下、カテゴリーから探すの上
     (typeof featureGuideHtml === "function" ? featureGuideHtml() : "") +
     (typeof renderTodoSection === "function" ? renderTodoSection() : "") +
@@ -1007,50 +1011,35 @@ document.getElementById("lang-select").addEventListener("change", () => {
   }, 0);
 });
 
-// PC のホームだけ: 画面の上の帯(ロゴ・サイト名の右横)に、検索バーを出す(CSS で、PC のホームのときだけ見える)
-//   ・下にスクロールしても、上の帯といっしょに出たまま
-//   ・探すと、ホームの検索窓と同じく、地図の画面で結果を出す
+// ホームのトップだけ: 画面の右上(言語の切り替えの左)に、🔍 のボタンを出す(スマホ・PC 共通。CSS で、ホームのトップのときだけ見える)
+//   ・押すと、トップ画像の下の検索バーまで移って、すぐ文字を打てる状態にする(下にスクロールしていても使える)
 function ensureHeaderSearch() {
-  const header = document.querySelector("header");
-  const brand = document.getElementById("brand-link");
-  if (!header || !brand) return;
+  const actions = document.querySelector("header .header-actions");
+  if (!actions) return;
   const h = homeText();
-  let form = document.getElementById("header-search");
-  if (!form) {
-    form = document.createElement("form");
-    form.id = "header-search";
-    form.className = "header-search";
-    form.setAttribute("role", "search");
-    brand.insertAdjacentElement("afterend", form);
-    // 検索バーを押すと、検索バーだけを明るく残して、ほかを暗くする(もう一度ほかを押すか、Esc で元に戻る)
-    const shade = document.createElement("div");
-    shade.className = "header-search-shade";
-    shade.setAttribute("aria-hidden", "true");
-    header.appendChild(shade);
-    shade.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-      const input = form.querySelector("input");
-      if (input) input.blur();
-    });
-    form.addEventListener("focusin", () => document.body.classList.add("is-header-search-focus"));
-    form.addEventListener("focusout", () => document.body.classList.remove("is-header-search-focus"));
-    form.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") event.target.blur();
-    });
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const input = form.querySelector("input");
-      const q = input.value.trim();
-      if (!q) return;
-      openMapWithSearch(q);
-      input.value = "";
-      input.blur();
+  let btn = document.getElementById("header-search-btn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "header-search-btn";
+    btn.className = "header-search-icon";
+    btn.innerHTML = homeIcon("search", 24);
+    actions.insertBefore(btn, actions.firstChild);
+    btn.addEventListener("click", () => {
+      const input = document.getElementById("home-search-input");
+      if (!input) return;
+      // iPhone では、押したその場で focus しないとキーボードが出ないので、先に focus してから位置を合わせる
+      input.focus({ preventScroll: true });
+      // ホームは #home-view の中でスクロールする(その中で、検索バーの帯が上の帯のすぐ下に来るまで動かす)
+      const band = input.closest(".home-search-band") || input;
+      const header = document.querySelector("header");
+      const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+      const delta = band.getBoundingClientRect().top - Math.max(0, headerBottom);
+      const view = document.getElementById("home-view");
+      const scroller = view && view.scrollHeight > view.clientHeight ? view : window;
+      scroller.scrollBy({ top: delta, behavior: "smooth" });
     });
   }
-  const current = form.querySelector("input") ? form.querySelector("input").value : "";
-  form.innerHTML =
-    `<label class="visually-hidden" for="header-search-input">${esc(h.searchLabel)}</label>` +
-    `<span class="header-search-box">${homeIcon("search", 18)}` +
-    `<input id="header-search-input" type="search" autocomplete="off" placeholder="${esc(h.searchPlaceholder)}" enterkeyhint="search"></span>`;
-  form.querySelector("input").value = current;
+  btn.setAttribute("aria-label", h.searchLabel);
+  btn.title = h.searchLabel;
 }
