@@ -11170,3 +11170,26 @@ body.is-home-search-focus .home-search-band .home-search-box {
 /* 検索窓の「探す」ボタンは出さない(Enter・キーボードの「検索」で探す) */
 .home-search-band .home-search-btn { display: none; }
 .home-search-band .home-search-box { padding-right: 16px; }
+
+/* ===== PC で画面(ウィンドウ)を小さめにしたとき(幅 600〜899px): トップ画像・検索バーの帯・赤い紹介の欄を、
+   画面の横幅いっぱいに出す(左右に中途半端な余白が出ないように。幅 900px 以上の PC と同じ形) ===== */
+@media (min-width: 600px) and (max-width: 899px) {
+  body.is-home-top .home-top {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    border-radius: 0;
+  }
+  body.is-home-top .home-search-band {
+    margin-top: 0;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 16px 24px;
+  }
+  body.is-home-top .home-intro {
+    margin: 0 calc(50% - 50vw);
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+/* 赤い紹介の欄のすぐ下の薄い青緑の帯(できること)は、すき間なくつなげる(スマホ・PC 共通) */
+body.is-home-top #home-page > .home-intro + .home-section.home-band { margin-top: 0; }
