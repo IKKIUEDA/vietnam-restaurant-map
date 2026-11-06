@@ -11302,3 +11302,44 @@ body.is-home-top #home-page > .home-intro + .home-section.home-band { margin-top
 .urank-progress-note { margin: 8px 0 0; font-size: 0.8rem; color: #4f5b53; }
 .urank-progress-how { margin: 4px 0 0; font-size: 0.72rem; color: #8a938c; }
 .acct-profile .urank-progress { flex: 0 0 100%; margin-top: 2px; }
+
+/* ===== ホームのトップ画像: フォー・ベトナムコーヒー・バインミーの画像(運営者が用意。画像の中の文字は消してある) =====
+   ・スマホ(599px 以下): 縦長の画像(images/hero-foodie-sp.jpg)を、画像と同じ縦横の比率で出す(画面に入りきる高さまで)
+   ・幅 600px 以上: 横長の画像(images/hero-foodie-pc.jpg)。見出しは左側の緑の壁の上
+   ・見出し「日本の中にある、ベトナムを探そう。」は、画像のデザインに合わせて、大きな白い文字の2行 */
+body.is-home-top .home-top {
+  box-sizing: border-box;
+  /* 画像と同じ縦横の比率。ただし、画面に入りきる高さまで(横幅は、いつも画面いっぱい) */
+  height: min(calc(100vw * 1672 / 941), calc(100svh - 60px - 64px));
+  min-height: 420px;
+  padding: 34% 0 0;
+  background-color: #1d3a2c;
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 45%),
+    url("../images/hero-foodie-sp.jpg");
+  background-size: cover;
+  background-position: 50% 100%;
+}
+body.is-home-top .home-top .home-hero { padding: 0 26px; }
+body.is-home-top .home-top .home-catch {
+  font-size: clamp(1.9rem, 9.4vw, 3rem);
+  line-height: 1.32;
+  letter-spacing: 0.02em;
+  white-space: normal;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+}
+body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
+@media (min-width: 600px) {
+  body.is-home-top .home-top {
+    height: min(calc(100vw * 941 / 1672), calc(100svh - 72px));
+    min-height: 360px;
+    padding: 17% 0 0;
+    background-image:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 55%),
+      url("../images/hero-foodie-pc.jpg");
+    background-position: 50% 50%;
+  }
+  body.is-home-top .home-top .home-hero { padding: 0 6%; }
+  body.is-home-top .home-top .home-catch { font-size: clamp(2.2rem, 4.9vw, 4.6rem); }
+  body.is-home-top .home-top .home-lead { font-size: 1.05rem; }
+}
