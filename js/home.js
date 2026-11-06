@@ -592,7 +592,6 @@ function renderHome() {
   const t = ui[currentLang];
   const count = (type) => restaurants.filter((s) => shopType(s) === type).length;
   const hasCafe = count("cafe") > 0;
-  const lead = `${t.resultHeading(t.resultWhere("default"), t.resultWhat(null, false))}`;
 
   const entryButton = (key, label) =>
     `<button type="button" class="home-entry home-entry-${key}" data-home-action="${key}">` +
@@ -623,7 +622,7 @@ function renderHome() {
     `<section class="home-hero">` +
     // 見出しは、トップ画像のデザインに合わせて2行(日本語は「、」のあとで改行)
     `<h2 class="home-catch">${esc(h.catch).replace("、", "、<br>")}</h2>` +
-    `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
+    // 見出しの下の説明(「関東のベトナム料理・食材店・カフェ ○件」)は出さない(トップ画像は見出しだけにする)
     `</section>` +
     `</div>` +
     // 検索窓: トップ画像のすぐ下。薄い灰色の帯の上に、白い角丸の検索バー(スマホ・PC 共通)
