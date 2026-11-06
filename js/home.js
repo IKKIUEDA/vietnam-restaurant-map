@@ -617,10 +617,12 @@ function renderHome() {
     `<span class="home-feature-sub">${esc(sub)}</span></span></button>`;
 
   homePage.innerHTML =
-    // 上の画像の部分(画像: 運営者が用意したベトナムの街並みのイラスト。images/hero-vietnam-street-v2.jpg)
+    // 上の画像の部分(画像: 運営者が用意した、フォー・ベトナムコーヒー・バインミーの画像。スマホは縦長 images/hero-foodie-sp.jpg、
+    //   幅 600px 以上は横長 images/hero-foodie-pc.jpg。画像の中の文字は消してあり、見出しはこの文字で重ねる)
     `<div class="home-top">` +
     `<section class="home-hero">` +
-    `<h2 class="home-catch">${esc(h.catch)}</h2>` +
+    // 見出しは、トップ画像のデザインに合わせて2行(日本語は「、」のあとで改行)
+    `<h2 class="home-catch">${esc(h.catch).replace("、", "、<br>")}</h2>` +
     `<p class="home-lead">${esc(lead)} <strong>${esc(t.resultCount(restaurants.length))}</strong></p>` +
     `</section>` +
     `</div>` +
