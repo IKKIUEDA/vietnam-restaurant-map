@@ -46,8 +46,28 @@
     const area = wrap.querySelector(".txed-area");
     const count = wrap.querySelector(".txed-count");
     area.addEventListener("input", () => updateCount());
-    wrap.querySelector(".txed-cancel").addEventListener("click", () => close(false));
-    wrap.querySelector(".txed-done").addEventListener("click", () => close(true));
+    // 「キャンセル」「完了」: 指で押したときは、指を離した時点で閉じる(touchend)
+    //   ・iPhone では、キーボードを閉じた直後などに、押しても click が届かないことがあるため(押しても閉じない不具合)
+    //   ・touchend で preventDefault して、あとから来る click(閉じた後の下の画面への誤タップ)も止める
+    //   ・マウス・キーボードで押したときは、今まで通り click で閉じる
+    const bindButton = (btn, apply) => {
+      btn.addEventListener(
+        "touchend",
+        (event) => {
+          const t = event.changedTouches && event.changedTouches[0];
+          if (!t) return;
+          const r = btn.getBoundingClientRect();
+          const pad = 12; // 指が少しずれても押したことにする
+          if (t.clientX < r.left - pad || t.clientX > r.right + pad || t.clientY < r.top - pad || t.clientY > r.bottom + pad) return;
+          if (event.cancelable) event.preventDefault();
+          close(apply);
+        },
+        { passive: false }
+      );
+      btn.addEventListener("click", () => close(apply));
+    };
+    bindButton(wrap.querySelector(".txed-cancel"), false);
+    bindButton(wrap.querySelector(".txed-done"), true);
     editor = { wrap, area, count, source: null };
   }
   function updateCount() {
@@ -98,8 +118,10 @@
     editor.area.blur();
     editor.wrap.hidden = true;
     editor.source = null;
+    closedAt = Date.now();
     document.body.classList.remove("is-txed-open");
   }
+  let closedAt = 0; // 閉じた時刻(閉じた直後に、下の入力欄が選ばれて、すぐ開き直してしまうのを防ぐ)
 
   // 文章の入力欄が選ばれたら、書くための画面を開く(スマホだけ)
   document.addEventListener("focusin", (event) => {
@@ -107,6 +129,8 @@
     if (!isMobile() || !(el instanceof HTMLTextAreaElement)) return;
     if (el.classList.contains("txed-area") || el.disabled || el.readOnly || el.dataset.noEditor !== undefined) return;
     el.blur();
+    // 「完了」を押した直後(0.6秒以内)に、下の入力欄が選ばれたとき(誤タップ・ブラウザがフォーカスを戻したとき)は、開き直さない
+    if (Date.now() - closedAt < 600) return;
     open(el);
   });
   document.addEventListener("keydown", (event) => {
@@ -116,6 +140,12 @@
     window.visualViewport.addEventListener("resize", fit);
     window.visualViewport.addEventListener("scroll", fit);
   }
+  // キーボードを閉じたとき(入力欄からフォーカスが外れたとき): iPhone では画面の大きさの知らせが遅れることがあるので、少し待ってから合わせ直す
+  document.addEventListener("focusout", (event) => {
+    if (!editor || event.target !== editor.area) return;
+    setTimeout(fit, 350);
+    setTimeout(fit, 800);
+  });
   window.addEventListener("resize", fit);
 
   // 短い入力欄: 入力中は下のメニューを隠し、選んだ欄がキーボードに隠れない位置まで動かす(スマホだけ)
