@@ -96,14 +96,18 @@ function userRankProgressHtml(stats) {
   }
   const needPosts = Math.max(0, next.min - stats.count);
   const needShops = next.minShops ? Math.max(0, next.minShops - stats.shops) : 0;
-  const pct = Math.max(0, Math.min(100, Math.round((Math.min(stats.count, next.min) / next.min) * 100)));
+  // 進み具合は「いまのランクになってから、次のランクまで」で見せる(ランクが上がったら 0 から数え直す)
+  //   例: Expert(25件〜)→ Ambassador(50件〜)は、25件で「0 / 25件」、30件で「5 / 25件」
+  const span = next.min - rank.min;
+  const done = Math.max(0, Math.min(span, stats.count - rank.min));
+  const pct = span > 0 ? Math.round((done / span) * 100) : 100;
   const note = needPosts > 0 ? x.remain(needPosts) : x.remainShops(needShops);
   return (
     `<div class="urank-progress">` +
     `<p class="urank-progress-title">${esc(x.next)}</p>` +
     `<div class="urank-progress-row"><span class="urank-progress-name">${esc(next.name[lang])}</span>` +
-    `<span class="urank-progress-num">${esc(x.progress(Math.min(stats.count, next.min), next.min))}</span></div>` +
-    `<div class="urank-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${next.min}" aria-valuenow="${Math.min(stats.count, next.min)}"><span style="width:${pct}%"></span></div>` +
+    `<span class="urank-progress-num">${esc(x.progress(done, span))}</span></div>` +
+    `<div class="urank-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${span}" aria-valuenow="${done}"><span style="width:${pct}%"></span></div>` +
     `<p class="urank-progress-note">${esc(note)}</p>` +
     `<p class="urank-progress-how">${esc(x.how)}</p>` +
     `</div>`
