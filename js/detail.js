@@ -76,6 +76,8 @@ function routeFromLocation() {
   if ((view === "contact" || (onContactPath && !view)) && typeof showHome === "function") return { name: "home", mode: "contact" };
   // エリアの一覧(js/home.js): 「?view=areas」
   if (view === "areas" && typeof showHome === "function") return { name: "home", mode: "areas" };
+  // エリアのお店のページ(js/home.js): 「?view=area&station=新宿」(種類で絞るときは「&type=cafe」)
+  if (view === "area" && params.get("station") && typeof showHome === "function") return { name: "home", mode: "area", list: params.get("station") };
   // ユーザーを探す(js/people.js): 「?view=people」
   if (view === "people" && typeof showHome === "function") return { name: "home", mode: "people" };
   // 特集(js/feature.js): 「?view=feature&type=cafe」
