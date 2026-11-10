@@ -92,7 +92,7 @@ function userRankProgressHtml(stats) {
   const next = USER_RANKS[idx + 1];
   const lang = typeof currentLang !== "undefined" && rank.name[currentLang] ? currentLang : "ja";
   if (!next) {
-    return `<div class="urank-progress"><p class="urank-progress-note">${esc(x.top)}</p></div>`;
+    return `<div class="urank-progress"><p class="urank-progress-note">${esc(x.top)}<button type="button" class="urank-info-btn" data-rank-info="${esc(rank.key)}" aria-label="${esc((USER_RANK_INFO_TEXT[lang] || USER_RANK_INFO_TEXT.ja).open)}">ⓘ</button></p></div>`;
   }
   const needPosts = Math.max(0, next.min - stats.count);
   const needShops = next.minShops ? Math.max(0, next.minShops - stats.shops) : 0;
@@ -104,7 +104,9 @@ function userRankProgressHtml(stats) {
   const note = needPosts > 0 ? x.remain(needPosts) : x.remainShops(needShops);
   return (
     `<div class="urank-progress">` +
-    `<p class="urank-progress-title">${esc(x.next)}</p>` +
+    `<p class="urank-progress-title">${esc(x.next)}` +
+    // ⓘ: ランクの説明を開く
+    `<button type="button" class="urank-info-btn" data-rank-info="${esc(rank.key)}" aria-label="${esc((USER_RANK_INFO_TEXT[lang] || USER_RANK_INFO_TEXT.ja).open)}">ⓘ</button></p>` +
     `<div class="urank-progress-row"><span class="urank-progress-name">${esc(next.name[lang])}</span>` +
     `<span class="urank-progress-num">${esc(x.progress(done, span))}</span></div>` +
     `<div class="urank-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${span}" aria-valuenow="${done}"><span style="width:${pct}%"></span></div>` +
@@ -139,3 +141,95 @@ function userRankSlotHtml(uid) {
   const v = getUserRankCached(uid);
   return `<span class="urank-slot" data-urank-for="${esc(uid)}">${v ? userRankBadgeHtml(v.rank, { small: true }) : ""}</span>`;
 }
+
+// ランクの説明(プロフィールの「次のランクまで」の ⓘ を押すと、下から出る)。文章は運営者が用意したもの
+const USER_RANK_INFO = {
+  beginner: {
+    need: { ja: "0〜2件", en: "0–2 posts", vi: "0–2 bài" },
+    desc: {
+      ja: "Vietnam Foodieでの活動をスタートしたフレッシュなメンバーです。これからさまざまなベトナムグルメに出会い、自分のお気に入りを見つけていく段階です。",
+      en: "A fresh member who has just started on Vietnam Foodie. You're about to discover all kinds of Vietnamese food and find your own favorites.",
+      vi: "Thành viên mới vừa bắt đầu hoạt động trên Vietnam Foodie. Đây là giai đoạn bạn sẽ gặp gỡ nhiều món ăn Việt Nam và tìm ra những món yêu thích của mình.",
+    },
+  },
+  explorer: {
+    need: { ja: "3件〜", en: "3+ posts", vi: "Từ 3 bài" },
+    desc: {
+      ja: "ベトナムグルメへの興味を広げ、さまざまなお店や料理を発見しているメンバーです。積極的に新しい体験を楽しんでいる段階です。",
+      en: "A member who is broadening their interest in Vietnamese food and discovering all kinds of shops and dishes, actively enjoying new experiences.",
+      vi: "Thành viên đang mở rộng niềm yêu thích ẩm thực Việt Nam và khám phá nhiều quán, nhiều món ăn khác nhau. Đây là giai đoạn tích cực tận hưởng những trải nghiệm mới.",
+    },
+  },
+  contributor: {
+    need: { ja: "10件〜", en: "10+ posts", vi: "Từ 10 bài" },
+    desc: {
+      ja: "写真やレビューを通じて、ベトナムグルメの情報を継続的に発信しているメンバーです。コミュニティを支える存在として活躍しています。",
+      en: "A member who regularly shares information about Vietnamese food through photos and reviews, playing an active part in supporting the community.",
+      vi: "Thành viên thường xuyên chia sẻ thông tin ẩm thực Việt Nam qua ảnh và đánh giá, đóng vai trò hỗ trợ cộng đồng.",
+    },
+  },
+  expert: {
+    need: { ja: "25件〜", en: "25+ posts", vi: "Từ 25 bài" },
+    desc: {
+      ja: "豊富な投稿経験と幅広いグルメ情報を持つメンバーです。ベトナムグルメに精通し、コミュニティでも高い活動実績を誇ります。",
+      en: "A member with plenty of posting experience and wide-ranging food knowledge. Well versed in Vietnamese food, with an outstanding record of activity in the community.",
+      vi: "Thành viên có nhiều kinh nghiệm đăng bài và thông tin ẩm thực phong phú. Am hiểu ẩm thực Việt Nam và có thành tích hoạt động nổi bật trong cộng đồng.",
+    },
+  },
+  ambassador: {
+    need: { ja: "50件以上・10店舗以上", en: "50+ posts at 10+ shops", vi: "Từ 50 bài, từ 10 quán" },
+    desc: {
+      ja: "多くのお店を紹介し、コミュニティに大きく貢献している特別なメンバーです。Vietnam Foodieのトップクラスのユーザーです。",
+      en: "A special member who has introduced many shops and contributed greatly to the community. One of the top users of Vietnam Foodie.",
+      vi: "Thành viên đặc biệt đã giới thiệu nhiều quán và đóng góp lớn cho cộng đồng. Là người dùng hàng đầu của Vietnam Foodie.",
+    },
+  },
+};
+const USER_RANK_INFO_TEXT = {
+  ja: { title: "ランクについて", open: "ランクについて", close: "閉じる", current: "いまのランク" },
+  en: { title: "About ranks", open: "About ranks", close: "Close", current: "Your rank" },
+  vi: { title: "Về hạng", open: "Về hạng", close: "Đóng", current: "Hạng hiện tại" },
+};
+function openUserRankInfo(currentKey) {
+  const lang = typeof currentLang !== "undefined" && USER_RANK_INFO_TEXT[currentLang] ? currentLang : "ja";
+  const t = USER_RANK_INFO_TEXT[lang];
+  const wrap = document.createElement("div");
+  wrap.className = "urank-info-backdrop";
+  wrap.innerHTML =
+    `<div class="urank-info" role="dialog" aria-modal="true" aria-labelledby="urank-info-title">` +
+    `<div class="urank-info-head"><h2 id="urank-info-title">${esc(t.title)}</h2>` +
+    `<button type="button" class="urank-info-close" aria-label="${esc(t.close)}">×</button></div>` +
+    `<ul class="urank-info-list">` +
+    USER_RANKS.map((r) => {
+      const info = USER_RANK_INFO[r.key];
+      const now = r.key === currentKey;
+      return (
+        `<li class="urank-info-item${now ? " is-current" : ""}">` +
+        `<div class="urank-info-row">${userRankBadgeHtml(r)}<span class="urank-info-sub">${esc(r.sub[lang])}</span>` +
+        (now ? `<span class="urank-info-now">${esc(t.current)}</span>` : "") +
+        `<span class="urank-info-need">${esc(info.need[lang])}</span></div>` +
+        `<p class="urank-info-desc">${esc(info.desc[lang])}</p></li>`
+      );
+    }).join("") +
+    `</ul></div>`;
+  document.body.appendChild(wrap);
+  requestAnimationFrame(() => wrap.classList.add("is-open"));
+  const close = () => {
+    wrap.classList.remove("is-open");
+    document.removeEventListener("keydown", onKey);
+    setTimeout(() => wrap.remove(), 250);
+  };
+  const onKey = (e) => {
+    if (e.key === "Escape") close();
+  };
+  document.addEventListener("keydown", onKey);
+  wrap.querySelector(".urank-info-close").addEventListener("click", close);
+  wrap.addEventListener("click", (e) => {
+    if (e.target === wrap) close();
+  });
+  wrap.querySelector(".urank-info-close").focus();
+}
+document.addEventListener("click", (event) => {
+  const btn = event.target.closest("[data-rank-info]");
+  if (btn) openUserRankInfo(btn.dataset.rankInfo);
+});
