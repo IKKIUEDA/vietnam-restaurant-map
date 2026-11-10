@@ -229,7 +229,7 @@ function loadTodoRatings(ids) {
         updateHomeRatings();
         return;
       }
-      if (document.body.classList.contains("view-home") && (homeMode === "todo-area" || homeMode === "feature")) {
+      if (document.body.classList.contains("view-home") && (homeMode === "todo-area" || homeMode === "feature" || homeMode === "area")) {
         const y = homeView.scrollTop;
         renderHomeMode();
         homeView.scrollTop = y;
