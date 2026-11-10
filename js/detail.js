@@ -1561,6 +1561,11 @@ function doSubmitCheckin(state) {
       state.message = { key: "checkinSuccess", error: false };
       state.sending = false;
       syncPublicCheckinCount(); // プロフィールに出すチェックインの数も、数え直す
+      // チェックインしたお店を公開している人だけ、公開の一覧にも足す(公開していなければ、何もしない)
+      if (typeof getProfileApi === "function")
+        getProfileApi()
+          .then((api) => api.addPublicCheckin(state.shopId))
+          .catch((e) => console.warn("公開のチェックイン一覧に足せませんでした:", e));
       renderCheckin(); // 「Check In Success!」を、先に見せる(共有シートが閉じるまで、待たせないため)
       const entry = entries.find((e) => e.shop.id === state.shopId);
       if (entry) return shareCheckin(state, entry.shop); // 続けて、共有シート(または、コピー)を開く
