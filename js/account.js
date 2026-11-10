@@ -40,6 +40,12 @@ const ACCOUNT_TEXT = {
     reviews: "レビュー",
     checkins: "チェックイン",
     onlyMe: "自分だけに表示",
+    publicOn: "プロフィールで公開中(日付は表示されません)",
+    publicCheckins: "チェックインしたお店をプロフィールに表示",
+    publicCheckinsOn: "表示する",
+    publicCheckinsOff: "表示しない",
+    publicCheckinsConfirm: "チェックインしたお店(日付は出ません)を、誰でもあなたのプロフィールで見られるようになります。よく行くお店や生活の範囲が、ほかの人に分かることがあります。表示しますか?",
+    publicCheckinsError: "設定を変えられませんでした。時間をおいて、もう一度お試しください",
     noPhotos: "まだ写真の投稿はありません",
     noReviews: "まだレビューの投稿はありません",
     noCheckins: "まだチェックインはありません",
@@ -124,6 +130,12 @@ const ACCOUNT_TEXT = {
     reviews: "Reviews",
     checkins: "Check-ins",
     onlyMe: "Only visible to you",
+    publicOn: "Shown on your profile (dates are not shown)",
+    publicCheckins: "Show checked-in shops on my profile",
+    publicCheckinsOn: "On",
+    publicCheckinsOff: "Off",
+    publicCheckinsConfirm: "Anyone will be able to see the shops you checked in at (without dates) on your profile. Others may learn which shops you visit often and the area you spend time in. Show them?",
+    publicCheckinsError: "Couldn't change the setting. Please try again later.",
     noPhotos: "No photos yet",
     noReviews: "No reviews yet",
     noCheckins: "No check-ins yet",
@@ -208,6 +220,12 @@ const ACCOUNT_TEXT = {
     reviews: "Đánh giá",
     checkins: "Check-in",
     onlyMe: "Chỉ mình bạn thấy",
+    publicOn: "Đang hiển thị trên hồ sơ (không hiện ngày)",
+    publicCheckins: "Hiển thị quán đã check-in trên hồ sơ",
+    publicCheckinsOn: "Bật",
+    publicCheckinsOff: "Tắt",
+    publicCheckinsConfirm: "Mọi người sẽ thấy các quán bạn đã check-in (không có ngày) trên hồ sơ của bạn. Người khác có thể biết quán bạn hay đến và khu vực bạn sinh hoạt. Bạn có muốn hiển thị không?",
+    publicCheckinsError: "Không thể thay đổi cài đặt. Vui lòng thử lại sau.",
     noPhotos: "Chưa có ảnh",
     noReviews: "Chưa có đánh giá",
     noCheckins: "Chưa có check-in",
@@ -317,7 +335,7 @@ function accountRankBadge(data) {
 
 function loadAccountData(uid, withCheckins) {
   if (accountData && accountData.uid === uid && accountData.withCheckins === withCheckins) return;
-  const data = { uid, withCheckins, status: "loading", profile: null, photos: [], reviews: [], checkins: [] };
+  const data = { uid, withCheckins, status: "loading", profile: null, photos: [], reviews: [], checkins: [], publicCheckins: null };
   accountData = data;
   getProfileApi()
     .then((api) =>
@@ -326,9 +344,11 @@ function loadAccountData(uid, withCheckins) {
         api.fetchUserPhotos(uid).catch((e) => (console.warn("写真の一覧を読めませんでした:", e), [])),
         api.fetchUserReviews(uid).catch((e) => (console.warn("レビューの一覧を読めませんでした:", e), [])),
         withCheckins ? api.fetchMyCheckins().catch((e) => (console.warn("チェックインの一覧を読めませんでした:", e), [])) : [],
+        // チェックインしたお店を公開しているか(公開していなければ null)
+        typeof api.fetchPublicCheckins === "function" ? api.fetchPublicCheckins(uid).catch(() => null) : null,
       ])
     )
-    .then(([profile, photos, reviews, checkins]) => {
+    .then(([profile, photos, reviews, checkins, publicCheckins]) => {
       const time = (x) => (x && typeof x.toMillis === "function" ? x.toMillis() : 0);
       // 非表示(管理者が隠したもの)・登録していないお店のものは出さない。新しい順
       const known = (x) => entries.some((e) => e.shop.id === x.shopId);
@@ -336,6 +356,11 @@ function loadAccountData(uid, withCheckins) {
       data.photos = photos.filter((p) => !p.hidden && known(p)).sort((a, b) => time(b.createdAt) - time(a.createdAt));
       data.reviews = reviews.filter((r) => !r.hidden && known(r)).sort((a, b) => time(b.createdAt) - time(a.createdAt));
       data.checkins = checkins.filter((c) => !c.hidden && known(c)).sort((a, b) => time(b.checkedInAt) - time(a.checkedInAt));
+      data.publicCheckins = Array.isArray(publicCheckins) ? publicCheckins : null;
+      // ほかの人のプロフィール: 本人が公開しているときだけ、公開しているお店をチェックインの一覧にする(新しいものが上)
+      if (!withCheckins && data.publicCheckins) {
+        data.checkins = [...data.publicCheckins].reverse().map((shopId) => ({ shopId })).filter(known);
+      }
       data.status = "ready";
       // 自分のアカウント画面: 公開用のチェックイン数を、いまの数に合わせる(どのお店かは公開しない)
       if (withCheckins && typeof getProfileApi === "function") {
@@ -427,16 +452,28 @@ function accountPostsHtml(data, tabs, opts = {}) {
           .join("")}</ul>`
       : `<p class="acct-note">${esc(x.noReviews)}</p>`;
   } else {
+    // チェックインしたお店: 写真・店名・エリア(いつチェックインしたかの日付は出さない)
+    //   自分の画面だけ、公開しているかどうかを上に出す
+    const note = opts.own
+      ? data.publicCheckins
+        ? `<p class="acct-onlyme">🌐 ${esc(x.publicOn)}</p>`
+        : `<p class="acct-onlyme">🔒 ${esc(x.onlyMe)}</p>`
+      : "";
     body =
-      `<p class="acct-onlyme">🔒 ${esc(x.onlyMe)}</p>` +
+      note +
       (data.checkins.length
-        ? `<ul class="acct-list">${data.checkins
-            .map(
-              (c) =>
-                `<li><a class="acct-item" href="${esc(shopUrl(c.shopId))}" data-shop-id="${esc(c.shopId)}">` +
-                `<span class="acct-item-head"><span class="acct-item-name">${esc(shopNameOf(c.shopId))}</span>` +
-                `<span class="acct-item-date">${esc(formatDate(c.checkedInAt))}</span></span></a></li>`
-            )
+        ? `<ul class="acct-list acct-checkins">${data.checkins
+            .map((c) => {
+              const entry = entries.find((e) => e.shop.id === c.shopId);
+              const image = entry && typeof getShopImage === "function" ? getShopImage(entry.shop) : null;
+              return (
+                `<li><a class="acct-item acct-checkin" href="${esc(shopUrl(c.shopId))}" data-shop-id="${esc(c.shopId)}">` +
+                (image ? `<img class="acct-checkin-img" src="${esc(image.src)}" alt="" loading="lazy" width="56" height="56">` : "") +
+                `<span class="acct-checkin-body"><span class="acct-item-name">${esc(shopNameOf(c.shopId))}</span>` +
+                (entry && entry.shop.area ? `<span class="acct-checkin-area">📍 ${esc(pick(entry.shop.area))}</span>` : "") +
+                `</span></a></li>`
+              );
+            })
             .join("")}</ul>`
         : `<p class="acct-note">${esc(x.noCheckins)}</p>`);
   }
@@ -562,7 +599,7 @@ function renderAccountPage() {
     `<a class="acct-square" href="${esc(accountSettingsUrl())}" data-acct-nav aria-label="${esc(x.settingsOpen)}" title="${esc(x.settings)}">${ACCOUNT_GEAR_ICON}</a>` +
     `</div>` +
     // 「保存したお店」の行は出さない(下のタブの「保存」から開ける)
-    accountPostsHtml(data, ["photos", "reviews", "checkins"], { savedLink: true }) +
+    accountPostsHtml(data, ["photos", "reviews", "checkins"], { savedLink: true, own: true }) +
     `</section>`;
 }
 
@@ -599,6 +636,66 @@ function acctRow({ icon, iconHtml, label, href, action, danger, nav = "data-acct
   return href
     ? `<li><a class="${cls}" href="${esc(href)}" ${nav}>${inner}</a></li>`
     : `<li><button type="button" class="${cls}" data-acct-action="${esc(action)}">${inner}</button></li>`;
+}
+
+// 設定: チェックインしたお店をプロフィールに表示するか(はじめは「表示しない」)
+let accountPublicCheckins = null; // null = まだ分からない / true / false
+let accountPublicCheckinsUid = null;
+let accountPublicCheckinsBusy = false;
+function publicCheckinsRow() {
+  const x = accountText();
+  if (!authUser) return "";
+  if (accountPublicCheckinsUid !== authUser.uid) {
+    accountPublicCheckinsUid = authUser.uid;
+    accountPublicCheckins = null;
+    getProfileApi()
+      .then((api) => api.fetchPublicCheckins(authUser.uid))
+      .then((list) => (accountPublicCheckins = Array.isArray(list)))
+      .catch(() => (accountPublicCheckins = false))
+      .then(() => {
+        if (homeMode === "account" && document.body.classList.contains("view-home")) renderHomeMode();
+      });
+  }
+  const on = accountPublicCheckins === true;
+  return (
+    `<li><button type="button" class="acct-setting acct-toggle" data-acct-action="toggle-public-checkins" role="switch" aria-checked="${on}"` +
+    `${accountPublicCheckins === null || accountPublicCheckinsBusy ? " disabled" : ""}>` +
+    `<span class="acct-setting-icon">${acctIcon("spot")}</span>` +
+    `<span class="acct-setting-label">${esc(x.publicCheckins)}</span>` +
+    `<span class="acct-switch${on ? " is-on" : ""}" aria-hidden="true"><span></span></span>` +
+    `<span class="visually-hidden">${esc(on ? x.publicCheckinsOn : x.publicCheckinsOff)}</span>` +
+    `</button></li>`
+  );
+}
+async function togglePublicCheckins() {
+  const x = accountText();
+  if (!authUser || accountPublicCheckinsBusy || accountPublicCheckins === null) return;
+  const turnOn = !accountPublicCheckins;
+  // 公開するときは、何が見えるようになるかを先に確かめる
+  if (turnOn && !window.confirm(x.publicCheckinsConfirm)) return;
+  accountPublicCheckinsBusy = true;
+  renderHomeMode();
+  try {
+    const api = await getProfileApi();
+    if (turnOn) {
+      const list = await api.fetchMyCheckins();
+      const time = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : 0);
+      const ids = list
+        .filter((c) => !c.hidden)
+        .sort((a, b) => time(a.checkedInAt) - time(b.checkedInAt))
+        .map((c) => c.shopId);
+      await api.setPublicCheckins(ids);
+    } else {
+      await api.deletePublicCheckins();
+    }
+    accountPublicCheckins = turnOn;
+    accountData = null; // プロフィールの表示も、読み込み直す
+  } catch (error) {
+    console.warn("チェックインの公開の設定を変えられませんでした:", error);
+    window.alert(x.publicCheckinsError);
+  }
+  accountPublicCheckinsBusy = false;
+  renderHomeMode();
 }
 
 function renderAccountSettings() {
@@ -651,6 +748,7 @@ function renderAccountSettings() {
       acctRow({ icon: "spot", label: x.addSpot, href: acctSettingsUrl("spot") }) +
       acctRow({ icon: "account", label: x.accountSettings, href: acctSettingsUrl("account") }) +
       acctRow({ icon: "eye", label: x.viewPublic, href: userUrl(authUser.uid) }) +
+      publicCheckinsRow() +
       `</ul>` +
       `<ul class="acct-settings">` +
       acctRow({ icon: "doc", label: t.termsPageTitle || x.terms, href: termsUrl(), nav: "data-home-nav" }) +
@@ -997,7 +1095,8 @@ function renderUserPage(uid) {
     (bio ? `<p class="acct-bio">${esc(bio)}</p>` : "") +
     `</div>` +
     (isMe ? `<div class="acct-actions"><a class="acct-link" href="${esc(accountUrl())}" data-acct-nav>${esc(x.editProfile)} ›</a></div>` : followButtonHtml(uid)) +
-    accountPostsHtml(data, ["photos", "reviews"]) +
+    // チェックインのタブは、本人が公開しているときだけ(公開していなければ、どのお店に行ったかは見せない)
+    accountPostsHtml(data, data.publicCheckins ? ["photos", "reviews", "checkins"] : ["photos", "reviews"], { own: isMe }) +
     (authUser && isAdminUser(authUser) && !isMe && data.profile
       ? `<div class="acct-bottom"><button type="button" class="acct-admin" data-acct-action="admin-delete" data-uid="${esc(uid)}">${esc(x.adminDelete)}</button></div>`
       : "") +
@@ -1036,6 +1135,7 @@ homePage.addEventListener("click", (event) => {
     return;
   }
   if (action === "login") openAuthModal();
+  else if (action === "toggle-public-checkins") togglePublicCheckins();
   else if (action === "logout") {
     accountData = null;
     signOutFromGoogle();

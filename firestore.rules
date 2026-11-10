@@ -571,6 +571,23 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // ---------------------------------------------------------------
+    // 📍 チェックインしたお店の公開(publicCheckins/{ユーザーID})
+    //   ・本人が設定で「公開する」を選んだときだけ作る(はじめは無い = 非公開)。日付は入れない(お店のIDだけ)
+    //   ・誰でも読める(プロフィールの「チェックイン」タブ)。書けるのは本人だけ。消せるのは本人・管理者
+    // ---------------------------------------------------------------
+    match /publicCheckins/{uid} {
+      allow read: if true;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["shops", "updatedAt"])
+        && request.resource.data.shops is list
+        && request.resource.data.shops.size() <= 1000
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+    }
+
     match /userStats/{uid} {
       allow read: if true;
 
