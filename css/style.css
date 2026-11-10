@@ -11343,3 +11343,48 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
   body.is-home-top .home-top .home-catch { font-size: clamp(2.2rem, 4.9vw, 4.6rem); }
   body.is-home-top .home-top .home-lead { font-size: 1.05rem; }
 }
+
+/* ===== エリア一覧: 1行に1エリアの横長の写真。写真の上に、エリア名と「新宿、東京」を重ねる(js/home.js の areaListItemsHtml) =====
+   PC(幅 900px 以上)は、横長のカードを2列に並べる */
+.area-list-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@media (min-width: 900px) {
+  .area-list-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+}
+.area-list-grid .area-item { margin-bottom: 0; }
+.area-list-grid .area-item-photo {
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+}
+.area-list-grid .area-item-photo::after {
+  /* 文字が読みやすいように、写真の下半分を少し暗くする */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.55) 100%);
+  pointer-events: none;
+}
+.area-item-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 12px;
+  color: #ffffff;
+  text-align: center;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+.area-list-grid .area-item-caption .area-item-name {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #ffffff;
+}
+.area-item-place { font-size: 0.95rem; font-weight: 700; }
+.area-list-grid .area-item-count { margin-top: 10px; font-size: 0.85rem; }
+.area-list-grid .home-area-credit { z-index: 2; }
