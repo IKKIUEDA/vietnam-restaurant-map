@@ -571,6 +571,41 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // ---------------------------------------------------------------
+    // 📢 運営からのお知らせ(announcements/{ID})
+    //   ・誰でも読める(アカウント画面の🔔)。書けるのは管理者だけ(書き換えはせず、消して出し直す)
+    // ---------------------------------------------------------------
+    match /announcements/{id} {
+      allow read: if true;
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(["title", "body", "createdAt"])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+        && request.resource.data.body is string
+        && request.resource.data.body.size() <= 1000
+        && request.resource.data.createdAt == request.time;
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 📍 チェックインしたお店の公開(publicCheckins/{ユーザーID})
+    //   ・本人が設定で「公開する」を選んだときだけ作る(はじめは無い = 非公開)。日付は入れない(お店のIDだけ)
+    //   ・誰でも読める(プロフィールの「チェックイン」タブ)。書けるのは本人だけ。消せるのは本人・管理者
+    // ---------------------------------------------------------------
+    match /publicCheckins/{uid} {
+      allow read: if true;
+
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["shops", "updatedAt"])
+        && request.resource.data.shops is list
+        && request.resource.data.shops.size() <= 1000
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+    }
+
     match /userStats/{uid} {
       allow read: if true;
 

@@ -312,7 +312,7 @@ const ui = {
             "paras": [
               "利用者が任意で設定するニックネーム、アイコン画像、自己紹介、出身国、在住国などを、プロフィールの表示に利用します。",
               "ニックネーム、アイコン画像、出身国、在住国は、ほかの利用者も閲覧できるプロフィールやユーザー一覧に表示されます。プロフィールには、本人が投稿した写真やレビューなども表示されます。",
-              "チェックインした店舗の一覧は本人のアカウント画面にのみ表示し、ほかの利用者には公開しません。",
+              "チェックインした店舗の一覧は、原則として本人のアカウント画面にのみ表示し、ほかの利用者には公開しません。ただし、本人が設定で「チェックインしたお店をプロフィールに表示」をオンにした場合に限り、チェックインした店舗の一覧(チェックインした日時は含みません)を、ほかの利用者も閲覧できるプロフィールに表示します。この設定はいつでもオフにでき、オフにすると公開をやめます。",
               "プロフィール情報はアカウント画面から変更できます。アカウントを削除した場合、プロフィール情報も削除します。アイコン画像は、写真投稿と同じCloudinaryに保存します。"
             ]
           },
@@ -321,7 +321,7 @@ const ui = {
             "paras": [
               "フォローした相手やフォローした日時などの情報を、フォロー・フォロワーの一覧や件数の表示に利用します。誰が誰をフォローしているかは、ほかの利用者も閲覧できます。",
               "フォローはいつでも解除できます。アカウントを削除した場合、フォロー情報も削除します。",
-              "また、チェックインの件数をプロフィールに表示します。チェックインした店舗の一覧は、本人にのみ公開します。"
+              "また、チェックインの件数をプロフィールに表示します。チェックインした店舗の一覧は、本人が公開を選んだ場合を除き、本人にのみ公開します(2-11 参照)。"
             ]
           },
           {
@@ -347,11 +347,11 @@ const ui = {
         "list": [
           {
             "label": "ほかの利用者に公開される情報：",
-            "text": "公開対象となるTips、レビュー、コメント、写真、プロフィール情報、フォロー・フォロワーの一覧、チェックインの件数など"
+            "text": "公開対象となるTips、レビュー、コメント、写真、プロフィール情報、フォロー・フォロワーの一覧、チェックインの件数、本人が公開を選んだ場合のチェックインした店舗の一覧(日時を除く)など"
           },
           {
             "label": "本人のみが閲覧できる情報：",
-            "text": "保存した店舗、チェックインした店舗の一覧など"
+            "text": "保存した店舗、チェックインした日時、チェックインした店舗の一覧(本人が公開を選んでいない場合)など"
           },
           {
             "label": "運営者が確認する情報：",
@@ -919,7 +919,7 @@ const ui = {
             "paras": [
               "The nickname, icon image, self-introduction, home country, country of residence and similar information you choose to set are used to show your profile.",
               "Your nickname, icon image, home country and country of residence are shown on your profile and in the user list, which other users can see. Photos, reviews and other content you posted are also shown on your profile.",
-              "The list of shops you checked in to is shown only on your own account screen and is not shown to other users.",
+              "As a rule, the list of shops you checked in to is shown only on your own account screen and is not shown to other users. Only if you turn on \"Show checked-in shops on my profile\" in Settings, the list of shops you checked in to (without check-in dates and times) is shown on your profile, which other users can view. You can turn this off at any time, and the list will no longer be shown.",
               "You can change your profile information on the account screen. If you delete your account, your profile information is also deleted. Icon images are stored in Cloudinary, the same service used for photo posts."
             ]
           },
@@ -928,7 +928,7 @@ const ui = {
             "paras": [
               "Information such as who you follow and when is used to show follow and follower lists and counts. Other users can see who follows whom.",
               "You can unfollow at any time. If you delete your account, your follow information is also deleted.",
-              "The number of your check-ins is shown on your profile. The list of shops you checked in to is visible only to you."
+              "The number of your check-ins is shown on your profile. The list of shops you checked in to is visible only to you, unless you choose to show it (see 2-11)."
             ]
           },
           {
@@ -954,11 +954,11 @@ const ui = {
         "list": [
           {
             "label": "Visible to other users:",
-            "text": "public Tips, reviews, comments, photos, profile information, follow and follower lists, number of check-ins, etc."
+            "text": "public Tips, reviews, comments, photos, profile information, follow and follower lists, number of check-ins, the list of shops you checked in to if you choose to show it (without dates), etc."
           },
           {
             "label": "Visible only to you:",
-            "text": "saved shops, the list of shops you checked in to, etc."
+            "text": "saved shops, check-in dates and times, the list of shops you checked in to (unless you choose to show it), etc."
           },
           {
             "label": "Reviewed by the operator:",
@@ -1525,7 +1525,7 @@ const ui = {
             "paras": [
               "Biệt danh, ảnh đại diện, giới thiệu bản thân, quốc gia xuất thân, quốc gia đang sống và các thông tin tương tự mà bạn tự chọn thiết lập được dùng để hiển thị hồ sơ.",
               "Biệt danh, ảnh đại diện, quốc gia xuất thân và quốc gia đang sống được hiển thị trên hồ sơ và danh sách người dùng mà người dùng khác cũng xem được. Ảnh, đánh giá và nội dung khác bạn đã đăng cũng hiển thị trên hồ sơ.",
-              "Danh sách quán bạn đã check-in chỉ hiển thị trên màn hình tài khoản của bạn và không công khai cho người dùng khác.",
+              "Về nguyên tắc, danh sách quán bạn đã check-in chỉ hiển thị trên màn hình tài khoản của bạn và không công khai cho người dùng khác. Chỉ khi bạn bật \"Hiển thị quán đã check-in trên hồ sơ\" trong Cài đặt, danh sách quán đã check-in (không bao gồm ngày giờ check-in) mới được hiển thị trên hồ sơ mà người dùng khác có thể xem. Bạn có thể tắt cài đặt này bất cứ lúc nào để ngừng công khai.",
               "Bạn có thể thay đổi thông tin hồ sơ trên màn hình tài khoản. Nếu xóa tài khoản, thông tin hồ sơ cũng bị xóa. Ảnh đại diện được lưu trên Cloudinary, giống như ảnh đăng bài."
             ]
           },
@@ -1534,7 +1534,7 @@ const ui = {
             "paras": [
               "Thông tin như người bạn theo dõi và thời điểm theo dõi được dùng để hiển thị danh sách và số lượng Đang theo dõi / Người theo dõi. Người dùng khác cũng xem được ai theo dõi ai.",
               "Bạn có thể bỏ theo dõi bất cứ lúc nào. Nếu xóa tài khoản, thông tin theo dõi cũng bị xóa.",
-              "Số lần check-in được hiển thị trên hồ sơ. Danh sách quán đã check-in chỉ công khai cho riêng bạn."
+              "Số lần check-in được hiển thị trên hồ sơ. Danh sách quán đã check-in chỉ công khai cho riêng bạn, trừ khi bạn chọn hiển thị (xem 2-11)."
             ]
           },
           {
@@ -1560,11 +1560,11 @@ const ui = {
         "list": [
           {
             "label": "Công khai cho người dùng khác:",
-            "text": "Tips, đánh giá, bình luận, ảnh công khai, thông tin hồ sơ, danh sách Đang theo dõi / Người theo dõi, số lần check-in, v.v."
+            "text": "Tips, đánh giá, bình luận, ảnh công khai, thông tin hồ sơ, danh sách Đang theo dõi / Người theo dõi, số lần check-in, danh sách quán đã check-in nếu bạn chọn hiển thị (không có ngày), v.v."
           },
           {
             "label": "Chỉ bạn xem được:",
-            "text": "quán đã lưu, danh sách quán đã check-in, v.v."
+            "text": "quán đã lưu, ngày giờ check-in, danh sách quán đã check-in (nếu bạn không chọn hiển thị), v.v."
           },
           {
             "label": "Đơn vị vận hành kiểm tra:",
