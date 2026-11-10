@@ -376,17 +376,24 @@ function homeIcon(name, size = 24) {
 //   ・color: 写真が無いときのカードの色(エリアごとに少しずつ変える)
 // ---------------------------------------------------------------------
 const HOME_AREAS = [
-  { station: "新宿", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6922, lng: 139.7006, color: "#2e7d32", image: "images/areas/shinjuku.jpg", source: "写真AC" },
-  { station: "池袋", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7281, lng: 139.711, color: "#00796b", image: "images/areas/ikebukuro.jpg", source: "写真AC" },
-  { station: "上野", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7134, lng: 139.7765, color: "#c0392b", image: "images/areas/ueno.jpg", source: "写真AC" },
-  { station: "渋谷", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.6581, lng: 139.7018, color: "#6a4c93", image: "images/areas/shibuya.jpg", source: "写真AC" },
-  { station: "横浜", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4662, lng: 139.6232, color: "#1e63d6", image: "images/areas/yokohama.jpg", source: "Pexels" },
-  { station: "川崎", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5314, lng: 139.6969, color: "#0277bd", image: "images/areas/kawasaki.jpg", source: "写真AC" },
-  { station: "千葉", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6137, lng: 140.1125, color: "#e67e22", image: "images/areas/chiba.jpg", source: "写真AC" },
-  { station: "船橋", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7017, lng: 139.9852, color: "#795548", image: "images/areas/funabashi.jpg", source: "写真AC" },
-  { station: "新松戸", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "images/areas/shinmatsudo.jpg", source: "写真AC" },
-  { station: "大宮", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "images/areas/omiya.jpg", source: "写真AC" },
+  { station: "新宿", pref: "tokyo", name: { ja: "新宿", en: "Shinjuku", vi: "Shinjuku" }, lat: 35.6922, lng: 139.7006, color: "#2e7d32", image: "images/areas/shinjuku.jpg", source: "写真AC" },
+  { station: "池袋", pref: "tokyo", name: { ja: "池袋", en: "Ikebukuro", vi: "Ikebukuro" }, lat: 35.7281, lng: 139.711, color: "#00796b", image: "images/areas/ikebukuro.jpg", source: "写真AC" },
+  { station: "上野", pref: "tokyo", name: { ja: "上野", en: "Ueno", vi: "Ueno" }, lat: 35.7134, lng: 139.7765, color: "#c0392b", image: "images/areas/ueno.jpg", source: "写真AC" },
+  { station: "渋谷", pref: "tokyo", name: { ja: "渋谷", en: "Shibuya", vi: "Shibuya" }, lat: 35.6581, lng: 139.7018, color: "#6a4c93", image: "images/areas/shibuya.jpg", source: "写真AC" },
+  { station: "横浜", pref: "kanagawa", name: { ja: "横浜", en: "Yokohama", vi: "Yokohama" }, lat: 35.4662, lng: 139.6232, color: "#1e63d6", image: "images/areas/yokohama.jpg", source: "Pexels" },
+  { station: "川崎", pref: "kanagawa", name: { ja: "川崎", en: "Kawasaki", vi: "Kawasaki" }, lat: 35.5314, lng: 139.6969, color: "#0277bd", image: "images/areas/kawasaki.jpg", source: "写真AC" },
+  { station: "千葉", pref: "chiba", name: { ja: "千葉", en: "Chiba", vi: "Chiba" }, lat: 35.6137, lng: 140.1125, color: "#e67e22", image: "images/areas/chiba.jpg", source: "写真AC" },
+  { station: "船橋", pref: "chiba", name: { ja: "船橋", en: "Funabashi", vi: "Funabashi" }, lat: 35.7017, lng: 139.9852, color: "#795548", image: "images/areas/funabashi.jpg", source: "写真AC" },
+  { station: "新松戸", pref: "chiba", name: { ja: "新松戸", en: "Shin-Matsudo", vi: "Shin-Matsudo" }, lat: 35.8255, lng: 139.9212, color: "#558b2f", image: "images/areas/shinmatsudo.jpg", source: "写真AC" },
+  { station: "大宮", pref: "saitama", name: { ja: "大宮", en: "Omiya", vi: "Omiya" }, lat: 35.9064, lng: 139.6243, color: "#ad1457", image: "images/areas/omiya.jpg", source: "写真AC" },
 ];
+// エリアの都道府県の名前(エリア一覧で「新宿、東京都」のように出す。日本語は「千葉、千葉県」と区別しやすいよう、都・県まで)
+const HOME_AREA_PREFS = {
+  tokyo: { ja: "東京都", en: "Tokyo", vi: "Tokyo" },
+  kanagawa: { ja: "神奈川県", en: "Kanagawa", vi: "Kanagawa" },
+  chiba: { ja: "千葉県", en: "Chiba", vi: "Chiba" },
+  saitama: { ja: "埼玉県", en: "Saitama", vi: "Saitama" },
+};
 // お店の種類のイラスト(ホームのカテゴリと同じ images/entries/ の絵)。トラベル・リスト・最初の質問でも使う
 //   読み込めないときは、これまでの線のアイコンに戻す
 function typeIllustHtml(key, px) {
@@ -511,11 +518,17 @@ function areaListItemsHtml() {
       return (
         `<li class="area-item">` +
         `<button type="button" class="area-item-main" data-home-area="${esc(a.station)}">` +
+        // 横長の写真の上に、エリア名と「新宿、東京」(エリア・都道府県)を重ねる
         `<span class="area-item-photo" style="background-color:${a.color}">` +
         (a.image ? `<img src="${esc(a.image)}" alt="" loading="lazy" width="480" height="336">` : "") +
+        `<span class="area-item-caption">` +
+        `<span class="area-item-name">${esc(pick(a.name))}</span>` +
+        (HOME_AREA_PREFS[a.pref]
+          ? `<span class="area-item-place">${esc(pick(a.name))}${currentLang === "ja" ? "、" : ", "}${esc(pick(HOME_AREA_PREFS[a.pref]))}</span>`
+          : "") +
+        `</span>` +
         (a.image && a.credit ? `<span class="home-area-credit">${esc(a.credit)}</span>` : "") +
         `</span>` +
-        `<span class="area-item-name">${esc(pick(a.name))}</span>` +
         `<span class="area-item-count">${esc(h.areaSpotCount(shops.length))}</span>` +
         `</button>` +
         (chips ? `<div class="area-chips">${chips}</div>` : "") +
