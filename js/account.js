@@ -480,12 +480,15 @@ function accountPostsHtml(data, tabs, opts = {}) {
   return head + `<div class="acct-tab-body">${body}</div>`;
 }
 
-function accountHeader(title, backHref) {
+function accountHeader(title, backHref, rightHtml) {
   const x = accountText();
   return (
-    `<div class="todo-create-head mylist-page-head">` +
+    `<div class="todo-create-head mylist-page-head${rightHtml ? " has-right" : ""}">` +
     (backHref ? `<a class="todo-back" href="${esc(backHref)}" data-acct-nav aria-label="${esc(x.back)}">${homeIcon("back", 24)}</a>` : "") +
-    `<h2 class="todo-create-title acct-title">${esc(title)}</h2></div>`
+    `<h2 class="todo-create-title acct-title">${esc(title)}</h2>` +
+    // 右上(自分のアカウント画面のお知らせ🔔など)
+    (rightHtml ? `<span class="acct-head-right">${rightHtml}</span>` : "") +
+    `</div>`
   );
 }
 
@@ -576,13 +579,22 @@ function renderAccountPage() {
     renderAccountSettings();
     return;
   }
+  // お知らせ(js/notifications.js)
+  if (new URLSearchParams(location.search).get("notifications") === "1" && typeof renderNotificationsPage === "function") {
+    renderNotificationsPage();
+    return;
+  }
   const data = accountData;
+  // ランクが上がっていたら、お知らせ用に記録する(js/notifications.js)
+  if (data.status === "ready" && typeof notifCheckRank === "function" && typeof userRankFor === "function") {
+    notifCheckRank(uid, userRankFor(countUserPosts(data.photos, data.reviews)));
+  }
   const name = accountDisplayName(data, resolveAuthName(authUser));
   const photoURL = data.profile && data.profile.photoURL;
   const bio = data.profile && data.profile.bio;
   const msg = accountMessage;
   homePage.innerHTML =
-    accountHeader(x.title) +
+    accountHeader(x.title, null, typeof notifBellHtml === "function" ? notifBellHtml() : "") +
     (msg ? `<p class="mylist-toast" role="status">${homeIcon("check", 18)}<span>${esc(msg)}</span></p>` : "") +
     `<section class="home-section acct-section">` +
     `<div class="acct-card acct-profile">${accountAvatar(photoURL, name, 76)}` +
