@@ -10,7 +10,11 @@ const CONTACT_TEXT = {
     bandLead: "ベトナムフーディーへのご意見・ご要望や、お店の掲載についてのご相談は、こちらからお気軽にご連絡ください。",
     bandBtn: "お問い合わせ",
     title: "お問い合わせ",
-    lead: "以下の各項目について、お間違えのないようご入力のうえ、ページ下部にある「送信する」ボタンを押してください。",
+    lead: "以下の各項目について、お間違えのないようご入力のうえ、ページ下部にある「入力内容を確認する」ボタンを押してください。",
+    steps: ["入力", "確認", "完了"],
+    toConfirm: "入力内容を確認する",
+    confirmLead: "入力内容をご確認ください。よろしければ「送信する」を押してください。",
+    fix: "修正する",
     selectPh: "選択してください",
     required: "必須",
     typeLabel: "お問い合わせの種類",
@@ -56,7 +60,11 @@ const CONTACT_TEXT = {
     bandLead: "For feedback, requests or questions about listing a shop on Vietnam Foodie, please feel free to contact us here.",
     bandBtn: "Contact us",
     title: "Contact us",
-    lead: "Please fill in each item below correctly, then press the “Send” button at the bottom of the page.",
+    lead: "Please fill in each item below correctly, then press the “Review your entry” button at the bottom of the page.",
+    steps: ["Enter", "Review", "Done"],
+    toConfirm: "Review your entry",
+    confirmLead: "Please check what you entered. If everything is correct, press “Send”.",
+    fix: "Edit",
     selectPh: "Please select",
     required: "Required",
     typeLabel: "Type of inquiry",
@@ -102,7 +110,11 @@ const CONTACT_TEXT = {
     bandLead: "Mọi ý kiến, đề xuất hoặc trao đổi về việc đăng quán trên Foodie Việt Nam, vui lòng liên hệ với chúng tôi tại đây.",
     bandBtn: "Liên hệ",
     title: "Liên hệ",
-    lead: "Vui lòng nhập chính xác từng mục dưới đây, rồi nhấn nút “Gửi” ở cuối trang.",
+    lead: "Vui lòng nhập chính xác từng mục dưới đây, rồi nhấn nút “Kiểm tra nội dung” ở cuối trang.",
+    steps: ["Nhập", "Xác nhận", "Hoàn tất"],
+    toConfirm: "Kiểm tra nội dung",
+    confirmLead: "Vui lòng kiểm tra nội dung đã nhập. Nếu đúng, hãy nhấn “Gửi”.",
+    fix: "Sửa lại",
     selectPh: "Vui lòng chọn",
     required: "Bắt buộc",
     typeLabel: "Loại câu hỏi",
@@ -216,7 +228,25 @@ function homeContactHtml() {
 // ---------------------------------------------------------------------
 // フォーム(URL「?view=contact」)
 // ---------------------------------------------------------------------
-let contactState = { type: "", name: "", email: "", message: "", agree: false, busy: false, error: "", done: false };
+// step: "input"(入力) → "confirm"(確認) → done: true(完了)
+const CONTACT_EMPTY = () => ({ type: "", name: "", email: "", message: "", agree: false, busy: false, error: "", step: "input", done: false });
+let contactState = CONTACT_EMPTY();
+
+// 上の「① 入力 ― ② 確認 ― ③ 完了」の目印(いまの段階を緑の丸にする)
+function contactStepsHtml(current) {
+  const x = contactText();
+  return (
+    `<ol class="contact-steps" aria-label="${esc(x.steps.join(" → "))}">` +
+    x.steps
+      .map((label, i) => {
+        const n = i + 1;
+        const cls = n === current ? " is-current" : n < current ? " is-past" : "";
+        return `<li class="contact-step${cls}"${n === current ? ' aria-current="step"' : ""}><span class="contact-step-num">${n}</span><span class="contact-step-label">${esc(label)}</span></li>`;
+      })
+      .join("") +
+    `</ol>`
+  );
+}
 
 function renderContactPage() {
   const x = contactText();
@@ -224,9 +254,32 @@ function renderContactPage() {
   // 左上の「戻る」は出さない(PC は新しいタブで開くため。ホームへは、下のメニューやロゴから戻れる)
   if (st.done) {
     homePage.innerHTML =
-      `<section class="home-section contact-section"><h2 class="contact-title">${esc(x.title)}</h2><div class="contact-done">${homeIcon("check", 28)}` +
+      `<section class="home-section contact-section"><h2 class="contact-title">${esc(x.title)}</h2>${contactStepsHtml(3)}<div class="contact-done">${homeIcon("check", 28)}` +
       `<h3>${esc(x.doneTitle)}</h3><p>${esc(x.doneText)}</p>` +
       `<a class="todo-primary contact-home" href="${esc(homeUrl())}" data-home-nav>${esc(x.toHome)}</a></div></section>`;
+    return;
+  }
+  // 確認: 入れた内容を、そのまま文字で見せる(書き換えはできない)。「修正する」で入力に戻る・「送信する」で送る
+  if (st.step === "confirm") {
+    const crow = (labelText, valueHtml) =>
+      `<div class="contact-row"><div class="contact-label"><span>${esc(labelText)}</span></div><div class="contact-input"><p class="contact-value">${valueHtml}</p></div></div>`;
+    homePage.innerHTML =
+      `<section class="home-section contact-section">` +
+      `<h2 class="contact-title">${esc(x.title)}</h2>` +
+      contactStepsHtml(2) +
+      `<p class="contact-lead">${esc(x.confirmLead)}</p>` +
+      `<form class="contact-form" data-contact-confirm novalidate>` +
+      crow(x.typeLabel, esc(x.types[st.type] || "")) +
+      crow(x.nameLabel, esc(st.name.trim())) +
+      crow(x.emailLabel, esc(st.email.trim())) +
+      crow(x.messageLabel, esc(st.message.trim())) +
+      `<div class="contact-bottom">` +
+      `<p class="acct-message is-error" role="alert"${st.error ? "" : " hidden"}>${esc(st.error)}</p>` +
+      `<div class="contact-actions">` +
+      `<button type="button" class="contact-back" data-contact-fix${st.busy ? " disabled" : ""}>${esc(x.fix)}</button>` +
+      `<button type="submit" class="contact-submit"${st.busy ? " disabled" : ""}>${esc(st.busy ? x.sending : x.send)}</button>` +
+      `</div></div>` +
+      `</form></section>`;
     return;
   }
   // 見た目: 1行ずつ線で区切り、PC は左に項目名(と「必須」)、右に入力欄。スマホは項目名の下に入力欄
@@ -237,6 +290,7 @@ function renderContactPage() {
   homePage.innerHTML =
     `<section class="home-section contact-section">` +
     `<h2 class="contact-title">${esc(x.title)}</h2>` +
+    contactStepsHtml(1) +
     `<p class="contact-lead">${esc(x.lead)}</p>` +
     `<form class="contact-form" data-contact-form novalidate>` +
     row(
@@ -262,7 +316,7 @@ function renderContactPage() {
     `<div class="contact-bottom">` +
     `<label class="set-check contact-agree"><input type="checkbox" name="agree"${st.agree ? " checked" : ""}><span>${x.agree(privacyLink)}</span></label>` +
     `<p class="acct-message is-error" role="alert"${st.error ? "" : " hidden"}>${esc(st.error)}</p>` +
-    `<button type="submit" class="contact-submit"${st.busy ? " disabled" : ""}>${esc(st.busy ? x.sending : x.send)}</button>` +
+    `<button type="submit" class="contact-submit">${esc(x.toConfirm)}</button>` +
     `</div>` +
     `</form></section>`;
 }
@@ -290,13 +344,14 @@ homePage.addEventListener(
   "submit",
   (event) => {
     const form = event.target;
-    if (!form.matches("[data-contact-form]")) return;
+    const isConfirm = form.matches("[data-contact-confirm]");
+    if (!form.matches("[data-contact-form]") && !isConfirm) return;
     event.preventDefault();
     event.stopPropagation();
     const x = contactText();
     const st = contactState;
     if (st.busy) return;
-    keepContactInputs(form);
+    if (!isConfirm) keepContactInputs(form);
     const name = st.name.trim().slice(0, 50);
     const email = st.email.trim().slice(0, 254);
     const message = st.message.trim().slice(0, 2000);
@@ -308,9 +363,17 @@ homePage.addEventListener(
     else if (!st.agree) error = x.needAgree;
     st.error = error;
     if (error) {
+      st.step = "input"; // (確認の画面で、もし内容に問題があれば、入力に戻す)
       renderContactPage();
       const el = homePage.querySelector(".acct-message");
       if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    // 入力の画面からは、送らずに「確認」の画面へ
+    if (!isConfirm) {
+      st.step = "confirm";
+      renderContactPage();
+      homeView.scrollTop = 0;
       return;
     }
     st.busy = true;
@@ -318,7 +381,7 @@ homePage.addEventListener(
     getContactApi()
       .then((api) => api.send({ type: st.type, name, email, message, lang: ["ja", "en", "vi"].includes(currentLang) ? currentLang : "ja" }))
       .then(() => {
-        contactState = { type: "", name: "", email: "", message: "", agree: false, busy: false, error: "", done: true };
+        contactState = { ...CONTACT_EMPTY(), done: true };
         renderContactPage();
         homeView.scrollTop = 0;
       })
@@ -334,8 +397,17 @@ homePage.addEventListener(
 
 // 「お問い合わせ」を開き直したら、前回の「受け付けました」は消して、新しいフォームにする
 function resetContactIfDone() {
-  if (contactState.done) contactState = { type: "", name: "", email: "", message: "", agree: false, busy: false, error: "", done: false };
+  if (contactState.done) contactState = CONTACT_EMPTY();
 }
+
+// 確認の画面の「修正する」: 入れた内容はそのままで、入力の画面に戻る
+homePage.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-contact-fix]") || contactState.busy) return;
+  contactState.step = "input";
+  contactState.error = "";
+  renderContactPage();
+  homeView.scrollTop = 0;
+});
 
 // ---------------------------------------------------------------------
 // 【管理者】届いたお問い合わせ(設定の中。js/settings.js の renderSettingsSub から呼ぶ)
