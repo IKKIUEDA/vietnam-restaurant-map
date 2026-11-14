@@ -306,7 +306,6 @@ function renderDetail() {
           <h2 class="detail-name">${esc(name)}</h2>
           ${bookmarkButtonHtml(shop)}
         </div>
-        <p class="detail-bookmark-toast" id="detail-bookmark-toast" role="status"></p>
         <p class="detail-sub">${[category, areaText].filter(Boolean).map(esc).join(" ・ ")}</p>
       </div>
 
@@ -416,7 +415,6 @@ function bookmarkButtonHtml(shop) {
     `aria-label="${esc(on ? x.remove : x.add)}" title="${esc(on ? x.remove : x.add)}">${on ? BOOKMARK_ICON_ON : BOOKMARK_ICON_OFF}</button>`
   );
 }
-let bookmarkToastTimer = null;
 // 保存の状態が変わったとき(ログイン・ログアウトなど)に、店舗ページの保存マークを合わせる
 function refreshDetailBookmark() {
   const btn = detailPage && detailPage.querySelector("[data-bookmark]");
@@ -444,13 +442,7 @@ function bindBookmark() {
     btn.setAttribute("aria-label", on ? x.remove : x.add);
     btn.title = on ? x.remove : x.add;
     btn.innerHTML = on ? BOOKMARK_ICON_ON : BOOKMARK_ICON_OFF;
-    const toast = detailPage.querySelector("#detail-bookmark-toast");
-    if (toast) {
-      toast.textContent = on ? x.added : x.removed;
-      toast.classList.add("is-show");
-      clearTimeout(bookmarkToastTimer);
-      bookmarkToastTimer = setTimeout(() => toast.classList.remove("is-show"), 3000);
-    }
+    // 「保存しました」のお知らせは、toggleFavorite(js/app.js の showSaveToast)が画面の上に出す
   });
 }
 
