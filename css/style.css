@@ -11638,3 +11638,11 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
 .urank-info-now { font-size: 0.72rem; font-weight: 800; color: #ffffff; background: #2e7d32; padding: 2px 8px; border-radius: 999px; }
 .urank-info-need { margin-left: auto; font-size: 0.8rem; font-weight: 700; color: #2e7d32; }
 .urank-info-desc { margin: 8px 0 0; font-size: 0.88rem; line-height: 1.7; color: #3f4d44; }
+
+/* ===== 保存したお店: レストラン / カフェ / 食材店のタブと、何も保存していないときの案内(js/account.js の renderSavedPage) ===== */
+.saved-tabs { margin-bottom: 8px; }
+.saved-tabs .acct-tab { flex: 1; justify-content: center; text-decoration: none; }
+.saved-none { padding: 56px 16px 24px; text-align: center; }
+.saved-none-title { margin: 0 0 12px; font-size: 1.15rem; font-weight: 800; color: #1d2a22; }
+.saved-none-text { margin: 0 auto; max-width: 340px; font-size: 0.92rem; line-height: 1.7; color: #6b756e; }
+.saved-section .saved-tabs { margin-top: 0; }

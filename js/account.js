@@ -72,6 +72,9 @@ const ACCOUNT_TEXT = {
     someone: "ユーザー",
     back: "戻る",
     savedTitle: "保存したお店",
+    savedTabs: { restaurant: "レストラン", cafe: "カフェ", grocery: "食材店" },
+    savedNoneTitle: { restaurant: "保存したレストランはありません", cafe: "保存したカフェはありません", grocery: "保存した食材店はありません" },
+    savedNoneText: { restaurant: "気になるレストランを保存してみましょう。保存したお店はここに表示されます。", cafe: "気になるカフェを保存してみましょう。保存したお店はここに表示されます。", grocery: "気になる食材店を保存してみましょう。保存したお店はここに表示されます。" },
     savedEmpty: "まだ保存したお店はありません。お店の保存マークを押すと、ここに集まります。",
     savedLogin: "ログインすると、お店を保存できます。保存したお店はアカウントに記録され、どの端末からでも見られます。",
     editTitle: "プロフィールを編集",
@@ -162,6 +165,9 @@ const ACCOUNT_TEXT = {
     someone: "User",
     back: "Back",
     savedTitle: "Saved shops",
+    savedTabs: { restaurant: "Restaurants", cafe: "Cafes", grocery: "Groceries" },
+    savedNoneTitle: { restaurant: "No saved restaurants", cafe: "No saved cafes", grocery: "No saved groceries" },
+    savedNoneText: { restaurant: "Try saving restaurants that interest you. Your saved shops will appear here.", cafe: "Try saving cafes that interest you. Your saved shops will appear here.", grocery: "Try saving grocery stores that interest you. Your saved shops will appear here." },
     savedEmpty: "No saved shops yet. Tap the save icon on a shop to collect it here.",
     savedLogin: "Log in to save shops. Saved shops are kept in your account, so you can see them on any device.",
     editTitle: "Edit profile",
@@ -252,6 +258,9 @@ const ACCOUNT_TEXT = {
     someone: "Người dùng",
     back: "Quay lại",
     savedTitle: "Quán đã lưu",
+    savedTabs: { restaurant: "Nhà hàng", cafe: "Cà phê", grocery: "Tạp hóa" },
+    savedNoneTitle: { restaurant: "Chưa lưu nhà hàng nào", cafe: "Chưa lưu quán cà phê nào", grocery: "Chưa lưu tiệm tạp hóa nào" },
+    savedNoneText: { restaurant: "Hãy lưu những nhà hàng bạn quan tâm. Quán đã lưu sẽ hiển thị tại đây.", cafe: "Hãy lưu những quán cà phê bạn quan tâm. Quán đã lưu sẽ hiển thị tại đây.", grocery: "Hãy lưu những tiệm tạp hóa bạn quan tâm. Quán đã lưu sẽ hiển thị tại đây." },
     savedEmpty: "Chưa có quán nào được lưu. Nhấn biểu tượng lưu ở quán để thêm vào đây.",
     savedLogin: "Đăng nhập để lưu quán. Quán đã lưu được ghi vào tài khoản, xem được trên mọi thiết bị.",
     editTitle: "Sửa hồ sơ",
@@ -500,8 +509,8 @@ function accountHeader(title, backHref, rightHtml) {
 // 保存したお店(URL「?view=saved」)
 //   ・お店の保存マークで保存したお店の一覧。アカウントごとに保存する(ログインが必要。js/app.js の favorites)
 // ---------------------------------------------------------------------
-function savedUrl() {
-  return appBase() + "?view=saved";
+function savedUrl(tab) {
+  return appBase() + "?view=saved" + (tab && tab !== "restaurant" ? "&tab=" + encodeURIComponent(tab) : "");
 }
 function savedEntries() {
   // 新しく保存したお店を上に
@@ -530,17 +539,34 @@ function savedRowHtml(entry) {
 }
 function renderSavedPage() {
   const x = accountText();
-  const list = savedEntries();
+  // 種類ごとのタブ: レストラン / カフェ / 食材店(URL「?view=saved&tab=cafe」。はじめはレストラン)
+  const kinds = ["restaurant", "cafe", "grocery"];
+  const asked = new URLSearchParams(location.search).get("tab");
+  const tab = kinds.includes(asked) ? asked : "restaurant";
+  const all = savedEntries();
+  const list = all.filter((e) => shopType(e.shop) === tab);
   if (typeof loadTodoRatings === "function") loadTodoRatings(list.map((e) => e.shop.id));
+  const tabs =
+    `<div class="acct-tabs saved-tabs" role="tablist">` +
+    kinds
+      .map(
+        (k) =>
+          `<a class="acct-tab${k === tab ? " is-on" : ""}" role="tab" aria-selected="${k === tab}" href="${esc(savedUrl(k))}" data-acct-nav>${esc(x.savedTabs[k])}</a>`
+      )
+      .join("") +
+    `</div>`;
   homePage.innerHTML =
     accountHeader(x.savedTitle, accountUrl()) +
     `<section class="home-section saved-section">` +
     (!authUser
       ? `<div class="saved-login"><p class="saved-empty">${esc(x.savedLogin)}</p>` +
         `<button type="button" class="acct-guest-btn" data-acct-action="login">${esc(x.login)}</button></div>`
-      : list.length
-      ? `<ul class="saved-list">${list.map(savedRowHtml).join("")}</ul>`
-      : `<p class="saved-empty">${esc(x.savedEmpty)}</p>`) +
+      : tabs +
+        (list.length
+          ? `<ul class="saved-list">${list.map(savedRowHtml).join("")}</ul>`
+          : // 何も保存していない種類: 見出しと案内の文(画像はなし)
+            `<div class="saved-none"><p class="saved-none-title">${esc(x.savedNoneTitle[tab])}</p>` +
+            `<p class="saved-none-text">${esc(x.savedNoneText[tab])}</p></div>`)) +
     `</section>`;
 }
 
