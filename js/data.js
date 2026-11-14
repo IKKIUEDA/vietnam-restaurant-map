@@ -1758,6 +1758,117 @@ const restaurants = [
     category: "ベトナム料理",
   },
 
+  // 新大久保・大久保のお店(2026-11 追加。緯度・経度は国土地理院の住所検索で調べた値。営業時間は、2つ以上の情報源で一致したもの・お店が出している情報だけ載せています)
+  {
+    id: "vietnam-chan-okubo", // 食べログ: https://tabelog.com/tokyo/A1304/A130404/13122530/
+    name: { ja: "ベトナムちゃん", en: "Vietnam Chan", vi: "Vietnam Chan" },
+    address: {
+      ja: "東京都新宿区百人町1-19-17",
+      en: "1-19-17 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "1-19-17 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.701469,
+    lng: 139.696487,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+    hours: {
+      ja: "11:30~15:00(L.O. 14:30、土日祝は14:15) / 17:30~23:00(料理L.O. 22:00、ドリンクL.O. 22:30)",
+      en: "11:30–15:00 (last order 14:30; 14:15 on weekends/holidays) / 17:30–23:00 (food last order 22:00, drinks 22:30)",
+      vi: "11:30–15:00 (gọi món cuối 14:30; cuối tuần/ngày lễ 14:15) / 17:30–23:00 (món ăn cuối 22:00, đồ uống 22:30)",
+    },
+    closed: { ja: "なし", en: "Open every day", vi: "Mở cửa hằng ngày" },
+  },
+  {
+    id: "soc-con-fast-food-okubo", // 食べログ: https://tabelog.com/tokyo/A1304/A130401/13253532/
+    name: { ja: "ソッコン ファーストフード(Soc Con Fast Food)", en: "Soc Con Fast Food", vi: "Sóc Con Fast Food" },
+    address: {
+      ja: "東京都新宿区百人町2-20-1 第2岡田屋ビル1F",
+      en: "Daini Okadaya Bldg. 1F, 2-20-1 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "Daini Okadaya Bldg. 1F, 2-20-1 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.701721,
+    lng: 139.697983,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "バインミー",
+  },
+  {
+    id: "banh-mi-ngonngon-okubo", // 公式: http://www.banhmi-ngonngon.com/
+    name: "バインミーゴンゴン 大久保店",
+    address: {
+      ja: "東京都新宿区百人町1-21-17 村上ビル1F",
+      en: "Murakami Bldg. 1F, 1-21-17 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "Murakami Bldg. 1F, 1-21-17 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.700939,
+    lng: 139.697052,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "バインミー・フォー",
+  },
+  {
+    id: "banh-mi-xin-chao-okubo", // 公式: https://banhmixinchao.co.jp/ja-home/
+    name: "バインミーシンチャオ 大久保店",
+    address: {
+      ja: "東京都新宿区百人町1-23-22 1F",
+      en: "1F, 1-23-22 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "1F, 1-23-22 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.69957,
+    lng: 139.697708,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "バインミー",
+    hours: { ja: "10:00~21:00", en: "10:00–21:00", vi: "10:00–21:00" },
+  },
+  {
+    id: "michan-shinokubo", // 公式: https://michan-shinokubo.owst.jp/
+    name: "ベトナム料理 みーちゃん 新大久保店",
+    address: {
+      ja: "東京都新宿区百人町1-7-5 座kuraビル3F",
+      en: "Zakura Bldg. 3F, 1-7-5 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "Zakura Bldg. 3F, 1-7-5 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.700161,
+    lng: 139.700653,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+    hours: {
+      ja: "11:00~16:45(L.O. 16:00) / 17:00~23:00(料理L.O. 22:30、ドリンクL.O. 22:00)",
+      en: "11:00–16:45 (last order 16:00) / 17:00–23:00 (food last order 22:30, drinks 22:00)",
+      vi: "11:00–16:45 (gọi món cuối 16:00) / 17:00–23:00 (món ăn cuối 22:30, đồ uống 22:00)",
+    },
+    closed: { ja: "不定休", en: "Irregular", vi: "Không cố định" },
+  },
+  {
+    id: "vietnam-restaurant-333-shinokubo", // 食べログ(お店の公式情報): https://tabelog.com/tokyo/A1304/A130404/13209692/
+    name: { ja: "ベトナム料理レストラン 333(バーバーバー)", en: "Vietnamese Restaurant 333 (Ba Ba Ba)", vi: "Nhà hàng Việt Nam 333 (Ba Ba Ba)" },
+    address: {
+      ja: "東京都新宿区百人町1-8-11 オリエンタルビル1F",
+      en: "Oriental Bldg. 1F, 1-8-11 Hyakunincho, Shinjuku-ku, Tokyo",
+      vi: "Oriental Bldg. 1F, 1-8-11 Hyakunincho, Quận Shinjuku, Tokyo",
+    },
+    lat: 35.699364,
+    lng: 139.700577,
+    prefecture: "東京都",
+    area: { ja: "新大久保", en: "Shin-Okubo", vi: "Shin-Okubo" },
+    dishes: ["ベトナム料理"],
+    category: "ベトナム料理",
+    hours: {
+      ja: "11:00~15:00(L.O. 14:30) / 17:00~23:00(L.O. 22:00)",
+      en: "11:00–15:00 (last order 14:30) / 17:00–23:00 (last order 22:00)",
+      vi: "11:00–15:00 (gọi món cuối 14:30) / 17:00–23:00 (gọi món cuối 22:00)",
+    },
+    closed: { ja: "なし", en: "Open every day", vi: "Mở cửa hằng ngày" },
+  },
+
   // ---- ここから ベトナム食材店(type: "grocery")----
   // ※ 緯度・経度は、国土地理院の住所検索で調べた値です(金田東6丁目のお店は「丁目」までの精度)。
   {
