@@ -933,13 +933,44 @@ function toggleFavorite(entry) {
     }
     return false;
   }
-  if (favorites.has(key)) favorites.delete(key);
-  else favorites.add(key);
+  const added = !favorites.has(key);
+  if (added) favorites.add(key);
+  else favorites.delete(key);
   persistFavorites();
+  showSaveToast(added);
   renderFavorites();
   // 「お気に入りのみ表示」中に解除したお店は、地図とリストから外す(地図は動かさない)
   if (favoritesOnly) applyFilters(false, true);
   return true;
+}
+
+// 保存した・外したときに、画面の上に緑の小さなお知らせを出す(約2秒で消える。続けて押したときは、出し直す)
+const SAVE_TOAST_TEXT = {
+  ja: { add: "保存しました", remove: "保存を外しました" },
+  en: { add: "Saved", remove: "Removed from saved" },
+  vi: { add: "Đã lưu", remove: "Đã bỏ lưu" },
+};
+let saveToastTimer = null;
+function showSaveToast(added) {
+  const x = SAVE_TOAST_TEXT[currentLang] || SAVE_TOAST_TEXT.ja;
+  let el = document.getElementById("save-toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "save-toast";
+    el.className = "save-toast";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+  el.innerHTML =
+    `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#ffffff"/>` +
+    `<path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+    `<span>${esc(added ? x.add : x.remove)}</span>`;
+  el.classList.remove("is-show");
+  void el.offsetWidth; // アニメーションを、はじめからやり直す
+  el.classList.add("is-show");
+  clearTimeout(saveToastTimer);
+  saveToastTimer = setTimeout(() => el.classList.remove("is-show"), 2000);
 }
 
 let favoritesReadyUid = null; // 保存したお店を読み込み済みのアカウント
