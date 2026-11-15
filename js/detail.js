@@ -601,7 +601,8 @@ function renderContentSectionHtml(section) {
   const subsHtml = (section.subs || [])
     .map((sub) => `<section class="terms-sub"><h4>${esc(sub.title)}</h4>${(sub.paras || []).map(para).join("")}</section>`)
     .join("");
-  return `<section class="terms-section"><h3>${esc(section.title)}</h3>${bodyHtml}${parasHtml}${rowsHtml}${listHtml}${afterHtml}${subsHtml}</section>`;
+  const headHtml = section.title ? `<h3>${esc(section.title)}</h3>` : ""; // 見出しが空の項目(事業者情報など)は、見出しを出さない
+  return `<section class="terms-section">${headHtml}${bodyHtml}${parasHtml}${rowsHtml}${listHtml}${afterHtml}${subsHtml}</section>`;
 }
 
 function renderContentPage() {
@@ -610,11 +611,16 @@ function renderContentPage() {
   if (!meta) return; // 直接は起こらないはず(routeFromLocation が、事前に絞っているため)
 
   const sectionsHtml = (t[meta.sectionsKey] || []).map(renderContentSectionHtml).join("");
+  // 事業者情報だけ: 白い背景 + 上に大きなロゴの枠
+  const isAbout = currentContentPage === "about";
+  contentPageEl.classList.toggle("is-about", isAbout);
+  contentPageView.classList.toggle("is-about", isAbout);
 
   contentPageEl.innerHTML = `
     <a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>
     <article>
       <h2 class="terms-title">${esc(t[meta.titleKey])}</h2>
+      ${isAbout ? `<div class="about-logo-card"><img src="images/logo.png" width="158" height="208" alt="${esc(t.title || "Vietnam Foodie")}"></div>` : ""}
       ${t[meta.introKey] ? `<p class="terms-intro">${esc(t[meta.introKey])}</p>` : ""}
       ${sectionsHtml}
     </article>`;
