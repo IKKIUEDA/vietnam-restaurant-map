@@ -617,7 +617,6 @@ function renderContentPage() {
   contentPageView.classList.toggle("is-about", isAbout);
 
   contentPageEl.innerHTML = `
-    <a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>
     <article>
       <h2 class="terms-title">${esc(t[meta.titleKey])}</h2>
       ${isAbout ? `<div class="about-logo-card"><img src="images/logo.png" width="158" height="208" alt="${esc(t.title || "Vietnam Foodie")}"></div>` : ""}
