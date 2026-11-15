@@ -11835,7 +11835,7 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
 }
 #content-page.is-about .terms-row dd p {
   line-height: 1.9;
-  color: var(--c-text);
+  color: #111111;
 }
 @media (min-width: 700px) {
   .about-logo-card {
@@ -11850,5 +11850,29 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
     grid-template-columns: 200px 1fr;
     gap: 32px;
     padding: 28px 8px;
+  }
+}
+
+/* ===== 固定ページ(事業者情報・プライバシーポリシー・利用規約): 白い背景・黒い文字。「一覧に戻る」は出さない ===== */
+#content-page-view {
+  background: #ffffff;
+}
+#content-page,
+#content-page .terms-title,
+#content-page .terms-intro,
+#content-page .terms-section h3,
+#content-page .terms-sub h4,
+#content-page .terms-section p,
+#content-page .terms-list,
+#content-page .terms-row dt,
+#content-page .terms-row dd p {
+  color: #111111;
+}
+#content-page .terms-title {
+  margin-top: 28px;
+}
+@media (min-width: 900px) {
+  #content-page .terms-title {
+    margin-top: 40px;
   }
 }
