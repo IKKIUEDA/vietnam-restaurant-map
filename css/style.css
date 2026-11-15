@@ -11799,3 +11799,56 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
     padding: 12px 0;
   }
 }
+
+/* ===== 事業者情報ページ: 白い背景 + 上に大きなロゴの枠 + すっきりした表 ===== */
+#content-page-view.is-about {
+  background: #ffffff;
+}
+.about-logo-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 28px;
+  padding: 36px 16px;
+  border: 1px solid #e3e5df;
+  border-radius: 24px;
+  background: #ffffff;
+}
+.about-logo-card img {
+  display: block;
+  width: auto;
+  height: 150px;
+}
+#content-page.is-about .terms-section {
+  margin-bottom: 0;
+}
+#content-page.is-about .terms-rows {
+  margin-top: 0;
+  border-top: none;
+}
+#content-page.is-about .terms-row {
+  padding: 22px 4px;
+  border-bottom: 1px solid #e3e5df;
+}
+#content-page.is-about .terms-row dt {
+  font-size: 1rem;
+}
+#content-page.is-about .terms-row dd p {
+  line-height: 1.9;
+  color: var(--c-text);
+}
+@media (min-width: 700px) {
+  .about-logo-card {
+    margin: 28px 0 36px;
+    padding: 64px 24px;
+    border-radius: 28px;
+  }
+  .about-logo-card img {
+    height: 220px;
+  }
+  #content-page.is-about .terms-row {
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+    padding: 28px 8px;
+  }
+}
