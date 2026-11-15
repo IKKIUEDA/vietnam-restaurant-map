@@ -423,7 +423,7 @@ const ui = {
     aboutIntro: "",
     aboutSections: [
       {
-        "title": "サービス概要",
+        "title": "",
         "rows": [
           {
             "label": "サービス名",
@@ -440,32 +440,9 @@ const ui = {
           {
             "label": "サービス内容",
             "value": [
-              "ベトナムフーディーは、日本国内のベトナム料理店、ベトナム食材店、カフェなど、ベトナムに関連するお店やスポットを地図から検索できるWebサービスです。",
-              "店舗情報や利用者の投稿を通じて、お店探しや新しいベトナムスポットとの出会いをサポートします。"
+              "ベトナムフーディーは、日本国内のベトナム料理店、ベトナム食材店、カフェなど、ベトナムに関連するお店やスポットを地図から検索できるWebサービスです。"
             ]
           }
-        ]
-      },
-      {
-        "title": "お問い合わせ",
-        "paras": [
-          "本サービスに関するご質問、ご意見、ご要望などは、以下のメールアドレスまたはお問い合わせフォームからお問い合わせください。"
-        ],
-        "rows": [
-          {
-            "label": "メールアドレス",
-            "value": [
-              "sales@compass-story.com"
-            ],
-            "link": "mailto:sales@compass-story.com"
-          },
-              {
-                "label": "お問い合わせフォーム",
-                "value": [
-                  "お問い合わせフォームはこちら"
-                ],
-                "contact": true
-              }
         ]
       }
     ],
@@ -1030,7 +1007,7 @@ const ui = {
     aboutIntro: "",
     aboutSections: [
       {
-        "title": "Service overview",
+        "title": "",
         "rows": [
           {
             "label": "Service name",
@@ -1047,32 +1024,9 @@ const ui = {
           {
             "label": "What we offer",
             "value": [
-              "Vietnam Foodie is a web service for finding Vietnam-related shops and spots in Japan, such as Vietnamese restaurants, Vietnamese grocery stores and cafes, on a map.",
-              "Through shop information and posts from users, we help you find shops and discover new Vietnamese spots."
+              "Vietnam Foodie is a web service for finding Vietnam-related shops and spots in Japan, such as Vietnamese restaurants, Vietnamese grocery stores and cafes, on a map."
             ]
           }
-        ]
-      },
-      {
-        "title": "Contact",
-        "paras": [
-          "For questions, feedback or requests about the Service, please contact us by email or through the contact form below."
-        ],
-        "rows": [
-          {
-            "label": "Email",
-            "value": [
-              "sales@compass-story.com"
-            ],
-            "link": "mailto:sales@compass-story.com"
-          },
-              {
-                "label": "Contact form",
-                "value": [
-                  "Open the contact form"
-                ],
-                "contact": true
-              }
         ]
       }
     ],
@@ -1636,7 +1590,7 @@ const ui = {
     aboutIntro: "",
     aboutSections: [
       {
-        "title": "Tổng quan dịch vụ",
+        "title": "",
         "rows": [
           {
             "label": "Tên dịch vụ",
@@ -1653,32 +1607,9 @@ const ui = {
           {
             "label": "Nội dung dịch vụ",
             "value": [
-              "Vietnam Foodie là dịch vụ web giúp bạn tìm trên bản đồ các cửa hàng và địa điểm liên quan đến Việt Nam tại Nhật Bản, như nhà hàng Việt Nam, cửa hàng thực phẩm Việt Nam và quán cà phê.",
-              "Thông qua thông tin cửa hàng và bài đăng của người dùng, chúng tôi hỗ trợ bạn tìm quán và khám phá những địa điểm Việt Nam mới."
+              "Vietnam Foodie là dịch vụ web giúp bạn tìm trên bản đồ các cửa hàng và địa điểm liên quan đến Việt Nam tại Nhật Bản, như nhà hàng Việt Nam, cửa hàng thực phẩm Việt Nam và quán cà phê."
             ]
           }
-        ]
-      },
-      {
-        "title": "Liên hệ",
-        "paras": [
-          "Nếu bạn có câu hỏi, ý kiến hoặc yêu cầu về Dịch vụ, vui lòng liên hệ qua địa chỉ email hoặc biểu mẫu liên hệ dưới đây."
-        ],
-        "rows": [
-          {
-            "label": "Email",
-            "value": [
-              "sales@compass-story.com"
-            ],
-            "link": "mailto:sales@compass-story.com"
-          },
-              {
-                "label": "Biểu mẫu liên hệ",
-                "value": [
-                  "Mở biểu mẫu liên hệ"
-                ],
-                "contact": true
-              }
         ]
       }
     ],
