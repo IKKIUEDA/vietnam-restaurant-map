@@ -698,8 +698,6 @@ function refreshHomeRec() {
 }
 
 function renderHome() {
-  // スマホ(幅が狭い画面)では、検索窓の案内文を短くする(「(例: 千葉駅)」まで入れると、途中で切れてしまうため)
-  const narrowScreen = window.matchMedia("(max-width: 480px)").matches;
   const h = homeText();
   const t = ui[currentLang];
   const count = (type) => restaurants.filter((s) => shopType(s) === type).length;
@@ -737,17 +735,8 @@ function renderHome() {
     // 見出しの下の説明(「関東のベトナム料理・食材店・カフェ ○件」)は出さない(トップ画像は見出しだけにする)
     `</section>` +
     `</div>` +
-    // 検索窓: トップ画像のすぐ下。薄い灰色の帯の上に、白い角丸の検索バー(スマホ・PC 共通)
-    //   ・右上の🔍(ensureHeaderSearch)を押すと、ここに移って、すぐ入力できる
-    //   ・スマホでは「探す」ボタンを隠し、キーボードの「検索」で探す
-    `<div class="home-search-band">` +
-    `<form class="home-search" role="search">` +
-    `<label class="visually-hidden" for="home-search-input">${esc(h.searchLabel)}</label>` +
-    `<span class="home-search-box">${homeIcon("search", 20)}` +
-    `<input id="home-search-input" type="search" autocomplete="off" placeholder="${esc(narrowScreen ? h.searchPlaceholderShort : h.searchPlaceholder)}" enterkeyhint="search">` +
-    `<button type="submit" class="home-search-btn">${esc(h.searchButton)}</button></span>` +
-    `</form>` +
-    `</div>` +
+    // 検索窓: トップ画像のすぐ下の、灰色の帯の検索バーは廃止(スマホ・PC 共通)。
+    //   検索は、右上の🔍(ensureHeaderSearch)だけから行う(見出しの直下に、重複した検索窓を置かない)
     // ベトナムフーディーの紹介(赤い背景。js/home-intro.js)
     (typeof homeIntroHtml === "function" ? homeIntroHtml() : "") +
     // ベトナムフーディーでできること(js/feature-guide.js)と、トラベル・リスト(js/todo.js): 検索窓のすぐ下、カテゴリーから探すの上
