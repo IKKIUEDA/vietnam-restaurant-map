@@ -1676,6 +1676,7 @@ function createPhotosState(shopId) {
     message: null, // { key: 文言のキー, error: true/false }
     deletingId: null, // 削除中の写真ID(自分の写真を削除しているとき)
     lightboxIndex: null, // 拡大表示中の写真の、一覧内での位置(null = 閉じている)
+    lightboxSlideDir: null, // 直前にスワイプした向き("next"/"prev")。写真の切り替えアニメーションに一度だけ使う
     // 誰でも使える、写真の報告(ログインは不要)
     reportFormPhotoId: null, // 報告フォームを開いている写真のID(nullなら、どれも開いていない)
     reportReason: "", // フォームで選んでいる理由のキー
@@ -2102,13 +2103,18 @@ function renderPhotos() {
     : "";
 
   // 写真の拡大表示(画面いっぱいに写真を出し、右側に いいね・コメント・シェア、左下に 投稿者・説明・お店の名前)
-  //   ・上下にスワイプ(パソコンは ↑↓ キー)で、前後の写真へ
+  //   ・左右にスワイプ(パソコンは ←→ キー)で、前後の写真へ。切り替わるとき、写真が横にスライドして入れ替わる
+  //   ・スマホでスワイプして写真が切り替わったときは、カチッと短く振動させる(navigator.vibrate。対応していない端末では何もしない)
   //   ・コメントと、削除などの操作は、下から出てくるシートの中に出す
   const lightboxPhoto = state.lightboxIndex !== null ? visiblePhotos[state.lightboxIndex] : null;
   let lightboxHtml = "";
   if (lightboxPhoto) {
     const v = photoViewerText();
     const lp = lightboxPhoto;
+    // 直前のスワイプの向きに合わせて、写真が左右どちらから入ってくるかを決める(読み終えたら、すぐに消す = 次の描き直しでは再生しない)
+    const slideDir = state.lightboxSlideDir;
+    state.lightboxSlideDir = null;
+    const slideClass = slideDir === "next" ? " pv-img-in-next" : slideDir === "prev" ? " pv-img-in-prev" : "";
     const cState = getPhotoCommentsState(state, lp.id);
     const commentCount = (isAdmin ? cState.list : cState.list.filter((c) => !c.hidden)).length;
     const liked = !!state.myLikes[lp.id];
@@ -2129,7 +2135,7 @@ function renderPhotos() {
       : "";
     lightboxHtml = `<div class="photo-lightbox pv" id="photo-lightbox" role="dialog" aria-modal="true" aria-label="${esc(t.photosEnlarge)}">
       <div class="pv-bg" style="background-image:url('${esc(lp.secure_url)}')" aria-hidden="true"></div>
-      <img class="pv-img" src="${esc(lp.secure_url)}" alt="${esc(lp.description || categoryLabel || "")}">
+      <img class="pv-img${slideClass}" src="${esc(lp.secure_url)}" alt="${esc(lp.description || categoryLabel || "")}">
       <div class="pv-shade-top" aria-hidden="true"></div><div class="pv-shade-bottom" aria-hidden="true"></div>
       <div class="pv-top">
         <button type="button" class="pv-back" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">${PV_ICONS.back}</button>
@@ -3822,15 +3828,18 @@ const PV_ICONS = {
 function bindPhotoViewer(box, state, visiblePhotos) {
   const viewer = box.querySelector("#photo-lightbox");
   if (!viewer) return;
+  // step: 1 = 次の写真へ、-1 = 前の写真へ。動けたら true、端(最初/最後)で動けなかったら false を返す
   const go = (step) => {
     const next = state.lightboxIndex + step;
-    if (next < 0 || next >= visiblePhotos.length) return;
+    if (next < 0 || next >= visiblePhotos.length) return false;
+    state.lightboxSlideDir = step > 0 ? "next" : "prev"; // 次の描き直しで、写真を横にスライドさせる向き
     state.lightboxIndex = next;
     state.viewerSheet = null;
     state.viewerCaptionOpen = false;
     const photo = visiblePhotos[next];
     if (photo && !state.commentsByPhoto[photo.id]) loadPhotoComments(state, photo.id);
     renderPhotos();
+    return true;
   };
   viewer.querySelectorAll("[data-pv-sheet]").forEach((btn) =>
     btn.addEventListener("click", () => {
@@ -3876,7 +3885,9 @@ function bindPhotoViewer(box, state, visiblePhotos) {
       toast.classList.add("is-on");
       setTimeout(() => toast.classList.remove("is-on"), 2500);
     });
-  // 上下のスワイプで、前後の写真へ(シートを開いているときは、しない)
+  // 左右のスワイプで、前後の写真へ(シートを開いているときは、しない)
+  //   ・右から左にスワイプ → 次の写真、左から右にスワイプ → 前の写真(写真アプリと同じ向き)
+  //   ・切り替わったら、スマホ(navigator.vibrate に対応した端末)だけ、カチッと短く振動させる
   let start = null;
   viewer.addEventListener(
     "touchstart",
@@ -3891,7 +3902,10 @@ function bindPhotoViewer(box, state, visiblePhotos) {
     const dx = e.changedTouches[0].clientX - start.x;
     const dy = e.changedTouches[0].clientY - start.y;
     start = null;
-    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx) * 1.5) go(dy < 0 ? 1 : -1);
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      const moved = go(dx < 0 ? 1 : -1);
+      if (moved && typeof navigator.vibrate === "function") navigator.vibrate(12);
+    }
   });
   // 写真の上で指を動かしても、後ろのページがスクロールしないようにする(シートの中は、スクロールできる)
   viewer.addEventListener(
