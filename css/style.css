@@ -8366,7 +8366,7 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
   pointer-events: none;
 }
 .pv-shade-top { top: 0; height: 120px; background: linear-gradient(rgba(0, 0, 0, 0.55), transparent); }
-.pv-shade-bottom { bottom: 0; height: 260px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.7)); }
+.pv-shade-bottom { bottom: 0; height: 320px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.7)); }
 .pv-top {
   position: absolute;
   top: 0;
@@ -8375,7 +8375,8 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px 6px;
+  /* 左上の「戻る」ボタンは無くしたので、お店の名前を左端から少し離して置く */
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) 14px 10px 16px;
 }
 .pv-back {
   display: grid;
@@ -8467,7 +8468,32 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
   left: 0;
   right: 76px;
   bottom: 0;
-  padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  /* いちばん下には、閉じる「✕」ボタン(56px)があるので、その上に置く */
+  padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 88px);
+}
+/* 写真の拡大表示を閉じる「✕」: 画面の左下の、半透明の丸いボタン */
+.pv-close-fab {
+  position: absolute;
+  left: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.28);
+  border: none;
+  border-radius: 50%;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pv-close-fab:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.4); }
+@media (hover: hover) {
+  .pv-close-fab:hover { background: rgba(255, 255, 255, 0.4); }
 }
 .pv-author {
   display: flex;
