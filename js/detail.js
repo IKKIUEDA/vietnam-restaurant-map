@@ -732,7 +732,6 @@ function updateDistanceUI() {
   if (geoPermission === "denied" || !navigator.geolocation) return; // 許可されていないので、距離は出さない
   box.innerHTML =
     `<button type="button" class="btn btn-small" id="distance-btn">${esc(t.distanceButton)}</button>` +
-    `<p class="location-note">${esc(t.nearbyNote)}</p>` + // 許可を求める前に、利用目的を伝える
     (distanceState === "failed" ? `<p class="detail-note">${esc(t.distanceFailed)}</p>` : "");
   box.querySelector("#distance-btn").addEventListener("click", () => locateForDetail(true));
 }
