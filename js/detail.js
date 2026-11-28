@@ -2123,6 +2123,7 @@ function renderPhotos() {
     : "";
 
   // 写真の拡大表示(画面いっぱいに写真を出し、右側に いいね・コメント・シェア、左下に 投稿者・説明・お店の名前)
+  //   ・閉じるボタン「✕」は、画面の左下の丸いボタン(片手で押しやすいように。左上には置かない)
   //   ・左右にスワイプ(パソコンは ←→ キー)で、前後の写真へ。切り替わるとき、写真が横にスライドして入れ替わる
   //   ・写真が2枚以上あるときは、写真の左右に「‹」「›」の丸いボタンも出す(最初の写真では「‹」、最後の写真では「›」を出さない)
   //   ・スマホでスワイプして写真が切り替わったときは、カチッと短く振動させる(swipeHaptic。Android も iPhone も)
@@ -2161,7 +2162,6 @@ function renderPhotos() {
       ${state.lightboxIndex > 0 ? `<button type="button" class="pv-nav pv-nav-prev" data-pv-go="-1" aria-label="${esc(v.prevPhoto)}">${PV_ICONS.navPrev}</button>` : ""}
       ${state.lightboxIndex < visiblePhotos.length - 1 ? `<button type="button" class="pv-nav pv-nav-next" data-pv-go="1" aria-label="${esc(v.nextPhoto)}">${PV_ICONS.navNext}</button>` : ""}
       <div class="pv-top">
-        <button type="button" class="pv-back" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">${PV_ICONS.back}</button>
         <span class="pv-title">${esc(pvShopName)}</span>
         <span class="pv-pos">${state.lightboxIndex + 1} / ${visiblePhotos.length}</span>
       </div>
@@ -2185,6 +2185,7 @@ function renderPhotos() {
         ${lp.description ? `<p class="pv-caption${state.viewerCaptionOpen ? " is-open" : ""}" data-pv-caption>${esc(lp.description)}</p>` + translateButtonHtml(lp.description, "dark") : ""}
         ${pvShopName ? `<p class="pv-place">${PV_ICONS.pin}<span>${esc(pvShopName)}</span></p>` : ""}
       </div>
+      <button type="button" class="pv-close-fab" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">${PV_ICONS.close}</button>
       <p class="pv-toast" role="status" aria-live="polite"></p>
       ${sheetHtml}
     </div>`;
@@ -3829,6 +3830,8 @@ const PV_SVG = (d, fill) =>
   `<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="${fill || "none"}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const PV_ICONS = {
   back: PV_SVG('<path d="M15 5l-7 7 7 7"/>'),
+  // 写真の拡大表示を閉じる「✕」(画面の左下の丸いボタン)
+  close: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>',
   // 写真の左右の「‹」「›」ボタン(丸の中に入れるので、少し小さめ)
   navPrev: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>',
   navNext: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg>',
