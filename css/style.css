@@ -8959,7 +8959,7 @@ body.view-detail.is-review-writing { overflow: hidden; }
   .photo-grid.photo-grid-3 .photo-thumb { border-radius: 10px; }
 }
 
-/* ===== 地図の検索ボックスの下の「エリア・カテゴリ」(js/map-quick.js) ===== */
+/* ===== 地図の検索ボックスの下の「エリア」「カテゴリーから探す」(js/map-quick.js) ===== */
 #search-bar { position: relative; }
 .map-quick { max-width: 640px; margin-top: 8px; }
 .map-quick-row {
@@ -8990,7 +8990,6 @@ body.view-detail.is-review-writing { overflow: hidden; }
 .map-quick-chip img { width: 22px; height: 22px; object-fit: contain; margin: -3px 0; }
 .map-quick-chip.is-on { color: #fff; background: #2e7d32; border-color: #2e7d32; }
 .map-quick-chip.is-on img { background: #fff; border-radius: 50%; }
-.map-quick-sep { flex: none; width: 1px; height: 22px; background: #dfe5dc; }
 .map-quick-panel {
   position: absolute;
   left: 12px;
@@ -9041,6 +9040,9 @@ body.view-detail.is-review-writing { overflow: hidden; }
 }
 .map-quick-area-item small { font-size: 0.75rem; font-weight: 600; color: #6b756e; }
 .map-quick-area-item.is-on { color: #1f5e23; background: #e8f3e8; border-color: #2e7d32; }
+/* カテゴリーの一覧: アイコン+名前(件数は出さない) */
+.map-quick-type-name { display: inline-flex; align-items: center; gap: 8px; }
+.map-quick-type-name img { width: 26px; height: 26px; object-fit: contain; }
 
 /* ===== トップ画像があるお店のピン: ピンの上に「写真+店名」の札(js/app.js の createShopIcon) ===== */
 .shop-marker.has-photo-label { overflow: visible; }
