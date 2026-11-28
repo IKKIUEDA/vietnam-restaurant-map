@@ -545,7 +545,8 @@ function bindBackLinksIn(container) {
     link.addEventListener("click", (event) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return; // 新しいタブで開く操作は、そのまま
       event.preventDefault();
-      goToList();
+      if (link.dataset.back === "history") goBackFromContent();
+      else goToList();
     })
   );
 }
@@ -564,6 +565,21 @@ function backFabHtml(t) {
     `<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>`;
 }
 
+// 事業者情報・プライバシーポリシー・利用規約の、左下の「戻る」ボタン(見た目は、お店のページのものと同じ)
+//   ・サイトの中から開いたとき(ホームの一番下・アカウントの設定など): ブラウザの「戻る」と同じで、元の画面に戻る
+//   ・検索やリンクから直接開いたとき: ホームへ
+const CONTENT_BACK_TEXT = { ja: "戻る", en: "Back", vi: "Quay lại" };
+function contentBackFabHtml() {
+  const label = CONTENT_BACK_TEXT[currentLang] || CONTENT_BACK_TEXT.ja;
+  return `<a class="detail-back-fab" data-back="history" href="${esc(homeUrl())}" aria-label="${esc(label)}" title="${esc(label)}">` +
+    `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+    `<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>`;
+}
+function goBackFromContent() {
+  if (history.state && history.state.app) history.back();
+  else navigate(homeUrl());
+}
+
 // 戻るボタンが、下の権利表示(フッター)に重ならないよう、フッターの高さをCSSに伝える
 function updateBackFabOffset() {
   const footer = document.getElementById("site-footer");
@@ -571,7 +587,7 @@ function updateBackFabOffset() {
   document.documentElement.style.setProperty("--detail-footer-h", h + "px");
 }
 window.addEventListener("resize", () => {
-  if (document.body.classList.contains("view-detail")) updateBackFabOffset();
+  if (document.body.classList.contains("view-detail") || document.body.classList.contains("view-content-page")) updateBackFabOffset();
 });
 
 // ---------------------------------------------------------------------
@@ -643,9 +659,11 @@ function renderContentPage() {
       ${isAbout ? `<div class="about-logo-card"><img src="images/logo.png" width="158" height="208" alt="${esc(t.title || "Vietnam Foodie")}"></div>` : ""}
       ${t[meta.introKey] ? `<p class="terms-intro">${esc(t[meta.introKey])}</p>` : ""}
       ${sectionsHtml}
-    </article>`;
+    </article>
+    ${contentBackFabHtml()}`;
 
   bindBackLinksIn(contentPageEl);
+  updateBackFabOffset();
 }
 
 // 「あなたのレビューをシェアしよう」のボタン
