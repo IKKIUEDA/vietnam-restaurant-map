@@ -11929,53 +11929,60 @@ body.is-home-top .home-top .home-lead { margin-top: 16px; font-size: 0.95rem; }
 }
 
 /* =====================================================================
-   お店のページ: 左下に浮かぶ「戻る」ボタン(スマホだけ)
-   ・スマホでは、上の「ベトナムフーディー」の帯(ロゴ・言語の切り替え)と「← 一覧に戻る」を出さず、
+   お店のページ: 左下に浮かぶ「戻る」ボタン(スマホ・PC 共通)
+   ・上の「ベトナムフーディー」の帯(ロゴ・アカウント・言語の切り替え)と「← 一覧に戻る」は出さず、
      画面の左下の丸い矢印ボタンで戻る
-   ・PC は、これまで通り(ヘッダーと「← 一覧に戻る」を出す。丸いボタンは出さない)
    ===================================================================== */
-.detail-back-fab {
+body.view-detail > header,
+body.view-detail .detail-page > .detail-back {
   display: none;
 }
 
-@media (max-width: 600px) {
-  body.view-detail > header,
-  body.view-detail .detail-page > .detail-back {
-    display: none;
-  }
+/* ヘッダーが無くなるので、店舗の写真を画面の上から表示する(ホーム画面に追加したときは、時計などの分だけ下げる) */
+body.view-detail .detail-page {
+  padding-top: calc(env(safe-area-inset-top) + 16px);
+}
 
-  /* ヘッダーが無くなるので、店舗の写真を画面のいちばん上から表示する(ホーム画面に追加したときは、時計などの分だけ下げる) */
+.detail-back-fab {
+  position: fixed;
+  left: 24px;
+  bottom: calc(var(--detail-footer-h, 0px) + 24px);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(40, 40, 40, 0.55);
+  color: #ffffff;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.detail-back-fab:active {
+  transform: scale(0.94);
+  background: rgba(40, 40, 40, 0.7);
+}
+@media (hover: hover) {
+  .detail-back-fab:hover { background: rgba(40, 40, 40, 0.7); }
+}
+
+/* スマホ: 写真は画面のいちばん上から(すき間なし)。ボタンは少し端に寄せる */
+@media (max-width: 600px) {
   body.view-detail .detail-page {
     padding-top: env(safe-area-inset-top);
   }
-
   .detail-back-fab {
-    position: fixed;
     left: 16px;
     bottom: calc(var(--detail-footer-h, 0px) + 16px);
-    z-index: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgba(40, 40, 40, 0.55);
-    color: #ffffff;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
   }
-  .detail-back-fab:active {
-    transform: scale(0.94);
-    background: rgba(40, 40, 40, 0.7);
-  }
+}
 
-  /* 写真の拡大表示中・レビューを書いている間は、戻るボタンを隠す(それぞれに「閉じる」がある) */
-  body.is-photo-lightbox .detail-back-fab,
-  body.is-review-writing .detail-back-fab {
-    display: none;
-  }
+/* 写真の拡大表示中・レビューを書いている間は、戻るボタンを隠す(それぞれに「閉じる」がある) */
+body.is-photo-lightbox .detail-back-fab,
+body.is-review-writing .detail-back-fab {
+  display: none;
 }

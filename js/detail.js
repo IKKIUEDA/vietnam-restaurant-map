@@ -555,9 +555,8 @@ function bindBackLinks() {
   updateBackFabOffset();
 }
 
-// スマホ: 画面の左下に浮かぶ「戻る」ボタン(丸い矢印)。押すと「← 一覧に戻る」と同じ動き
-//   ・スマホでは、上のヘッダーと「← 一覧に戻る」を出さず、このボタンだけにする(CSS)
-//   ・PC では、このボタンは出さない(CSS)
+// 画面の左下に浮かぶ「戻る」ボタン(丸い矢印)。押すと「← 一覧に戻る」と同じ動き
+//   ・スマホ・PC とも、上のヘッダーと「← 一覧に戻る」を出さず、このボタンだけにする(CSS)
 function backFabHtml(t) {
   const label = String(t.detailBack).replace(/^←\s*/, ""); // 読み上げ用(矢印の記号は除く)
   return `<a class="detail-back-fab" href="${esc(listUrl())}" aria-label="${esc(label)}" title="${esc(label)}">` +
