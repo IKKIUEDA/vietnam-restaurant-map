@@ -8402,7 +8402,8 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
 .pv-rail {
   position: absolute;
   right: 8px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 120px);
+  /* 写真の真ん中の高さには「›」ボタンがあるので、重ならないよう、下のほうに置く */
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -8428,6 +8429,39 @@ body.view-detail.is-photo-lightbox { overflow: hidden; }
 }
 .photo-lightbox .pv-act.photo-like-btn.is-liked { color: #ff5a6e; background: none; }
 .photo-lightbox .pv-act.photo-like-btn.is-liked span { color: #fff; }
+/* 画面の高さが低い端末: いいね・コメントなどの間を詰めて、「›」ボタンに重ならないようにする */
+@media (max-height: 680px) {
+  .pv-rail { gap: 10px; }
+}
+/* 写真の左右の「‹」「›」ボタン(写真が2枚以上あるとき。最初の写真では「‹」、最後の写真では「›」は出さない) */
+.pv-nav {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pv-nav-prev { left: 12px; }
+.pv-nav-next { right: 14px; }
+.pv-nav:active { background: rgba(0, 0, 0, 0.55); }
+@media (hover: hover) {
+  .pv-nav:hover { background: rgba(0, 0, 0, 0.55); }
+}
+/* PC: 少し大きく、写真の端から離す */
+@media (min-width: 601px) {
+  .pv-nav { width: 48px; height: 48px; }
+  .pv-nav-prev { left: 24px; }
+  .pv-nav-next { right: 24px; }
+}
 .pv-info {
   position: absolute;
   left: 0;
