@@ -2104,6 +2104,7 @@ function renderPhotos() {
 
   // 写真の拡大表示(画面いっぱいに写真を出し、右側に いいね・コメント・シェア、左下に 投稿者・説明・お店の名前)
   //   ・左右にスワイプ(パソコンは ←→ キー)で、前後の写真へ。切り替わるとき、写真が横にスライドして入れ替わる
+  //   ・写真が2枚以上あるときは、写真の左右に「‹」「›」の丸いボタンも出す(最初の写真では「‹」、最後の写真では「›」を出さない)
   //   ・スマホでスワイプして写真が切り替わったときは、カチッと短く振動させる(navigator.vibrate。対応していない端末では何もしない)
   //   ・コメントと、削除などの操作は、下から出てくるシートの中に出す
   const lightboxPhoto = state.lightboxIndex !== null ? visiblePhotos[state.lightboxIndex] : null;
@@ -2137,6 +2138,8 @@ function renderPhotos() {
       <div class="pv-bg" style="background-image:url('${esc(lp.secure_url)}')" aria-hidden="true"></div>
       <img class="pv-img${slideClass}" src="${esc(lp.secure_url)}" alt="${esc(lp.description || categoryLabel || "")}">
       <div class="pv-shade-top" aria-hidden="true"></div><div class="pv-shade-bottom" aria-hidden="true"></div>
+      ${state.lightboxIndex > 0 ? `<button type="button" class="pv-nav pv-nav-prev" data-pv-go="-1" aria-label="${esc(v.prevPhoto)}">${PV_ICONS.navPrev}</button>` : ""}
+      ${state.lightboxIndex < visiblePhotos.length - 1 ? `<button type="button" class="pv-nav pv-nav-next" data-pv-go="1" aria-label="${esc(v.nextPhoto)}">${PV_ICONS.navNext}</button>` : ""}
       <div class="pv-top">
         <button type="button" class="pv-back" id="photo-lightbox-close" aria-label="${esc(t.tipsClose)}">${PV_ICONS.back}</button>
         <span class="pv-title">${esc(pvShopName)}</span>
@@ -3806,9 +3809,9 @@ function setPhotoCover(state, photoId, on) {
 // 写真の拡大表示(画面いっぱい)の部品
 // ---------------------------------------------------------------------
 const PHOTO_VIEWER_TEXT = {
-  ja: { share: "シェア", more: "その他", shareText: (n) => `${n} の写真 #ベトナムフーディー`, copied: "リンクをコピーしました" },
-  en: { share: "Share", more: "More", shareText: (n) => `Photo at ${n} #VietnamFoodie`, copied: "Link copied" },
-  vi: { share: "Chia sẻ", more: "Khác", shareText: (n) => `Ảnh tại ${n} #VietnamFoodie`, copied: "Đã sao chép liên kết" },
+  ja: { share: "シェア", more: "その他", shareText: (n) => `${n} の写真 #ベトナムフーディー`, copied: "リンクをコピーしました", prevPhoto: "前の写真", nextPhoto: "次の写真" },
+  en: { share: "Share", more: "More", shareText: (n) => `Photo at ${n} #VietnamFoodie`, copied: "Link copied", prevPhoto: "Previous photo", nextPhoto: "Next photo" },
+  vi: { share: "Chia sẻ", more: "Khác", shareText: (n) => `Ảnh tại ${n} #VietnamFoodie`, copied: "Đã sao chép liên kết", prevPhoto: "Ảnh trước", nextPhoto: "Ảnh tiếp theo" },
 };
 function photoViewerText() {
   return PHOTO_VIEWER_TEXT[currentLang] || PHOTO_VIEWER_TEXT.ja;
@@ -3818,6 +3821,9 @@ const PV_SVG = (d, fill) =>
   `<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="${fill || "none"}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const PV_ICONS = {
   back: PV_SVG('<path d="M15 5l-7 7 7 7"/>'),
+  // 写真の左右の「‹」「›」ボタン(丸の中に入れるので、少し小さめ)
+  navPrev: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>',
+  navNext: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg>',
   heart: PV_SVG('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
   heartOn: PV_SVG('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>', "currentColor"),
   comment: PV_SVG('<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>'),
@@ -3841,6 +3847,10 @@ function bindPhotoViewer(box, state, visiblePhotos) {
     renderPhotos();
     return true;
   };
+  // 写真の左右の「‹」「›」ボタン
+  viewer.querySelectorAll("[data-pv-go]").forEach((btn) =>
+    btn.addEventListener("click", () => go(Number(btn.dataset.pvGo)))
+  );
   viewer.querySelectorAll("[data-pv-sheet]").forEach((btn) =>
     btn.addEventListener("click", () => {
       state.viewerSheet = btn.dataset.pvSheet;
