@@ -272,7 +272,7 @@ function renderDetail() {
   // --- お店が見つからないとき(URLの id が間違っている など) ---
   if (!entry) {
     detailPage.innerHTML =
-      `<a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>` +
+      `<a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>` + backFabHtml(t) +
       `<section class="detail-notfound"><h2>${esc(t.detailNotFound)}</h2><p>${esc(t.detailNotFoundText)}</p></section>`;
     bindBackLinks();
     return;
@@ -296,6 +296,7 @@ function renderDetail() {
 
   detailPage.innerHTML = `
     <a class="btn detail-back" href="${esc(listUrl())}">${esc(t.detailBack)}</a>
+    ${backFabHtml(t)}
 
     <article class="detail">
       <!-- ① 店舗画像 -->
@@ -540,7 +541,7 @@ function bindNearbySpots() {
 // 「← 一覧に戻る」: 普通のリンクとしても動く(新しいタブで開いたときなど)が、通常は、ページを移動せずに切り替える
 //   ・detailPage(店舗詳細)・contentPageEl(利用規約などの固定ページ)の、どちらでも使う共通の部品
 function bindBackLinksIn(container) {
-  container.querySelectorAll(".detail-back").forEach((link) =>
+  container.querySelectorAll(".detail-back, .detail-back-fab").forEach((link) =>
     link.addEventListener("click", (event) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return; // 新しいタブで開く操作は、そのまま
       event.preventDefault();
@@ -551,7 +552,28 @@ function bindBackLinksIn(container) {
 
 function bindBackLinks() {
   bindBackLinksIn(detailPage);
+  updateBackFabOffset();
 }
+
+// スマホ: 画面の左下に浮かぶ「戻る」ボタン(丸い矢印)。押すと「← 一覧に戻る」と同じ動き
+//   ・スマホでは、上のヘッダーと「← 一覧に戻る」を出さず、このボタンだけにする(CSS)
+//   ・PC では、このボタンは出さない(CSS)
+function backFabHtml(t) {
+  const label = String(t.detailBack).replace(/^←\s*/, ""); // 読み上げ用(矢印の記号は除く)
+  return `<a class="detail-back-fab" href="${esc(listUrl())}" aria-label="${esc(label)}" title="${esc(label)}">` +
+    `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">` +
+    `<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>`;
+}
+
+// 戻るボタンが、下の権利表示(フッター)に重ならないよう、フッターの高さをCSSに伝える
+function updateBackFabOffset() {
+  const footer = document.getElementById("site-footer");
+  const h = footer && footer.offsetParent !== null ? footer.offsetHeight : 0;
+  document.documentElement.style.setProperty("--detail-footer-h", h + "px");
+}
+window.addEventListener("resize", () => {
+  if (document.body.classList.contains("view-detail")) updateBackFabOffset();
+});
 
 // ---------------------------------------------------------------------
 // 固定ページ(利用規約・プライバシーポリシー・運営者情報)
