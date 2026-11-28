@@ -2105,7 +2105,7 @@ function renderPhotos() {
   // 写真の拡大表示(画面いっぱいに写真を出し、右側に いいね・コメント・シェア、左下に 投稿者・説明・お店の名前)
   //   ・左右にスワイプ(パソコンは ←→ キー)で、前後の写真へ。切り替わるとき、写真が横にスライドして入れ替わる
   //   ・写真が2枚以上あるときは、写真の左右に「‹」「›」の丸いボタンも出す(最初の写真では「‹」、最後の写真では「›」を出さない)
-  //   ・スマホでスワイプして写真が切り替わったときは、カチッと短く振動させる(navigator.vibrate。対応していない端末では何もしない)
+  //   ・スマホでスワイプして写真が切り替わったときは、カチッと短く振動させる(swipeHaptic。Android も iPhone も)
   //   ・コメントと、削除などの操作は、下から出てくるシートの中に出す
   const lightboxPhoto = state.lightboxIndex !== null ? visiblePhotos[state.lightboxIndex] : null;
   let lightboxHtml = "";
@@ -3831,6 +3831,37 @@ const PV_ICONS = {
   more: PV_SVG('<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>'),
   pin: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
 };
+// スマホで写真をスワイプして切り替えたときの「カチッ」という短い振動
+//   ・Android など: navigator.vibrate(12)(12ミリ秒だけ振動)
+//   ・iPhone: navigator.vibrate が使えないため、iPhone(iOS 18 以降)の「スイッチ」部品
+//     (<input type="checkbox" switch>)を、見えない状態で切り替えて、その時に出る軽い振動を使う
+//     (iOS 17 以前など、対応していない端末では、何も起きないだけ。画面の見た目・動きには影響しない)
+//   ・PC では呼ばれない(スワイプ = 指の操作のときだけ呼ぶ)
+let hapticSwitchLabel = null;
+function swipeHaptic() {
+  try {
+    if (typeof navigator.vibrate === "function") {
+      navigator.vibrate(12);
+      return;
+    }
+    if (!hapticSwitchLabel) {
+      hapticSwitchLabel = document.createElement("label");
+      hapticSwitchLabel.setAttribute("aria-hidden", "true");
+      hapticSwitchLabel.style.display = "none";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.setAttribute("switch", "");
+      input.tabIndex = -1;
+      hapticSwitchLabel.appendChild(input);
+      // この「見えないクリック」が、ほかの部品(「外を押したら閉じる」など)に届かないようにする
+      hapticSwitchLabel.addEventListener("click", (e) => e.stopPropagation());
+      document.body.appendChild(hapticSwitchLabel);
+    }
+    hapticSwitchLabel.click();
+  } catch (e) {
+    // 振動できなくても、写真の切り替えはそのまま
+  }
+}
 function bindPhotoViewer(box, state, visiblePhotos) {
   const viewer = box.querySelector("#photo-lightbox");
   if (!viewer) return;
@@ -3897,7 +3928,7 @@ function bindPhotoViewer(box, state, visiblePhotos) {
     });
   // 左右のスワイプで、前後の写真へ(シートを開いているときは、しない)
   //   ・右から左にスワイプ → 次の写真、左から右にスワイプ → 前の写真(写真アプリと同じ向き)
-  //   ・切り替わったら、スマホ(navigator.vibrate に対応した端末)だけ、カチッと短く振動させる
+  //   ・切り替わったら、スマホだけ、カチッと短く振動させる(swipeHaptic)
   let start = null;
   viewer.addEventListener(
     "touchstart",
@@ -3914,7 +3945,7 @@ function bindPhotoViewer(box, state, visiblePhotos) {
     start = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       const moved = go(dx < 0 ? 1 : -1);
-      if (moved && typeof navigator.vibrate === "function") navigator.vibrate(12);
+      if (moved) swipeHaptic();
     }
   });
   // 写真の上で指を動かしても、後ろのページがスクロールしないようにする(シートの中は、スクロールできる)
